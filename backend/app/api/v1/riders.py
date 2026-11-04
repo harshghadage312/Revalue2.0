@@ -21,6 +21,7 @@ def register_delivery_partner(req: RiderRegisterRequest):
 
 
 @router.get("/me/profile")
+@router.get("/profile")
 def get_my_rider_profile(current_user: Dict[str, Any] = Depends(require_role("rider"))):
     """
     Retrieves the authenticated delivery partner's profile and application verification status.
@@ -29,6 +30,9 @@ def get_my_rider_profile(current_user: Dict[str, Any] = Depends(require_role("ri
 
 
 @router.put("/me/status")
+@router.put("/status")
+@router.post("/me/status")
+@router.post("/status")
 def toggle_availability_status(
     req: RiderStatusUpdateRequest,
     current_user: Dict[str, Any] = Depends(require_role("rider"))
@@ -41,6 +45,7 @@ def toggle_availability_status(
 
 
 @router.post("/me/location")
+@router.post("/location")
 def update_current_location(
     req: RiderLocationUpdateRequest,
     current_user: Dict[str, Any] = Depends(require_role("rider"))
@@ -53,6 +58,7 @@ def update_current_location(
 
 
 @router.get("/me/jobs/available")
+@router.get("/jobs/available")
 def list_available_jobs(current_user: Dict[str, Any] = Depends(require_role("rider"))):
     """
     Fetches open delivery job offers within the rider's active service areas.
@@ -61,6 +67,7 @@ def list_available_jobs(current_user: Dict[str, Any] = Depends(require_role("rid
 
 
 @router.get("/me/jobs/active")
+@router.get("/jobs/active")
 def get_current_active_job(current_user: Dict[str, Any] = Depends(require_role("rider"))):
     """
     Retrieves the currently assigned active delivery in progress.
@@ -69,7 +76,20 @@ def get_current_active_job(current_user: Dict[str, Any] = Depends(require_role("
     return {"active_job": job}
 
 
+@router.get("/me/jobs/{job_id}")
+@router.get("/jobs/{job_id}")
+def get_rider_job_detail(
+    job_id: str,
+    current_user: Dict[str, Any] = Depends(require_role("rider"))
+):
+    """
+    Retrieves details for a specific delivery job assignment.
+    """
+    return RiderService.get_job_detail(current_user["id"], job_id)
+
+
 @router.post("/me/jobs/{job_id}/accept")
+@router.post("/jobs/{job_id}/accept")
 def accept_delivery_job(
     job_id: str,
     current_user: Dict[str, Any] = Depends(require_role("rider"))
@@ -82,6 +102,7 @@ def accept_delivery_job(
 
 
 @router.post("/me/jobs/{job_id}/reject")
+@router.post("/jobs/{job_id}/reject")
 def decline_delivery_job(
     job_id: str,
     current_user: Dict[str, Any] = Depends(require_role("rider"))
@@ -93,6 +114,7 @@ def decline_delivery_job(
 
 
 @router.post("/me/jobs/{job_id}/arrived-pickup")
+@router.post("/jobs/{job_id}/arrived-pickup")
 def mark_arrived_at_pickup(
     job_id: str,
     current_user: Dict[str, Any] = Depends(require_role("rider"))
@@ -104,6 +126,7 @@ def mark_arrived_at_pickup(
 
 
 @router.post("/me/jobs/{job_id}/pickup")
+@router.post("/jobs/{job_id}/pickup")
 def confirm_parcel_pickup(
     job_id: str,
     req: Optional[JobPickupConfirmRequest] = None,
@@ -118,6 +141,7 @@ def confirm_parcel_pickup(
 
 
 @router.post("/me/jobs/{job_id}/start-delivery")
+@router.post("/jobs/{job_id}/start-delivery")
 def start_out_for_delivery(
     job_id: str,
     current_user: Dict[str, Any] = Depends(require_role("rider"))
@@ -129,6 +153,7 @@ def start_out_for_delivery(
 
 
 @router.post("/me/jobs/{job_id}/verify-delivery-otp")
+@router.post("/jobs/{job_id}/verify-delivery-otp")
 def verify_doorstep_otp(
     job_id: str,
     req: JobDeliveryOtpVerifyRequest,
@@ -147,6 +172,7 @@ def verify_doorstep_otp(
 
 
 @router.post("/me/jobs/{job_id}/report-failure")
+@router.post("/jobs/{job_id}/report-failure")
 def report_delivery_failure(
     job_id: str,
     req: JobReportFailureRequest,
@@ -164,6 +190,7 @@ def report_delivery_failure(
 
 
 @router.get("/me/earnings")
+@router.get("/earnings")
 def get_rider_earnings_summary(current_user: Dict[str, Any] = Depends(require_role("rider"))):
     """
     Returns recorded delivery partner earnings, completed deliveries, and payout statuses.
@@ -172,8 +199,12 @@ def get_rider_earnings_summary(current_user: Dict[str, Any] = Depends(require_ro
 
 
 @router.get("/me/history")
+@router.get("/history")
+@router.get("/me/jobs/history")
+@router.get("/jobs/history")
 def get_rider_job_history(current_user: Dict[str, Any] = Depends(require_role("rider"))):
     """
     Returns historical list of handled delivery assignments.
     """
-    return RiderService.get_rider_history(current_user["id"])
+    history = RiderService.get_rider_history(current_user["id"])
+    return {"jobs": history, "total": len(history)}

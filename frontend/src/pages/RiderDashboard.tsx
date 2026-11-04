@@ -74,7 +74,11 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
     setError(null);
     try {
       const updated = await api.updateRiderStatus(!profile.is_online);
-      setProfile(updated);
+      setProfile(prev => prev ? {
+        ...prev,
+        ...updated,
+        is_online: updated.is_online,
+      } : updated);
       setSuccessMsg(updated.is_online ? 'You are now ONLINE and ready for local dispatches!' : 'You are now OFFLINE.');
       setTimeout(() => setSuccessMsg(null), 3000);
 
@@ -170,17 +174,36 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
     return (
       <div className="min-h-screen bg-slate-50 py-16 px-4 flex items-center justify-center">
         <div className="max-w-md w-full bg-white rounded-2xl p-8 border border-slate-200 text-center shadow-sm">
-          <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-slate-900 mb-2">No Partner Profile</h2>
-          <p className="text-xs text-slate-600 mb-6">
-            You do not have a registered delivery partner profile linked to this account.
-          </p>
-          <button
-            onClick={() => onNavigate('delivery-partner-signup')}
-            className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
-          >
-            Apply to Become a Partner
-          </button>
+          {error ? (
+            <>
+              <AlertCircle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+              <h2 className="text-xl font-bold text-slate-900 mb-2">Error Loading Dashboard</h2>
+              <p className="text-xs text-rose-600 mb-6 bg-rose-50 p-2.5 rounded-lg border border-rose-200">
+                {error}
+              </p>
+              <button
+                onClick={() => loadData(true)}
+                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+              >
+                <RotateCw className="w-4 h-4" />
+                <span>Retry Connection</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+              <h2 className="text-xl font-bold text-slate-900 mb-2">No Partner Profile</h2>
+              <p className="text-xs text-slate-600 mb-6">
+                You do not have a registered delivery partner profile linked to this account.
+              </p>
+              <button
+                onClick={() => onNavigate('delivery-partner-signup')}
+                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+              >
+                Apply to Become a Partner
+              </button>
+            </>
+          )}
         </div>
       </div>
     );
@@ -192,16 +215,25 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
       <div className="min-h-screen bg-slate-50 py-16 px-4 flex items-center justify-center">
         <div className="max-w-md w-full bg-white rounded-2xl p-8 border border-slate-200 text-center shadow-sm">
           <Clock className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Application Pending Approval</h2>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Application Under Review</h2>
           <p className="text-xs text-slate-600 mb-6">
-            Your delivery partner profile is currently {profile.application_status.replace(/_/g, ' ')}. Once approved by Operations, your dispatch feed will unlock.
+            Your delivery partner profile status is currently <span className="font-bold uppercase text-amber-700">{profile.application_status.replace(/_/g, ' ')}</span>. Once approved by Operations, your live dispatch feed and online switch will unlock immediately.
           </p>
-          <button
-            onClick={() => onNavigate('delivery-partner-application')}
-            className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
-          >
-            Check Application Status
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => onNavigate('delivery-partner-application')}
+              className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+            >
+              View Full Application Details
+            </button>
+            <button
+              onClick={() => loadData(true)}
+              className="w-full py-2 px-4 border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+            >
+              <RotateCw className="w-3.5 h-3.5" />
+              <span>Check for Approval</span>
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -306,7 +338,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
               <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
             </div>
             <p className="text-base sm:text-lg font-extrabold text-slate-900">
-              ₹{profile.successful_deliveries * 135}
+              ₹{((profile.successful_deliveries ?? (profile as any).total_deliveries_completed ?? 0) * 135).toLocaleString('en-IN')}
             </p>
             <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5 mt-0.5">
               <span>View breakdown</span>
@@ -323,7 +355,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
               <PackageCheck className="w-3.5 h-3.5 text-blue-600" />
             </div>
             <p className="text-base sm:text-lg font-extrabold text-slate-900">
-              {profile.successful_deliveries}
+              {profile.successful_deliveries ?? (profile as any).total_deliveries_completed ?? 0}
             </p>
             <span className="text-[10px] text-slate-400">Total verified</span>
           </div>
@@ -334,7 +366,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
               <Award className="w-3.5 h-3.5 text-amber-500" />
             </div>
             <p className="text-base sm:text-lg font-extrabold text-slate-900">
-              ⭐ {profile.rating.toFixed(1)}
+              ⭐ {Number(profile.rating ?? (profile as any).average_rating ?? 5.0).toFixed(1)}
             </p>
             <span className="text-[10px] text-emerald-600 font-semibold">Top tier</span>
           </div>
@@ -385,7 +417,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
                 Available Nearby Deliveries ({availableJobs.length})
               </h2>
               <p className="text-xs text-slate-500">
-                Based on your registered pincodes: {profile.service_pincodes.slice(0, 3).join(', ')}...
+                Based on your registered pincodes: {(profile.service_pincodes || []).slice(0, 3).join(', ')}...
               </p>
             </div>
             <button

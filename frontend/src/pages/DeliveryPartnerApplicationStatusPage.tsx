@@ -89,17 +89,36 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
     return (
       <div className="min-h-screen bg-slate-50 py-16 px-4 flex items-center justify-center">
         <div className="max-w-md w-full bg-white rounded-2xl p-8 border border-slate-200 text-center shadow-sm">
-          <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-slate-900 mb-2">No Application Found</h2>
-          <p className="text-xs text-slate-600 mb-6">
-            You do not currently have an active delivery partner profile linked with this account.
-          </p>
-          <button
-            onClick={() => onNavigate('delivery-partner-signup')}
-            className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
-          >
-            Submit a Partner Application
-          </button>
+          {error ? (
+            <>
+              <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+              <h2 className="text-xl font-bold text-slate-900 mb-2">Error Loading Application</h2>
+              <p className="text-xs text-rose-600 mb-6 bg-rose-50 p-2.5 rounded-lg border border-rose-200">
+                {error}
+              </p>
+              <button
+                onClick={() => fetchProfile(true)}
+                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+              >
+                <RotateCw className="w-4 h-4" />
+                <span>Retry Connection</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+              <h2 className="text-xl font-bold text-slate-900 mb-2">No Application Found</h2>
+              <p className="text-xs text-slate-600 mb-6">
+                You do not currently have an active delivery partner profile linked with this account.
+              </p>
+              <button
+                onClick={() => onNavigate('delivery-partner-signup')}
+                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+              >
+                Submit a Partner Application
+              </button>
+            </>
+          )}
         </div>
       </div>
     );

@@ -222,6 +222,7 @@ export const AppContent: React.FC = () => {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
+        onNavigate={navigate}
       />
     </div>
   );

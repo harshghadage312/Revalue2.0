@@ -538,42 +538,46 @@ class ApiClient {
   }
 
   async getRiderProfile(): Promise<RiderProfile> {
-    return this.request<RiderProfile>('/riders/profile');
+    return this.request<RiderProfile>('/riders/me/profile');
   }
 
   async updateRiderStatus(isOnline: boolean): Promise<RiderProfile> {
-    return this.request<RiderProfile>('/riders/status', {
-      method: 'POST',
+    return this.request<RiderProfile>('/riders/me/status', {
+      method: 'PUT',
       body: JSON.stringify({ is_online: isOnline }),
     });
   }
 
   async updateRiderLocation(latitude: number, longitude: number): Promise<{ success: boolean }> {
-    return this.request<{ success: boolean }>('/riders/location', {
+    return this.request<{ success: boolean }>('/riders/me/location', {
       method: 'POST',
       body: JSON.stringify({ latitude, longitude }),
     });
   }
 
   async getRiderAvailableJobs(): Promise<DeliveryJob[]> {
-    return this.request<DeliveryJob[]>('/riders/jobs/available');
+    return this.request<DeliveryJob[]>('/riders/me/jobs/available');
   }
 
   async getRiderActiveJob(): Promise<DeliveryJob | null> {
-    const res = await this.request<{ active_job: DeliveryJob | null }>('/riders/jobs/active');
+    const res = await this.request<{ active_job: DeliveryJob | null }>('/riders/me/jobs/active');
     return res.active_job;
   }
 
   async getRiderJobHistory(page = 1, size = 20): Promise<{ jobs: DeliveryJob[]; total: number }> {
-    return this.request<{ jobs: DeliveryJob[]; total: number }>(`/riders/jobs/history?page=${page}&size=${size}`);
+    const res = await this.request<any>(`/riders/me/history?page=${page}&size=${size}`);
+    if (Array.isArray(res)) {
+      return { jobs: res, total: res.length };
+    }
+    return { jobs: res.jobs || [], total: res.total || 0 };
   }
 
   async getRiderJobDetail(jobId: string): Promise<DeliveryJob> {
-    return this.request<DeliveryJob>(`/riders/jobs/${jobId}`);
+    return this.request<DeliveryJob>(`/riders/me/jobs/${jobId}`);
   }
 
   async acceptRiderJob(jobId: string): Promise<DeliveryJob> {
-    return this.request<DeliveryJob>(`/riders/jobs/${jobId}/accept`, {
+    return this.request<DeliveryJob>(`/riders/me/jobs/${jobId}/accept`, {
       method: 'POST',
     });
   }
@@ -582,7 +586,7 @@ class ApiClient {
     jobId: string,
     payload: { pickup_token?: string; notes?: string; package_condition_ok?: boolean } = {}
   ): Promise<DeliveryJob> {
-    return this.request<DeliveryJob>(`/riders/jobs/${jobId}/pickup`, {
+    return this.request<DeliveryJob>(`/riders/me/jobs/${jobId}/pickup`, {
       method: 'POST',
       body: JSON.stringify({
         pickup_token: payload.pickup_token,
@@ -593,7 +597,7 @@ class ApiClient {
   }
 
   async verifyRiderDeliveryOtp(jobId: string, deliveryOtp: string, notes?: string): Promise<DeliveryJob> {
-    return this.request<DeliveryJob>(`/riders/jobs/${jobId}/verify-delivery-otp`, {
+    return this.request<DeliveryJob>(`/riders/me/jobs/${jobId}/verify-delivery-otp`, {
       method: 'POST',
       body: JSON.stringify({
         delivery_otp: deliveryOtp,
@@ -603,7 +607,7 @@ class ApiClient {
   }
 
   async reportRiderJobFailure(jobId: string, reason: string, notes?: string): Promise<DeliveryJob> {
-    return this.request<DeliveryJob>(`/riders/jobs/${jobId}/report-failure`, {
+    return this.request<DeliveryJob>(`/riders/me/jobs/${jobId}/report-failure`, {
       method: 'POST',
       body: JSON.stringify({
         reason,
@@ -613,7 +617,7 @@ class ApiClient {
   }
 
   async getRiderEarnings(): Promise<RiderEarningsSummary> {
-    return this.request<RiderEarningsSummary>('/riders/earnings');
+    return this.request<RiderEarningsSummary>('/riders/me/earnings');
   }
 
   // -------------------------------------------------------------

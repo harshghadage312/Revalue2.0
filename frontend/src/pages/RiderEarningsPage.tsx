@@ -102,10 +102,10 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
               Total Earned
             </span>
             <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-              ₹{earnings?.total_earned ?? 0}
+              ₹{earnings?.total_earned ?? (earnings as any)?.total_earnings_inr ?? 0}
             </p>
             <span className="text-xs text-slate-500 mt-1 block">
-              Across {earnings?.completed_jobs_count ?? 0} verified deliveries
+              Across {earnings?.completed_jobs_count ?? (earnings as any)?.total_deliveries_completed ?? 0} verified deliveries
             </span>
           </div>
 
@@ -114,7 +114,7 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
               Pending Payout
             </span>
             <p className="text-2xl sm:text-3xl font-extrabold text-amber-600">
-              ₹{earnings?.pending_payout ?? 0}
+              ₹{earnings?.pending_payout ?? (earnings as any)?.pending_payout_inr ?? 0}
             </p>
             <span className="text-xs text-slate-500 mt-1 block">
               Scheduled for next settlement cycle
@@ -126,7 +126,7 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
               Paid Out to Bank
             </span>
             <p className="text-2xl sm:text-3xl font-extrabold text-emerald-600">
-              ₹{earnings?.paid_out ?? 0}
+              ₹{earnings?.paid_out ?? (earnings as any)?.paid_payout_inr ?? 0}
             </p>
             <span className="text-xs text-slate-500 mt-1 block">
               Direct transfer to registered account
@@ -152,19 +152,19 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
             <h2 className="text-sm font-bold text-slate-900">Payout Breakdown by Delivery</h2>
             <span className="text-xs text-slate-500 font-medium">
-              {earnings?.jobs.length ?? 0} completed records
+              {earnings?.jobs?.length ?? 0} completed records
             </span>
           </div>
 
           {loading ? (
             <div className="p-8 text-center text-xs text-slate-400">Loading payout records...</div>
-          ) : !earnings || earnings.jobs.length === 0 ? (
+          ) : !earnings || !earnings.jobs || earnings.jobs.length === 0 ? (
             <div className="p-8 text-center text-xs text-slate-400">
               No completed delivery payout records found yet.
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
-              {earnings.jobs.map((item, idx) => (
+              {(earnings.jobs || []).map((item, idx) => (
                 <div key={idx} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">

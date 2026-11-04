@@ -8,12 +8,14 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultMode?: 'login' | 'register';
+  onNavigate?: (page: string, params?: any) => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
   defaultMode = 'login',
+  onNavigate,
 }) => {
   const { login, register } = useAuth();
   const [isLogin, setIsLogin] = useState(defaultMode === 'login');
@@ -32,11 +34,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setLoading(true);
     try {
       if (isLogin) {
-        await login(email, password);
+        const loggedUser = await login(email, password);
+        onClose();
+        if (loggedUser?.role === 'rider') {
+          onNavigate?.('rider-dashboard');
+        } else if (loggedUser?.role === 'admin') {
+          onNavigate?.('admin-dashboard');
+        }
       } else {
         await register(name, email, password, role);
+        onClose();
       }
-      onClose();
     } catch (err: any) {
       setError(err.message || 'Authentication failed. Please verify credentials.');
     } finally {

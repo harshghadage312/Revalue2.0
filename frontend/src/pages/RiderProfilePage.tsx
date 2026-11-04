@@ -133,9 +133,9 @@ export const RiderProfilePage: React.FC<RiderProfilePageProps> = ({
               <h2 className="text-base font-bold text-slate-900">{profile.name}</h2>
               <p className="text-xs text-slate-500">{profile.email}</p>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[11px] font-semibold text-slate-700">⭐ {profile.rating.toFixed(1)} Partner Rating</span>
+                <span className="text-[11px] font-semibold text-slate-700">⭐ {Number(profile.rating ?? (profile as any).average_rating ?? 5.0).toFixed(1)} Partner Rating</span>
                 <span>•</span>
-                <span className="text-[11px] text-emerald-600 font-bold">{profile.successful_deliveries} Delivered</span>
+                <span className="text-[11px] text-emerald-600 font-bold">{profile.successful_deliveries ?? (profile as any).total_deliveries_completed ?? 0} Delivered</span>
               </div>
             </div>
           </div>

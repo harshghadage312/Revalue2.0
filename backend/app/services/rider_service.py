@@ -105,7 +105,15 @@ class RiderService:
         rider = db.rider_profiles.find_one({"user_id": user_id})
         if not rider:
             raise NotFoundError("Delivery partner profile not found.")
-        return rider
+        r_copy = dict(rider)
+        if "_id" in r_copy:
+            r_copy["_id"] = str(r_copy["_id"])
+        r_copy.pop("driving_license_hash", None)
+        r_copy["rating"] = float(r_copy.get("average_rating", 5.0))
+        r_copy["successful_deliveries"] = int(r_copy.get("total_deliveries_completed", 0))
+        r_copy["total_deliveries"] = int(r_copy.get("total_deliveries_completed", 0))
+        r_copy["current_location"] = r_copy.get("last_location")
+        return r_copy
 
     @staticmethod
     def get_profile_by_id(rider_id: str) -> Dict[str, Any]:
@@ -113,7 +121,32 @@ class RiderService:
         rider = db.rider_profiles.find_one({"id": rider_id})
         if not rider:
             raise NotFoundError("Delivery partner not found.")
-        return rider
+        r_copy = dict(rider)
+        if "_id" in r_copy:
+            r_copy["_id"] = str(r_copy["_id"])
+        r_copy.pop("driving_license_hash", None)
+        r_copy["rating"] = float(r_copy.get("average_rating", 5.0))
+        r_copy["successful_deliveries"] = int(r_copy.get("total_deliveries_completed", 0))
+        r_copy["total_deliveries"] = int(r_copy.get("total_deliveries_completed", 0))
+        r_copy["current_location"] = r_copy.get("last_location")
+        return r_copy
+
+    @staticmethod
+    def get_job_detail(user_id: str, job_id: str) -> Dict[str, Any]:
+        db = get_db()
+        rider = db.rider_profiles.find_one({"user_id": user_id})
+        if not rider:
+            raise NotFoundError("Delivery partner not found.")
+
+        job = db.delivery_jobs.find_one({"id": job_id})
+        if not job:
+            raise NotFoundError("Delivery job not found.")
+
+        j_copy = dict(job)
+        if "_id" in j_copy:
+            j_copy["_id"] = str(j_copy["_id"])
+        j_copy.pop("delivery_otp_hash", None)
+        return j_copy
 
     @staticmethod
     def update_online_status(user_id: str, is_online: bool) -> Dict[str, Any]:
@@ -135,11 +168,7 @@ class RiderService:
             {"$set": {"is_online": is_online, "last_active_at": now}}
         )
         logger.info(f"Rider {rider['id']} toggled online status to {is_online}")
-        return {
-            "rider_id": rider["id"],
-            "is_online": is_online,
-            "last_active_at": now
-        }
+        return RiderService.get_profile_by_user(user_id)
 
     @staticmethod
     def update_location(user_id: str, req: RiderLocationUpdateRequest) -> Dict[str, Any]:
@@ -656,9 +685,10 @@ class RiderService:
         pending_payout = 0.0
         completed_jobs_count = 0
 
+        earnings_jobs = []
         for j in jobs_cursor:
             comp = j.get("compensation", {})
-            amt = float(comp.get("total_rider_earnings", 0.0))
+            amt = float(comp.get("total_compensation", comp.get("total_rider_earnings", 0.0)))
             p_status = comp.get("payout_status", "pending")
             total_earned += amt
             completed_jobs_count += 1
@@ -670,15 +700,28 @@ class RiderService:
             else:
                 pending_payout += amt
 
+            earnings_jobs.append({
+                "job_id": j.get("id"),
+                "order_id": j.get("order_id"),
+                "product_title": j.get("product_title", "Pre-Owned Smartphone"),
+                "completed_at": str(j.get("delivered_at") or j.get("updated_at")),
+                "compensation": comp
+            })
+
         return {
             "rider_id": rider["id"],
             "rider_name": rider["name"],
+            "total_earned": round(total_earned, 2),
             "total_earnings_inr": round(total_earned, 2),
             "eligible_for_payout_inr": round(eligible_payout, 2),
+            "paid_out": round(paid_payout, 2),
             "paid_payout_inr": round(paid_payout, 2),
+            "pending_payout": round(pending_payout, 2),
             "pending_payout_inr": round(pending_payout, 2),
+            "completed_jobs_count": completed_jobs_count,
             "total_deliveries_completed": completed_jobs_count,
-            "currency": "INR"
+            "currency": "INR",
+            "jobs": earnings_jobs
         }
 
     @staticmethod
