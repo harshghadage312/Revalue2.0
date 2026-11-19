@@ -21,6 +21,30 @@ export interface AuthResponse {
   user: User;
 }
 
+export interface RegisterSendOtpRequest {
+  name: string;
+  email: string;
+  password: string;
+  role?: UserRole;
+}
+
+export interface RegisterSendOtpResponse {
+  message: string;
+  email: string;
+  cooldown_seconds: number;
+  expires_in_minutes: number;
+  dev_otp?: string;
+}
+
+export interface RegisterVerifyOtpRequest {
+  email: string;
+  otp: string;
+}
+
+export interface RegisterVerifyOtpResponse extends AuthResponse {
+  message: string;
+}
+
 export type ProductCondition = 'excellent' | 'good' | 'bad' | 'defective';
 export type SellingMethod = 'negotiation' | 'bidding';
 export type ProductStatus = 'active' | 'reserved' | 'sold' | 'inactive' | 'cancelled';

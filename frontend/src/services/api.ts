@@ -1,5 +1,7 @@
 import {
   AuthResponse, User, Product, ProductListResponse,
+  RegisterSendOtpRequest, RegisterSendOtpResponse,
+  RegisterVerifyOtpRequest, RegisterVerifyOtpResponse,
   Offer, NegotiationSuggestion, Auction, Order,
   PriceEstimate, MobileCondition, RecommendationItem,
   Review, Notification, ShippingQuoteResponse,
@@ -110,6 +112,23 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(body),
     });
+  }
+
+  async sendRegisterOtp(body: RegisterSendOtpRequest): Promise<RegisterSendOtpResponse> {
+    return this.request<RegisterSendOtpResponse>('/auth/register/send-otp', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
+
+  async verifyRegisterOtp(body: RegisterVerifyOtpRequest): Promise<RegisterVerifyOtpResponse> {
+    const data = await this.request<RegisterVerifyOtpResponse>('/auth/register/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    localStorage.setItem('revalue_token', data.access_token);
+    localStorage.setItem('revalue_user', JSON.stringify(data.user));
+    return data;
   }
 
   async login(body: any): Promise<AuthResponse> {

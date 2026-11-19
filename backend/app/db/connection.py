@@ -309,6 +309,38 @@ class MemoryCollection:
                 deleted_count = count
             return Result()
 
+    def replace_one(self, query: Dict[str, Any], replacement: Dict[str, Any], upsert: bool = False):
+        with self._lock:
+            target_key = None
+            for k, doc in list(self._docs.items()):
+                if self._matches_filter(doc, query):
+                    target_key = k
+                    break
+
+            class Result:
+                matched_count = 0
+                modified_count = 0
+                upserted_id = None
+
+            res = Result()
+            if target_key is not None:
+                new_doc = copy.deepcopy(replacement)
+                new_doc['_id'] = target_key
+                self._docs[target_key] = new_doc
+                res.matched_count = 1
+                res.modified_count = 1
+                return res
+
+            if upsert:
+                new_doc = copy.deepcopy(replacement)
+                _id = str(new_doc.get('_id', new_doc.get('id', len(self._docs) + 1)))
+                new_doc['_id'] = _id
+                self._docs[_id] = new_doc
+                res.upserted_id = _id
+                return res
+
+            return res
+
     def create_index(self, keys, unique: bool = False, name: Optional[str] = None, **kwargs):
         with self._lock:
             if isinstance(keys, str):

@@ -10,6 +10,26 @@ class UserRegisterRequest(BaseModel):
     role: str = Field(default="buyer", pattern="^(buyer|seller|admin)$")
 
 
+class RegisterSendOtpRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=60)
+    email: EmailStr
+    password: str = Field(..., min_length=8, max_length=128)
+    role: str = Field(default="buyer", pattern="^(buyer|seller)$")
+
+
+class RegisterSendOtpResponse(BaseModel):
+    message: str
+    email: str
+    cooldown_seconds: int = 60
+    expires_in_minutes: int = 5
+    dev_otp: Optional[str] = None
+
+
+class RegisterVerifyOtpRequest(BaseModel):
+    email: EmailStr
+    otp: str = Field(..., min_length=6, max_length=6, pattern="^[0-9]{6}$")
+
+
 class UserLoginRequest(BaseModel):
     email: EmailStr
     password: str
@@ -29,6 +49,15 @@ class UserProfileResponse(BaseModel):
 
 
 class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "Bearer"
+    expires_in_minutes: int
+    user: UserProfileResponse
+
+
+class RegisterVerifyOtpResponse(BaseModel):
+    message: str
     access_token: str
     refresh_token: str
     token_type: str = "Bearer"

@@ -8,6 +8,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, pass: string) => Promise<User>;
   register: (name: string, email: string, pass: string, role: UserRole) => Promise<void>;
+  verifyOtpRegistration: (email: string, otp: string) => Promise<User>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -52,6 +53,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await login(email, pass);
   };
 
+  const verifyOtpRegistration = async (email: string, otp: string): Promise<User> => {
+    const data = await api.verifyRegisterOtp({ email, otp });
+    setUser(data.user);
+    return data.user;
+  };
+
   const logout = () => {
     api.logout();
     setUser(null);
@@ -75,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         register,
+        verifyOtpRegistration,
         logout,
         refreshUser,
       }}

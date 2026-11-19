@@ -18,6 +18,11 @@ def init_indexes():
         db.refresh_tokens.create_index("user_id", name="idx_tokens_user_id")
         db.refresh_tokens.create_index("expires_at", name="idx_tokens_expires_at")
 
+        # Email OTP Verifications collection
+        db.email_verifications.create_index("email", unique=True, name="idx_email_verif_email_unique")
+        db.email_verifications.create_index("expires_at", expireAfterSeconds=0, name="idx_email_verif_ttl")
+        db.email_verifications.create_index("created_at", name="idx_email_verif_created_at")
+
         # Products collection
         db.products.create_index("seller_id", name="idx_products_seller_id")
         db.products.create_index("status", name="idx_products_status")

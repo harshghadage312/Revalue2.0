@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # Server URLs
     BACKEND_URL: str = "http://localhost:8000"
     FRONTEND_URL: str = "http://localhost:5173"
-    CORS_ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
+    CORS_ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000,https://revalue-nine.vercel.app"
 
     # Database
     MONGODB_URI: str = "mongodb://localhost:27017"
@@ -35,15 +35,21 @@ class Settings(BaseSettings):
     MAX_IMAGES_PER_LISTING: int = 6
     ALLOWED_IMAGE_TYPES: str = "image/jpeg,image/png,image/webp"
 
-    # Email
+    # Email (Gmail SMTP / Generic SMTP)
     SMTP_ENABLED: bool = False
-    SMTP_HOST: Optional[str] = None
+    SMTP_HOST: Optional[str] = "smtp.gmail.com"
     SMTP_PORT: int = 587
     SMTP_USER: Optional[str] = None
+    SMTP_USERNAME: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
-    SMTP_FROM_EMAIL: str = "no-reply@revalue.market"
+    SMTP_FROM_EMAIL: str = "revalue26@gmail.com"
+    EMAIL_FROM: Optional[str] = "revalue26@gmail.com"
     SMTP_FROM_NAME: str = "ReValue Marketplace"
 
+    # Registration OTP Settings
+    OTP_EXPIRE_MINUTES: int = 5
+    OTP_RESEND_COOLDOWN_SECONDS: int = 60
+    OTP_MAX_ATTEMPTS: int = 5
     # Payments
     PAYMENT_PROVIDER: str = "sandbox"  # "sandbox", "razorpay", "disabled"
     PAYMENT_CURRENCY: str = "INR"
@@ -79,6 +85,24 @@ class Settings(BaseSettings):
     @property
     def allowed_image_mimes(self) -> List[str]:
         return [mime.strip() for mime in self.ALLOWED_IMAGE_TYPES.split(",") if mime.strip()]
+
+    @property
+    def effective_smtp_username(self) -> Optional[str]:
+        return self.SMTP_USERNAME or self.SMTP_USER
+
+    @property
+    def effective_email_from(self) -> str:
+        return self.EMAIL_FROM or self.SMTP_FROM_EMAIL or "revalue26@gmail.com"
+
+    @property
+    def effective_smtp_host(self) -> str:
+        return self.SMTP_HOST or "smtp.gmail.com"
+
+    @property
+    def is_smtp_configured(self) -> bool:
+        user = self.effective_smtp_username
+        pw = self.SMTP_PASSWORD
+        return bool(user and pw and self.SMTP_ENABLED)
 
     @model_validator(mode="after")
     def validate_production_security(self):
