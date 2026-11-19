@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
+import { PromptModal } from '../components/PromptModal';
 import {
   AdminShipmentItem, AdminCodOrder, RiderProfile, DeliveryJob,
   ServiceArea, RiderCompensationRecord
@@ -18,6 +21,29 @@ interface AdminDashboardProps {
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) => {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
+
+  const [promptConfig, setPromptConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    description?: string;
+    label: string;
+    placeholder?: string;
+    initialValue?: string;
+    confirmText?: string;
+    required?: boolean;
+    onConfirm: (val: string) => void;
+  }>({
+    isOpen: false,
+    title: '',
+    label: '',
+    onConfirm: () => {},
+  });
+
+  const askPrompt = (opts: Omit<typeof promptConfig, 'isOpen'>) => {
+    setPromptConfig({ ...opts, isOpen: true });
+  };
   const [activeTab, setActiveTab] = useState<
     'overview' | 'delivery' | 'disputes' | 'cod' | 'users' | 'riders' | 'local-dispatch' | 'service-areas' | 'rider-payouts'
   >('overview');
@@ -124,53 +150,55 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
   // Hybrid Delivery Handlers
   const handleDirectApproveRider = async (rider: RiderProfile) => {
-    const confirmed = window.confirm(
-      `Approve delivery partner "${rider.name}" (${rider.email})?\n\n` +
-      `Vehicle: ${rider.vehicle_type.replace(/_/g, ' ')} (${rider.vehicle_registration_number})\n` +
-      `City: ${rider.city} | PIN Codes: ${rider.service_pincodes.join(', ')}\n\n` +
-      `This will activate their account, grant them access to the Rider Dashboard, and allow them to go online and accept delivery jobs.`
-    );
+    const confirmed = await confirm({
+      title: `Approve Delivery Partner: ${rider.name}`,
+      message: `Activate delivery partner account for ${rider.name} (${rider.email})? Vehicle: ${rider.vehicle_type.replace(/_/g, ' ')} (${rider.vehicle_registration_number}). City: ${rider.city} | PINs: ${rider.service_pincodes.join(', ')}. This grants access to the Rider Dashboard and local dispatch pool.`,
+      confirmText: 'Approve & Activate',
+      variant: 'primary',
+    });
     if (!confirmed) return;
 
     setUpdatingRiderStatus(true);
     try {
       await api.updateAdminRiderStatus(rider.id, 'approved');
-      alert(`Delivery partner "${rider.name}" has been approved successfully!`);
+      toast.success(`Delivery partner "${rider.name}" has been approved successfully!`);
       await loadAdminData();
     } catch (err: any) {
-      alert(err?.message || 'Failed to approve rider.');
+      toast.error(err?.message || 'Failed to approve rider.');
     } finally {
       setUpdatingRiderStatus(false);
     }
   };
 
-  const handleDirectRejectRider = async (rider: RiderProfile) => {
-    const reason = window.prompt(
-      `Enter rejection reason for "${rider.name}" (${rider.email}):`,
-      'Verification documents or vehicle details did not meet requirements.'
-    );
-    if (reason === null) return;
-    if (!reason.trim()) {
-      alert('A rejection reason is required to reject an application.');
-      return;
-    }
-
-    setUpdatingRiderStatus(true);
-    try {
-      await api.updateAdminRiderStatus(rider.id, 'rejected', reason.trim());
-      alert(`Application for "${rider.name}" has been rejected.`);
-      await loadAdminData();
-    } catch (err: any) {
-      alert(err?.message || 'Failed to reject rider.');
-    } finally {
-      setUpdatingRiderStatus(false);
-    }
+  const handleDirectRejectRider = (rider: RiderProfile) => {
+    askPrompt({
+      title: `Reject Application: ${rider.name}`,
+      description: `Provide a formal explanation for rejecting ${rider.name}'s delivery partner application.`,
+      label: 'Rejection Reason',
+      placeholder: 'Verification documents or vehicle details did not meet requirements.',
+      initialValue: 'Verification documents or vehicle details did not meet requirements.',
+      confirmText: 'Reject Application',
+      required: true,
+      onConfirm: async (reason) => {
+        setPromptConfig(p => ({ ...p, isOpen: false }));
+        setUpdatingRiderStatus(true);
+        try {
+          await api.updateAdminRiderStatus(rider.id, 'rejected', reason.trim());
+          toast.info(`Application for "${rider.name}" has been rejected.`);
+          await loadAdminData();
+        } catch (err: any) {
+          toast.error(err?.message || 'Failed to reject rider.');
+        } finally {
+          setUpdatingRiderStatus(false);
+        }
+      },
+    });
   };
 
   const handleUpdateRiderStatus = async (status: string) => {
     if (!selectedRider) return;
     if ((status === 'rejected' || status === 'suspended') && !riderRejectionReason.trim()) {
-      alert('Please provide a reason for rejecting or suspending this application.');
+      toast.warning('Please provide a reason for rejecting or suspending this application.');
       return;
     }
     setUpdatingRiderStatus(true);
@@ -180,12 +208,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         status,
         status === 'rejected' || status === 'suspended' ? riderRejectionReason.trim() : undefined
       );
-      alert(`Rider application status updated to: ${status}`);
+      toast.success(`Rider application status updated to: ${status}`);
       setSelectedRider(null);
       setRiderRejectionReason('');
       await loadAdminData();
     } catch (err: any) {
-      alert(err?.message || 'Failed to update rider status.');
+      toast.error(err?.message || 'Failed to update rider status.');
     } finally {
       setUpdatingRiderStatus(false);
     }
@@ -197,28 +225,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
     setReassigning(true);
     try {
       await api.reassignAdminDispatchJob(selectedJobToReassign.id, targetRiderId, reassignReason || undefined);
-      alert('Job reassigned successfully.');
+      toast.success('Job reassigned successfully.');
       setSelectedJobToReassign(null);
       setTargetRiderId('');
       setReassignReason('');
       loadAdminData();
     } catch (err: any) {
-      alert(err?.message || 'Failed to reassign delivery job.');
+      toast.error(err?.message || 'Failed to reassign delivery job.');
     } finally {
       setReassigning(false);
     }
   };
 
-  const handleCancelJob = async (jobId: string) => {
-    const reason = prompt('Enter formal reason for cancelling this local delivery dispatch:');
-    if (!reason || !reason.trim()) return;
-    try {
-      await api.cancelAdminDispatchJob(jobId, reason.trim());
-      alert('Delivery job cancelled.');
-      loadAdminData();
-    } catch (err: any) {
-      alert(err?.message || 'Failed to cancel job.');
-    }
+  const handleCancelJob = (jobId: string) => {
+    askPrompt({
+      title: 'Cancel Dispatch Job',
+      description: 'Enter formal reason for cancelling this local delivery dispatch.',
+      label: 'Cancellation Reason',
+      placeholder: 'e.g., Customer requested rescheduling or route blocked',
+      confirmText: 'Cancel Dispatch Job',
+      required: true,
+      onConfirm: async (reason) => {
+        setPromptConfig(p => ({ ...p, isOpen: false }));
+        try {
+          await api.cancelAdminDispatchJob(jobId, reason.trim());
+          toast.warning('Delivery job cancelled.');
+          loadAdminData();
+        } catch (err: any) {
+          toast.error(err?.message || 'Failed to cancel job.');
+        }
+      },
+    });
   };
 
   const handleCreateServiceArea = async (e: React.FormEvent) => {
@@ -229,7 +266,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
       .filter(p => /^\d{6}$/.test(p));
 
     if (pincodes.length === 0) {
-      alert('Please enter at least one valid 6-digit PIN code.');
+      toast.warning('Please enter at least one valid 6-digit PIN code.');
       return;
     }
 
@@ -245,7 +282,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         estimated_delivery_hours: Number(newAreaHours) || 4,
         is_active: true,
       });
-      alert('Service area registered successfully!');
+      toast.success('Service area registered successfully!');
       setShowAddAreaModal(false);
       setNewAreaCity('');
       setNewAreaState('');
@@ -253,7 +290,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
       setNewAreaPincodes('');
       loadAdminData();
     } catch (err: any) {
-      alert(err?.message || 'Failed to create service area.');
+      toast.error(err?.message || 'Failed to create service area.');
     } finally {
       setSavingArea(false);
     }
@@ -262,19 +299,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
   const handleToggleServiceArea = async (area: ServiceArea) => {
     try {
       await api.updateAdminServiceArea(area.id, { is_active: !area.is_active });
+      toast.info(`Service area "${area.name}" ${!area.is_active ? 'activated' : 'deactivated'}.`);
       loadAdminData();
     } catch (err: any) {
-      alert(err?.message || 'Failed to update service area status.');
+      toast.error(err?.message || 'Failed to update service area status.');
     }
   };
 
   const handleDeleteServiceArea = async (areaId: string) => {
-    if (!confirm('Are you sure you want to delete this service area?')) return;
+    const ok = await confirm({
+      title: 'Delete Service Area',
+      message: 'Are you sure you want to permanently delete this service area? Active jobs in this zone may be affected.',
+      confirmText: 'Delete Area',
+      variant: 'danger',
+    });
+    if (!ok) return;
+
     try {
       await api.deleteAdminServiceArea(areaId);
+      toast.success('Service area deleted.');
       loadAdminData();
     } catch (err: any) {
-      alert(err?.message || 'Failed to delete service area.');
+      toast.error(err?.message || 'Failed to delete service area.');
     }
   };
 
@@ -284,12 +330,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
     setSettlingPayout(true);
     try {
       await api.markAdminRiderCompensationPaid(selectedCompensation.job_id, payoutBankRef.trim() || undefined);
-      alert('Rider compensation marked as paid!');
+      toast.success('Rider compensation marked as paid!');
       setSelectedCompensation(null);
       setPayoutBankRef('');
       loadAdminData();
     } catch (err: any) {
-      alert(err?.message || 'Failed to settle payout.');
+      toast.error(err?.message || 'Failed to settle payout.');
     } finally {
       setSettlingPayout(false);
     }
@@ -298,9 +344,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
   const handleToggleUser = async (userId: string, currentStatus: boolean) => {
     try {
       await api.setAdminUserStatus(userId, !currentStatus);
+      toast.info(`User ${!currentStatus ? 'activated' : 'suspended'}.`);
       loadAdminData();
     } catch (err: any) {
-      alert(err.message || 'Failed to update user.');
+      toast.error(err.message || 'Failed to update user.');
     }
   };
 
@@ -311,13 +358,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
     try {
       const pAmount = resolutionAction === 'refund_buyer_partial' && partialRefundAmount ? Number(partialRefundAmount) : undefined;
       await api.resolveAdminDispute(selectedDispute.id, resolutionAction, resolutionNotes, pAmount);
-      alert(`Dispute resolved with action: ${resolutionAction}`);
+      toast.success(`Dispute resolved with action: ${resolutionAction}`);
       setSelectedDispute(null);
       setResolutionNotes('');
       setPartialRefundAmount('');
       loadAdminData();
     } catch (err: any) {
-      alert(err.message || 'Failed to resolve dispute.');
+      toast.error(err.message || 'Failed to resolve dispute.');
     } finally {
       setSubmittingResolution(false);
     }
@@ -329,14 +376,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
     setReconciling(true);
     try {
       await api.reconcileCodOrder(selectedCod.awb_code, Number(remittedAmount), courierRef, codNotes);
-      alert('COD remittance reconciled successfully!');
+      toast.success('COD remittance reconciled successfully!');
       setSelectedCod(null);
       setRemittedAmount('');
       setCourierRef('');
       setCodNotes('');
       loadAdminData();
     } catch (err: any) {
-      alert(err.message || 'Failed to reconcile COD remittance.');
+      toast.error(err.message || 'Failed to reconcile COD remittance.');
     } finally {
       setReconciling(false);
     }
@@ -346,22 +393,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
     setProcessingTimeouts(true);
     try {
       const res = await api.processInspectionTimeouts();
-      alert(`Inspection Timeouts Reconciled: ${res.processed_count} delivered order(s) auto-accepted and payouts released.`);
+      toast.success(`Inspection Timeouts Reconciled: ${res.processed_count} delivered order(s) auto-accepted.`);
       loadAdminData();
     } catch (err: any) {
-      alert(err.message || 'Failed to process inspection timeouts.');
+      toast.error(err.message || 'Failed to process inspection timeouts.');
     } finally {
       setProcessingTimeouts(false);
     }
   };
 
   const handleDeleteReview = async (reviewId: string) => {
-    if (!confirm('Are you sure you want to delete this reported review?')) return;
+    const ok = await confirm({
+      title: 'Delete Reported Review',
+      message: 'Are you sure you want to delete this reported review permanently?',
+      confirmText: 'Delete Review',
+      variant: 'danger',
+    });
+    if (!ok) return;
+
     try {
       await api.deleteAdminReview(reviewId);
+      toast.success('Review deleted.');
       loadAdminData();
     } catch (err: any) {
-      alert(err.message || 'Failed to delete review.');
+      toast.error(err.message || 'Failed to delete review.');
     }
   };
 
@@ -1109,18 +1164,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                               type="button"
                               disabled={updatingRiderStatus}
                               onClick={() => {
-                                const reason = window.prompt(
-                                  `Enter suspension reason for "${r.name}":`,
-                                  'Delivery performance review or policy compliance inquiry.'
-                                );
-                                if (reason !== null && reason.trim()) {
-                                  api.updateAdminRiderStatus(r.id, 'suspended', reason.trim())
-                                    .then(() => {
-                                      alert(`Rider "${r.name}" has been suspended.`);
+                                askPrompt({
+                                  title: `Suspend Partner: ${r.name}`,
+                                  description: 'Enter formal reason for suspending this delivery partner.',
+                                  label: 'Suspension Reason',
+                                  placeholder: 'Delivery performance review or policy compliance inquiry.',
+                                  initialValue: 'Delivery performance review or policy compliance inquiry.',
+                                  confirmText: 'Suspend Partner',
+                                  required: true,
+                                  onConfirm: async (reason) => {
+                                    setPromptConfig(p => ({ ...p, isOpen: false }));
+                                    try {
+                                      await api.updateAdminRiderStatus(r.id, 'suspended', reason.trim());
+                                      toast.warning(`Rider "${r.name}" has been suspended.`);
                                       loadAdminData();
-                                    })
-                                    .catch((err: any) => alert(err?.message || 'Failed to suspend rider.'));
-                                }
+                                    } catch (err: any) {
+                                      toast.error(err?.message || 'Failed to suspend rider.');
+                                    }
+                                  },
+                                });
                               }}
                               title="Suspend partner"
                               className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-semibold rounded-lg text-xs transition-colors disabled:opacity-50"
@@ -1906,6 +1968,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
           </div>
         </div>
       )}
+      {/* Reusable Prompt Modal */}
+      <PromptModal
+        isOpen={promptConfig.isOpen}
+        title={promptConfig.title}
+        description={promptConfig.description}
+        label={promptConfig.label}
+        placeholder={promptConfig.placeholder}
+        initialValue={promptConfig.initialValue}
+        confirmText={promptConfig.confirmText}
+        required={promptConfig.required}
+        onConfirm={promptConfig.onConfirm}
+        onCancel={() => setPromptConfig(p => ({ ...p, isOpen: false }))}
+      />
     </div>
   );
 };

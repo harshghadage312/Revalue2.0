@@ -6,6 +6,8 @@ import {
 import { api } from '../services/api';
 import { Order, Offer, Product } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 interface BuyerDashboardProps {
   onNavigate: (page: string, params?: any) => void;
@@ -17,6 +19,8 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   onOpenAuth,
 }) => {
   const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [activeTab, setActiveTab] = useState<'orders' | 'offers' | 'wishlist'>('orders');
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -53,31 +57,48 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   }, [isAuthenticated]);
 
   const handleConfirmReceipt = async (orderId: string) => {
+    const ok = await confirm({
+      title: 'Confirm Smartphone Receipt',
+      message: 'Confirming receipt will complete the order and immediately release the seller payout.',
+      confirmText: 'Yes, Confirm Receipt',
+      variant: 'primary',
+    });
+    if (!ok) return;
+
     try {
       await api.confirmReceipt(orderId);
-      alert('Receipt confirmed! Order completed and seller payout released.');
+      toast.success('Receipt confirmed! Order completed and seller payout released.');
       loadData();
     } catch (err: any) {
-      alert(err.message || 'Failed to confirm receipt.');
+      toast.error(err.message || 'Failed to confirm receipt.');
     }
   };
 
   const handleAcceptCounter = async (offerId: string) => {
     try {
       await api.acceptOffer(offerId);
-      alert('Counteroffer accepted! You can now proceed to checkout.');
+      toast.success('Counteroffer accepted! You can now proceed to checkout.');
       loadData();
     } catch (err: any) {
-      alert(err.message || 'Failed to accept counteroffer.');
+      toast.error(err.message || 'Failed to accept counteroffer.');
     }
   };
 
   const handleRejectOffer = async (offerId: string) => {
+    const ok = await confirm({
+      title: 'Decline Offer',
+      message: 'Are you sure you want to decline this offer?',
+      confirmText: 'Decline Offer',
+      variant: 'danger',
+    });
+    if (!ok) return;
+
     try {
       await api.rejectOffer(offerId);
+      toast.info('Offer declined.');
       loadData();
     } catch (err: any) {
-      alert(err.message || 'Failed to reject offer.');
+      toast.error(err.message || 'Failed to reject offer.');
     }
   };
 
@@ -87,12 +108,12 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
     setReviewSubmitting(true);
     try {
       await api.createReview(reviewOrder.order_id, rating, comment);
-      alert('Review submitted successfully! Thank you for rating the transaction.');
+      toast.success('Review submitted successfully! Thank you for rating the transaction.');
       setReviewOrder(null);
       setComment('');
       loadData();
     } catch (err: any) {
-      alert(err.message || 'Failed to submit review.');
+      toast.error(err.message || 'Failed to submit review.');
     } finally {
       setReviewSubmitting(false);
     }

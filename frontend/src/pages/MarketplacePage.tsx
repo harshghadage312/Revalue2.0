@@ -5,6 +5,7 @@ import {
 import { api } from '../services/api';
 import { Product } from '../types';
 import { ProductCard } from '../components/ProductCard';
+import { MarketplaceGridSkeleton } from '../components/Skeleton';
 import { getConditionMeta } from '../utils/formatters';
 
 interface MarketplacePageProps {
@@ -377,11 +378,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
         {/* Product Grid Area (2 columns on mobile, 3-4 columns on desktop) */}
         <main className="lg:col-span-3 space-y-6">
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4">
-              {[1, 2, 3, 4, 5, 6].map((n) => (
-                <div key={n} className="h-64 rounded-xl bg-slate-100 animate-pulse border border-slate-200" />
-              ))}
-            </div>
+            <MarketplaceGridSkeleton count={8} />
           ) : products.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-xl border border-slate-200 p-8 space-y-2">
               <Smartphone className="w-10 h-10 text-slate-300 mx-auto" />

@@ -7,6 +7,7 @@ import {
 import { api } from '../services/api';
 import { Product, RecommendationItem } from '../types';
 import { ProductCard } from '../components/ProductCard';
+import { MarketplaceGridSkeleton } from '../components/Skeleton';
 import { formatCurrency } from '../utils/formatters';
 
 interface LandingPageProps {
@@ -318,11 +319,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         {/* 2-Column on Mobile, 4-Column on Desktop */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {[1, 2, 3, 4].map(n => (
-              <div key={n} className="h-64 rounded-xl bg-slate-100 animate-pulse border border-slate-200" />
-            ))}
-          </div>
+          <MarketplaceGridSkeleton count={4} />
         ) : filteredListings.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-xl border border-slate-200 p-6 space-y-2">
             <Smartphone className="w-8 h-8 text-slate-300 mx-auto" />

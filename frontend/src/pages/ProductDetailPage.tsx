@@ -8,8 +8,10 @@ import {
 import { api, resolveMediaUrl } from '../services/api';
 import { Product, PriceEstimate, Auction, Offer } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { formatCurrency, getConditionMeta, getSellingMethodMeta } from '../utils/formatters';
 import { ProductCard } from '../components/ProductCard';
+import { ProductDetailSkeleton } from '../components/Skeleton';
 
 interface ProductDetailPageProps {
   productId: string;
@@ -25,6 +27,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   onOpenValuator,
 }) => {
   const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
   const [auction, setAuction] = useState<Auction | null>(null);
   const [userOffer, setUserOffer] = useState<Offer | null>(null);
@@ -110,8 +113,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       setUserOffer(res);
       setOfferAmount('');
       setOfferNote('');
+      toast.success('Offer submitted to seller successfully!');
     } catch (err: any) {
-      alert(err.message || 'Failed to submit offer.');
+      toast.error(err.message || 'Failed to submit offer.');
     } finally {
       setOfferLoading(false);
     }
@@ -128,9 +132,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     try {
       await api.submitBid(auction.id, Number(bidAmount));
       setBidAmount('');
+      toast.success('Sealed bid placed successfully!');
       fetchDetails();
     } catch (err: any) {
-      alert(err.message || 'Failed to place sealed bid.');
+      toast.error(err.message || 'Failed to place sealed bid.');
     } finally {
       setBidLoading(false);
     }
@@ -141,20 +146,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     try {
       const res = await api.finalizeAuction(auction.id);
       setAuction(res);
-      alert(res.status === 'finalized' ? 'Auction ended. Winner declared.' : 'Auction closed without winner (reserve unmet).');
+      if (res.status === 'finalized') {
+        toast.success('Auction finalized! Winner declared.');
+      } else {
+        toast.info('Auction closed without winner (reserve unmet).');
+      }
       fetchDetails();
     } catch (err: any) {
-      alert(err.message || 'Auction cannot be finalized yet.');
+      toast.error(err.message || 'Auction cannot be finalized yet.');
     }
   };
 
   if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center space-y-3">
-        <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto" />
-        <span className="text-xs font-semibold text-slate-500">Loading phone details...</span>
-      </div>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   if (error || !product) {

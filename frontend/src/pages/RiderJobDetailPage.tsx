@@ -7,6 +7,7 @@ import {
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { DeliveryJob } from '../types';
+import { useToast } from '../context/ToastContext';
 
 interface RiderJobDetailPageProps {
   jobId: string;
@@ -20,6 +21,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
   onOpenAuth,
 }) => {
   const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [job, setJob] = useState<DeliveryJob | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -68,10 +70,11 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
     try {
       const updated = await api.acceptRiderJob(jobId);
       setJob(updated);
-      setSuccessMsg('Job accepted! Proceed to pickup location.');
-      setTimeout(() => setSuccessMsg(null), 3000);
+      toast.success('Job accepted! Proceed to pickup location.');
     } catch (err: any) {
-      setError(err?.message || 'Failed to accept job.');
+      const msg = err?.message || 'Failed to accept job.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setActionLoading(false);
     }
@@ -79,7 +82,9 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
 
   const handleConfirmPickup = async () => {
     if (!deviceInspected) {
-      setError('Please confirm that you have physically inspected and received the package.');
+      const msg = 'Please confirm that you have physically inspected and received the package.';
+      setError(msg);
+      toast.warning(msg);
       return;
     }
 
@@ -92,10 +97,11 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
         package_condition_ok: true,
       });
       setJob(updated);
-      setSuccessMsg('Pickup confirmed! Now proceeding to delivery destination.');
-      setTimeout(() => setSuccessMsg(null), 3000);
+      toast.success('Pickup confirmed! Now proceeding to delivery destination.');
     } catch (err: any) {
-      setError(err?.message || 'Failed to confirm pickup. Please check pickup token if required.');
+      const msg = err?.message || 'Failed to confirm pickup. Please check pickup token if required.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setActionLoading(false);
     }
@@ -104,7 +110,9 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!deliveryOtp.trim() || deliveryOtp.trim().length !== 6) {
-      setError('Please enter the 6-digit delivery OTP provided by the buyer.');
+      const msg = 'Please enter the 6-digit delivery OTP provided by the buyer.';
+      setError(msg);
+      toast.warning(msg);
       return;
     }
 
@@ -113,9 +121,11 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
     try {
       const updated = await api.verifyRiderDeliveryOtp(jobId, deliveryOtp.trim(), deliveryNotes.trim() || undefined);
       setJob(updated);
-      setSuccessMsg('🎉 Doorstep OTP verified successfully! Delivery completed.');
+      toast.success('🎉 Doorstep OTP verified successfully! Delivery completed.');
     } catch (err: any) {
-      setError(err?.message || 'Invalid delivery OTP. Please ask the buyer to check their tracking page or SMS.');
+      const msg = err?.message || 'Invalid delivery OTP. Please ask the buyer to check their tracking page or SMS.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setActionLoading(false);
     }
@@ -128,9 +138,11 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
       const updated = await api.reportRiderJobFailure(jobId, failureReason, failureNotes.trim() || undefined);
       setJob(updated);
       setShowFailureModal(false);
-      setSuccessMsg('Delivery failure reported. Operations will review the shipment.');
+      toast.warning('Delivery failure reported. Operations will review the shipment.');
     } catch (err: any) {
-      setError(err?.message || 'Failed to submit failure report.');
+      const msg = err?.message || 'Failed to submit failure report.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setActionLoading(false);
     }
