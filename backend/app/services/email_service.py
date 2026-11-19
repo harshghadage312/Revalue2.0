@@ -2,7 +2,7 @@ import smtplib
 import socket
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Optional
+from typing import Optional, Tuple
 from app.core.config import settings
 from app.core.logging import logger
 
@@ -22,32 +22,30 @@ def mask_email(email: str) -> str:
 
 class EmailService:
     @staticmethod
-    def send_registration_otp(email: str, name: str, otp: str) -> bool:
+    def send_registration_otp(email: str, name: str, otp: str) -> Tuple[bool, Optional[str]]:
         """
-        Sends a 6-digit registration OTP verification email via Gmail SMTP (or configured SMTP).
-        Supports STARTTLS (port 587) and SSL (port 465).
-        Returns True if sent or simulated successfully; returns False on delivery failure.
+        Sends a 6-digit registration OTP verification email via Gmail SMTP.
+        Supports STARTTLS (port 587) with automatic SSL (port 465) fallback for cloud hosts.
+        Returns (success: bool, error_reason: Optional[str]).
         """
         masked = mask_email(email)
 
         if not settings.is_smtp_configured:
             if settings.is_production:
-                logger.error(
-                    f"[EmailService] FATAL: SMTP is not configured or disabled in production mode. "
-                    f"Cannot send registration OTP to {masked}."
-                )
-                return False
+                err_msg = "SMTP is not configured in production (missing SMTP_PASSWORD or SMTP_ENABLED=false)."
+                logger.error(f"[EmailService] {err_msg} Cannot deliver OTP to {masked}.")
+                return False, err_msg
             logger.info(
                 f"[EmailService] SMTP not configured or disabled (SMTP_ENABLED={settings.SMTP_ENABLED}). "
                 f"Registration OTP delivery simulated for {masked}."
             )
-            return True
+            return True, None
 
         smtp_host = settings.effective_smtp_host
-        smtp_port = settings.SMTP_PORT
+        configured_port = settings.SMTP_PORT
         smtp_user = settings.effective_smtp_username
         raw_password = settings.SMTP_PASSWORD
-        # Strip any formatting spaces from Google App Password (e.g. 'abcd efgh ijkl mnop' -> 'abcdefghijklmnop')
+        # Strip spaces from 16-character Google App Password (e.g. 'abcd efgh ijkl mnop' -> 'abcdefghijklmnop')
         smtp_password = raw_password.replace(" ", "").strip() if raw_password else None
         sender_email = settings.effective_email_from
         sender_name = settings.SMTP_FROM_NAME or "ReValue Marketplace"
@@ -226,39 +224,56 @@ class EmailService:
         msg.attach(MIMEText(text_content, "plain", "utf-8"))
         msg.attach(MIMEText(html_content, "html", "utf-8"))
 
-        timeout_seconds = 12
+        timeout_sec = 10
 
-        try:
-            if smtp_port == 465:
-                # SSL connection
-                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=timeout_seconds) as server:
-                    if smtp_user and smtp_password:
-                        server.login(smtp_user, smtp_password)
-                    server.sendmail(sender_email, [email], msg.as_string())
-            else:
-                # Standard STARTTLS connection (typically port 587 or 25)
-                with smtplib.SMTP(smtp_host, smtp_port, timeout=timeout_seconds) as server:
-                    server.ehlo()
-                    # Attempt TLS if supported
-                    if server.has_extn("STARTTLS"):
-                        server.starttls()
+        def _attempt_send(port: int, use_ssl: bool) -> Tuple[bool, Optional[str]]:
+            try:
+                if use_ssl:
+                    with smtplib.SMTP_SSL(smtp_host, port, timeout=timeout_sec) as server:
+                        if smtp_user and smtp_password:
+                            server.login(smtp_user, smtp_password)
+                        server.sendmail(sender_email, [email], msg.as_string())
+                else:
+                    with smtplib.SMTP(smtp_host, port, timeout=timeout_sec) as server:
                         server.ehlo()
-                    if smtp_user and smtp_password:
-                        server.login(smtp_user, smtp_password)
-                    server.sendmail(sender_email, [email], msg.as_string())
+                        if server.has_extn("STARTTLS") or server.has_extn("starttls"):
+                            server.starttls()
+                            server.ehlo()
+                        if smtp_user and smtp_password:
+                            server.login(smtp_user, smtp_password)
+                        server.sendmail(sender_email, [email], msg.as_string())
+                return True, None
+            except smtplib.SMTPAuthenticationError as auth_err:
+                err_detail = f"Authentication rejected by Gmail (code {auth_err.smtp_code}). Please verify your 16-character Google App Password."
+                logger.error(f"[EmailService] {err_detail} Target: {masked}")
+                return False, err_detail
+            except (socket.timeout, smtplib.SMTPConnectError, ConnectionRefusedError, OSError) as net_err:
+                err_detail = f"Network connection failed on {smtp_host}:{port} ({type(net_err).__name__})."
+                logger.warning(f"[EmailService] {err_detail} Target: {masked}")
+                return False, err_detail
+            except Exception as ex:
+                err_detail = f"Delivery failed on port {port}: {type(ex).__name__}."
+                logger.error(f"[EmailService] {err_detail} Target: {masked}")
+                return False, err_detail
 
-            logger.info(f"[EmailService] Registration OTP successfully delivered to {masked}")
-            return True
+        # Primary attempt based on configured port
+        use_ssl_primary = (configured_port == 465)
+        success, err = _attempt_send(configured_port, use_ssl_primary)
+        if success:
+            logger.info(f"[EmailService] Registration OTP successfully delivered to {masked} via port {configured_port}")
+            return True, None
 
-        except smtplib.SMTPAuthenticationError as e:
-            logger.error(
-                f"[EmailService] SMTP Authentication failed for {masked}. "
-                f"Please verify your Gmail App Password in SMTP_PASSWORD. Error: {str(e)}"
-            )
-            return False
-        except (socket.timeout, smtplib.SMTPConnectError) as e:
-            logger.error(f"[EmailService] SMTP connection timeout or failed to {smtp_host}:{smtp_port}: {str(e)}")
-            return False
-        except Exception as e:
-            logger.error(f"[EmailService] Failed to send OTP email to {masked}: {str(e)}")
-            return False
+        # If primary failed with auth error, do not retry other ports because credentials are bad
+        if err and "Authentication rejected" in err:
+            return False, err
+
+        # Resilient fallback: If port 587 failed due to network/firewall, try port 465 SSL
+        if configured_port != 465:
+            logger.info(f"[EmailService] Attempting SSL fallback on port 465 for {masked}...")
+            fallback_success, fallback_err = _attempt_send(465, True)
+            if fallback_success:
+                logger.info(f"[EmailService] Registration OTP successfully delivered to {masked} via fallback port 465")
+                return True, None
+            return False, f"Primary ({err}) and fallback ({fallback_err}) failed."
+
+        return False, err

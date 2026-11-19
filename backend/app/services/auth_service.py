@@ -105,15 +105,16 @@ class AuthService:
         db.email_verifications.replace_one({"email": email}, verif_doc, upsert=True)
 
         # Send OTP email via EmailService
-        email_sent = EmailService.send_registration_otp(email, req.name, otp)
+        email_sent, error_reason = EmailService.send_registration_otp(email, req.name, otp)
         if not email_sent:
             if settings.is_production:
+                logger.error(f"Production OTP email failed for {mask_email(email)}: {error_reason}")
                 raise AppException(
-                    message="Failed to dispatch verification email. Please verify system email settings or try again later.",
+                    message=f"Failed to dispatch verification email: {error_reason or 'Please verify system email settings.'}",
                     code="EMAIL_DELIVERY_FAILED",
                     status_code=503,
                 )
-            logger.warning(f"Registration OTP email delivery failed for {mask_email(email)}")
+            logger.warning(f"Registration OTP email delivery failed for {mask_email(email)}: {error_reason}")
 
         resp = RegisterSendOtpResponse(
             message=f"A 6-digit verification code has been sent to {email}.",
