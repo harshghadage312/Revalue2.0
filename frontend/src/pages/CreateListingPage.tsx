@@ -2,19 +2,24 @@ import React, { useState, useEffect } from 'react';
 import {
   Camera, Upload, ShieldCheck, Gavel, Handshake,
   CheckCircle2, AlertCircle, ArrowLeft, ArrowRight, Trash2, Smartphone,
-  Cpu, Check, MapPin, Sparkles
+  Cpu, Check, MapPin, Sparkles, RefreshCw, Wand2, Info
 } from 'lucide-react';
 import { api } from '../services/api';
 import { ProductCondition, SellingMethod, PriceEstimate } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { AiConditionModal } from '../components/AiConditionModal';
+import { CatalogueSpecsCard, CatalogueSpecsData } from '../components/CatalogueSpecsCard';
+import { MultiImageUploader } from '../components/MultiImageUploader';
+import { AiPriceBenchmarkCard } from '../components/AiPriceBenchmarkCard';
+import { ListingPreviewCard } from '../components/ListingPreviewCard';
+import {
+  generateTitleSuggestions,
+  generateDescriptionSuggestions,
+  TitleSuggestion,
+  DescriptionSuggestion
+} from '../utils/smartListingGenerator';
 import { formatCurrency, getConditionMeta, getSellingMethodMeta } from '../utils/formatters';
-
-const EXPANDED_BRANDS = [
-  'Apple', 'Samsung', 'Google', 'OnePlus', 'Xiaomi', 'Realme',
-  'Vivo', 'iQOO', 'Oppo', 'Motorola', 'Nothing', 'Poco',
-  'Infinix', 'Tecno', 'Lava', 'Honor', 'itel', 'CMF'
-];
 
 interface CreateListingPageProps {
   onNavigate: (page: string, params?: any) => void;
@@ -23,11 +28,11 @@ interface CreateListingPageProps {
 
 const STEPS = [
   { id: 1, title: 'Phone Specs', stepLabel: 'Specs' },
-  { id: 2, title: 'Phone Condition Check', stepLabel: 'Condition' },
-  { id: 3, title: 'Estimated Resale Value', stepLabel: 'Valuation' },
+  { id: 2, title: 'Photos & Condition', stepLabel: 'Condition' },
+  { id: 3, title: 'Resale Valuation', stepLabel: 'Valuation' },
   { id: 4, title: 'Listing Details', stepLabel: 'Details' },
   { id: 5, title: 'Choose How to Sell', stepLabel: 'Method' },
-  { id: 6, title: 'Review Your Listing', stepLabel: 'Review' },
+  { id: 6, title: 'Review & Publish', stepLabel: 'Review' },
 ];
 
 export const CreateListingPage: React.FC<CreateListingPageProps> = ({
@@ -35,24 +40,24 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
   onOpenAuth,
 }) => {
   const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
 
   // Step 1: Specs
   const [brand, setBrand] = useState('Apple');
-  const [model, setModel] = useState('');
-  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [model, setModel] = useState('Apple iPhone 14');
   const [customModel, setCustomModel] = useState(false);
   const [storageGb, setStorageGb] = useState(128);
   const [ramGb, setRamGb] = useState(6);
   const [batteryHealth, setBatteryHealth] = useState(88);
-  const [color, setColor] = useState('Space Grey');
+  const [color, setColor] = useState('Midnight');
   const [ageMonths, setAgeMonths] = useState(12);
-  const [originalMSRP, setOriginalMSRP] = useState('69900');
+  const [originalMSRP, setOriginalMSRP] = useState('79900');
 
-  // Step 2: Condition & Photos
-  const [condition, setCondition] = useState<ProductCondition>('good');
+  // Step 2: Photos & Condition
   const [images, setImages] = useState<string[]>([]);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [condition, setCondition] = useState<ProductCondition>('good');
+  const [isAiConditionVerified, setIsAiConditionVerified] = useState(false);
   const [showConditionModal, setShowConditionModal] = useState(false);
   const [screenCrack, setScreenCrack] = useState('No');
   const [scratches, setScratches] = useState('Minor');
@@ -71,6 +76,8 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
   const [hasBox, setHasBox] = useState(true);
   const [hasCharger, setHasCharger] = useState(true);
   const [knownFaults, setKnownFaults] = useState('');
+  const [titleSuggestions, setTitleSuggestions] = useState<TitleSuggestion[]>([]);
+  const [descSuggestions, setDescSuggestions] = useState<DescriptionSuggestion[]>([]);
 
   // Step 5: Selling Method
   const [sellingMethod, setSellingMethod] = useState<SellingMethod>('negotiation');
@@ -83,52 +90,33 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch catalogue models on brand change
-  useEffect(() => {
-    if (brand) {
-      api.getCatalogueModels(brand)
-        .then((res) => {
-          if (res?.models?.length) {
-            setAvailableModels(res.models);
-            if (!model || !res.models.includes(model)) {
-              setModel(res.models[0]);
-            }
-          } else {
-            setAvailableModels([]);
-          }
-        })
-        .catch(() => setAvailableModels([]));
-    }
-  }, [brand]);
-
-  // Fetch model specs on model change
-  useEffect(() => {
-    if (brand && model && !customModel) {
-      api.getCatalogueSpecs(brand, model)
-        .then((specs) => {
-          if (specs) {
-            if (specs.original_retail_price) {
-              setOriginalMSRP(String(specs.original_retail_price));
-            }
-            if (specs.ram_options?.length) {
-              setRamGb(specs.ram_options[0]);
-            }
-            if (specs.storage_options?.length) {
-              setStorageGb(specs.storage_options[0]);
-            }
-          }
-        })
-        .catch(() => {});
-    }
-  }, [model, brand, customModel]);
-
-  // Auto-generate title draft
+  // Initialize title if empty
   useEffect(() => {
     if (!title && brand && model) {
       const condMeta = getConditionMeta(condition);
       setTitle(`${brand} ${model} (${storageGb}GB) - ${condMeta.label}`);
     }
   }, [brand, model, storageGb, condition]);
+
+  // Update AI title and description suggestions when specs or condition change
+  useEffect(() => {
+    const ctx = {
+      brand,
+      model,
+      storageGb,
+      ramGb,
+      batteryHealth,
+      color,
+      condition,
+      hasBox,
+      hasCharger,
+      locationCity,
+      knownFaults,
+      ageMonths,
+    };
+    setTitleSuggestions(generateTitleSuggestions(ctx));
+    setDescSuggestions(generateDescriptionSuggestions(ctx));
+  }, [brand, model, storageGb, ramGb, batteryHealth, color, condition, hasBox, hasCharger, locationCity, knownFaults, ageMonths]);
 
   if (!isAuthenticated) {
     return (
@@ -142,7 +130,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
         </p>
         <button
           onClick={onOpenAuth}
-          className="px-4 py-2 bg-slate-900 text-white font-bold text-xs rounded-lg"
+          className="px-4 py-2 bg-slate-900 text-white font-bold text-xs rounded-xl shadow-2xs hover:bg-slate-800 transition-colors"
         >
           Sign In
         </button>
@@ -150,26 +138,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
     );
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setUploadingImage(true);
-      setError(null);
-      try {
-        const res = await api.uploadImage(file);
-        setImages(prev => [...prev, res.image_url]);
-      } catch (err: any) {
-        setError(err.message || 'Image upload failed. Allowed formats: JPEG, PNG, WebP up to 5MB.');
-      } finally {
-        setUploadingImage(false);
-      }
-    }
-  };
-
-  const handleRemoveImage = (indexToRemove: number) => {
-    setImages(prev => prev.filter((_, idx) => idx !== indexToRemove));
-  };
-
+  // Calculate Resale Valuation via Random Forest
   const calculateResalePrice = async () => {
     if (!model.trim()) return;
     setAiPriceLoading(true);
@@ -177,7 +146,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
     try {
       const est = await api.getPriceEstimate({
         brand,
-        model,
+        model: model.trim(),
         category: 'smartphone',
         approximate_age_months: Number(ageMonths),
         condition,
@@ -190,18 +159,25 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
         repair_history: repairHistory,
         warranty_available: warrantyAvailable,
       });
+
       setPriceEstimate(est);
+
+      // Auto-suggest prices if currently unset
       if (!askingPrice) {
-        setAskingPrice(String(est.estimated_price));
+        setAskingPrice(String(Math.round(est.estimated_price)));
+      }
+      if (!minAcceptablePrice) {
+        setMinAcceptablePrice(String(Math.round(est.estimated_price * 0.85)));
       }
       if (!startingBid) {
         setStartingBid(String(Math.round(est.estimated_price * 0.75)));
       }
       if (!reservePrice) {
-        setReservePrice(String(Math.round(est.estimated_price * 0.9)));
+        setReservePrice(String(Math.round(est.estimated_price * 0.90)));
       }
     } catch (err: any) {
       setError(err.message || 'Price valuation is currently unavailable.');
+      toast.error('Unable to calculate resale valuation. Please check inputs.');
     } finally {
       setAiPriceLoading(false);
     }
@@ -209,30 +185,47 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
 
   const handleNextStep = () => {
     setError(null);
+
+    // Validation for Step 1
     if (currentStep === 1) {
       if (!model.trim()) {
-        setError('Please select or enter your phone model.');
+        setError('Please select or enter your smartphone model.');
         return;
       }
-    } else if (currentStep === 2) {
+    }
+
+    // Validation for Step 2
+    else if (currentStep === 2) {
+      if (images.length === 0) {
+        setError('Please upload at least 1 photo of your phone.');
+        return;
+      }
+      // Trigger price estimate as we transition to Step 3
       calculateResalePrice();
-    } else if (currentStep === 4) {
+    }
+
+    // Validation for Step 4
+    else if (currentStep === 4) {
       if (!title.trim()) {
-        setError('Please enter a listing title.');
+        setError('Please provide a listing title.');
         return;
       }
       if (sellingMethod === 'negotiation' && (!askingPrice || Number(askingPrice) <= 0)) {
         setError('Please enter a valid asking price.');
         return;
       }
-    } else if (currentStep === 5) {
+    }
+
+    // Validation for Step 5
+    else if (currentStep === 5) {
       if (sellingMethod === 'bidding') {
         if (!startingBid || Number(startingBid) <= 0) {
-          setError('Please specify a starting bid floor.');
+          setError('Please specify an opening bid floor.');
           return;
         }
       }
     }
+
     setCurrentStep(prev => Math.min(6, prev + 1));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -253,7 +246,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
 
       const payload: any = {
         title: title.trim(),
-        description: description.trim(),
+        description: description.trim() || `${brand} ${model} in ${getConditionMeta(condition).label} condition.`,
         category: 'smartphone',
         brand,
         model: model.trim(),
@@ -291,9 +284,11 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
       }
 
       const created = await api.createProduct(payload);
+      toast.success('Phone listing published successfully on ReValue!');
       onNavigate('product-detail', { id: created.id });
     } catch (err: any) {
       setError(err.message || 'Failed to publish listing. Please check inputs.');
+      toast.error(err.message || 'Failed to publish listing.');
     } finally {
       setSubmitting(false);
     }
@@ -301,29 +296,29 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      {/* Header */}
+      {/* Top Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-200">
         <div>
           <button
             onClick={() => onNavigate('marketplace')}
-            className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 mb-1"
+            className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 mb-1 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Cancel</span>
           </button>
-          <h1 className="text-xl font-extrabold text-slate-900">
-            Sell Your Phone
+          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
+            Sell Your Smartphone
           </h1>
         </div>
 
         <div className="text-right text-xs">
           <span className="text-slate-400">Step {currentStep} of 6</span>
-          <span className="font-bold text-slate-800 block">{STEPS[currentStep - 1].title}</span>
+          <span className="font-extrabold text-slate-800 block">{STEPS[currentStep - 1].title}</span>
         </div>
       </div>
 
-      {/* Step Progress Bar */}
-      <div className="bg-white rounded-xl p-2.5 border border-slate-200 shadow-2xs">
+      {/* Step Progress Navigation Bar */}
+      <div className="bg-white rounded-2xl p-2.5 border border-slate-200/80 shadow-xs">
         <div className="grid grid-cols-6 gap-1">
           {STEPS.map((s) => {
             const isCompleted = currentStep > s.id;
@@ -334,15 +329,15 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 type="button"
                 onClick={() => { if (isCompleted) setCurrentStep(s.id); }}
                 disabled={!isCompleted && !isCurrent}
-                className={`py-1.5 px-1 rounded text-center transition-all ${
+                className={`py-1.5 px-1 rounded-xl text-center transition-all ${
                   isCurrent
-                    ? 'bg-emerald-50 text-emerald-900 font-bold'
+                    ? 'bg-emerald-50 text-emerald-950 font-extrabold shadow-2xs'
                     : isCompleted
                     ? 'text-slate-700 hover:bg-slate-50 cursor-pointer'
                     : 'text-slate-300 opacity-60 cursor-not-allowed'
                 }`}
               >
-                <div className={`w-5 h-5 mx-auto rounded-full text-[10px] font-bold flex items-center justify-center mb-0.5 ${
+                <div className={`w-5 h-5 mx-auto rounded-full text-[10.5px] font-bold flex items-center justify-center mb-0.5 ${
                   isCurrent
                     ? 'bg-emerald-600 text-white'
                     : isCompleted
@@ -351,7 +346,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 }`}>
                   {isCompleted ? <Check className="w-3 h-3" /> : s.id}
                 </div>
-                <span className="text-[10px] truncate block">
+                <span className="text-[10px] truncate block font-semibold">
                   {s.stepLabel}
                 </span>
               </button>
@@ -360,220 +355,106 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
         </div>
       </div>
 
-      {/* Error Notice */}
+      {/* Inline Error Notice */}
       {error && (
-        <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2 animate-in fade-in">
           <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-          <span className="font-medium">{error}</span>
+          <span className="font-semibold">{error}</span>
         </div>
       )}
 
-      {/* STEP 1: PHONE INFO */}
+      {/* STEP 1: SMART SPECS AUTO-FILL */}
       {currentStep === 1 && (
-        <div className="bg-white rounded-xl p-5 sm:p-6 border border-slate-200 space-y-4 shadow-2xs">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900">Phone Specifications</h2>
-            <p className="text-xs text-slate-500">Provide accurate hardware specifications for your phone.</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">Brand *</label>
-              <select
-                value={brand}
-                onChange={(e) => {
-                  setBrand(e.target.value);
-                  setCustomModel(false);
-                }}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-semibold focus:bg-white focus:border-emerald-600 outline-none"
-              >
-                {EXPANDED_BRANDS.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block font-bold text-slate-700">Model *</label>
-                <button
-                  type="button"
-                  onClick={() => setCustomModel(!customModel)}
-                  className="text-[10px] text-emerald-700 font-semibold hover:underline"
-                >
-                  {customModel ? 'Select from list' : 'Custom model'}
-                </button>
-              </div>
-
-              {customModel || availableModels.length === 0 ? (
-                <input
-                  type="text"
-                  placeholder="e.g. Galaxy S23 Ultra"
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-emerald-600 outline-none"
-                  required
-                />
-              ) : (
-                <select
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-semibold focus:bg-white focus:border-emerald-600 outline-none"
-                >
-                  {availableModels.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">Storage *</label>
-              <select
-                value={storageGb}
-                onChange={(e) => setStorageGb(Number(e.target.value))}
-                className="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-lg font-semibold outline-none"
-              >
-                {[32, 64, 128, 256, 512, 1024].map((s) => (
-                  <option key={s} value={s}>{s} GB</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">RAM *</label>
-              <select
-                value={ramGb}
-                onChange={(e) => setRamGb(Number(e.target.value))}
-                className="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-lg font-semibold outline-none"
-              >
-                {[3, 4, 6, 8, 12, 16].map((r) => (
-                  <option key={r} value={r}>{r} GB</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">Battery Health %</label>
-              <input
-                type="number"
-                min="50"
-                max="100"
-                value={batteryHealth}
-                onChange={(e) => setBatteryHealth(Number(e.target.value))}
-                className="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-lg font-semibold outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">Age (Months)</label>
-              <input
-                type="number"
-                min="1"
-                max="72"
-                value={ageMonths}
-                onChange={(e) => setAgeMonths(Number(e.target.value))}
-                className="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-lg font-semibold outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">Color</label>
-              <input
-                type="text"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                placeholder="e.g. Space Grey, Black"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">Original Price (MSRP in ₹)</label>
-              <input
-                type="number"
-                value={originalMSRP}
-                onChange={(e) => setOriginalMSRP(e.target.value)}
-                placeholder="e.g. 69900"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none"
-              />
-            </div>
-          </div>
-        </div>
+        <CatalogueSpecsCard
+          brand={brand}
+          onBrandChange={setBrand}
+          model={model}
+          onModelChange={setModel}
+          storageGb={storageGb}
+          onStorageChange={setStorageGb}
+          ramGb={ramGb}
+          onRamChange={setRamGb}
+          batteryHealth={batteryHealth}
+          onBatteryHealthChange={setBatteryHealth}
+          ageMonths={ageMonths}
+          onAgeMonthsChange={setAgeMonths}
+          color={color}
+          onColorChange={setColor}
+          originalMSRP={originalMSRP}
+          onOriginalMSRPChange={setOriginalMSRP}
+          customModel={customModel}
+          onCustomModelToggle={setCustomModel}
+          onSpecsLoaded={(specs) => {
+            toast.info(`Loaded specs for ${brand} ${model} from catalogue.`);
+          }}
+        />
       )}
 
-      {/* STEP 2: PHONE CONDITION & PHOTOS */}
+      {/* STEP 2: MULTI-IMAGE UPLOAD & CONDITION CHECK */}
       {currentStep === 2 && (
-        <div className="bg-white rounded-xl p-5 sm:p-6 border border-slate-200 space-y-4 shadow-2xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
             <div>
-              <h2 className="text-sm font-bold text-slate-900">Phone Condition Check & Photos</h2>
-              <p className="text-xs text-slate-500">Upload device photos and select the cosmetic condition.</p>
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700">
+                  <Camera className="w-4 h-4" />
+                </div>
+                <h2 className="text-sm font-extrabold text-slate-900 tracking-tight">
+                  Device Photos & Cosmetic Condition
+                </h2>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Upload clear photos of your phone and select its cosmetic grade.
+              </p>
             </div>
 
             <button
               type="button"
               onClick={() => setShowConditionModal(true)}
-              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 self-start sm:self-auto transition-colors"
+              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto transition-colors"
             >
-              <Camera className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Run Condition Check</span>
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Dedicated AI Condition Scanner</span>
             </button>
           </div>
 
-          {/* Photo Upload Section */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">Photos</label>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
-              {images.map((imgUrl, index) => (
-                <div key={index} className="aspect-square rounded-lg bg-slate-100 border border-slate-200 overflow-hidden relative group p-1">
-                  <img src={imgUrl} alt="Uploaded device" className="w-full h-full object-contain" />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(index)}
-                    className="absolute top-1.5 right-1.5 p-1 bg-slate-900/80 hover:bg-rose-600 text-white rounded transition-colors"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
+          {/* Multi-Image Upload Dropzone */}
+          <MultiImageUploader
+            images={images}
+            onImagesChange={setImages}
+            currentCondition={condition}
+            onConditionDetected={(detected, conf) => {
+              setCondition(detected);
+              setIsAiConditionVerified(true);
+              toast.success(`Condition updated to ${getConditionMeta(detected).label} (${Math.round(conf * 100)}% match)`);
+            }}
+          />
 
-              <label className="aspect-square rounded-lg border-2 border-dashed border-slate-200 hover:border-emerald-600 hover:bg-emerald-50/20 cursor-pointer flex flex-col items-center justify-center p-2 text-center transition-colors">
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={uploadingImage}
-                />
-                <Upload className="w-5 h-5 text-slate-400 mb-1" />
-                <span className="text-[11px] font-bold text-slate-700">Add Photo</span>
+          {/* Condition Tier Selection */}
+          <div className="space-y-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-700">
+                Cosmetic Condition Grade <span className="text-rose-500">*</span>
               </label>
+              {isAiConditionVerified && (
+                <span className="text-[10.5px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  ✓ MobileNetV2 Verified
+                </span>
+              )}
             </div>
-            {uploadingImage && (
-              <p className="text-xs text-emerald-700 font-semibold mt-1.5">Uploading...</p>
-            )}
-          </div>
 
-          {/* Condition Radio Options */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">Condition Grade *</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {[
-                { key: 'excellent', label: 'Like New', desc: 'Flawless screen & body. Zero visible scratches.' },
-                { key: 'good', label: 'Good Condition', desc: 'Screen in great shape with light micro-marks.' },
-                { key: 'bad', label: 'Noticeable Wear', desc: 'Visible casing scuffs or scratches from use.' },
-                { key: 'defective', label: 'Heavily Damaged', desc: 'Cracked glass or physical faults. Sold for parts.' },
+                { key: 'excellent', label: 'Like New (Flawless)', desc: 'Screen & body in pristine condition. Zero visible scratches.' },
+                { key: 'good', label: 'Good Condition', desc: 'Display in great shape with minor cosmetic micro-marks.' },
+                { key: 'bad', label: 'Noticeable Wear', desc: 'Visible casing scuffs or surface scratches from daily use.' },
+                { key: 'defective', label: 'Damaged / For Parts', desc: 'Cracked glass or physical faults. Sold for components/repair.' },
               ].map((c) => (
                 <label
                   key={c.key}
-                  className={`p-3 rounded-lg border cursor-pointer transition-colors flex items-start gap-2.5 ${
+                  className={`p-3 rounded-xl border cursor-pointer transition-all flex items-start gap-2.5 ${
                     condition === c.key
-                      ? 'bg-emerald-50/80 border-emerald-600 ring-1 ring-emerald-600'
+                      ? 'bg-emerald-50/90 border-emerald-600 ring-2 ring-emerald-600/20 shadow-2xs'
                       : 'bg-white border-slate-200 hover:border-slate-300'
                   }`}
                 >
@@ -582,7 +463,10 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                     name="condition"
                     value={c.key}
                     checked={condition === c.key}
-                    onChange={() => setCondition(c.key as ProductCondition)}
+                    onChange={() => {
+                      setCondition(c.key as ProductCondition);
+                      setIsAiConditionVerified(false);
+                    }}
                     className="accent-emerald-600 mt-0.5"
                   />
                   <div>
@@ -595,15 +479,17 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
           </div>
 
           {/* Physical Verification Inputs */}
-          <div className="pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-2">Physical Checks</span>
+          <div className="pt-2 border-t border-slate-100 space-y-2">
+            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
+              Physical Checkpoints
+            </span>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
               <div>
                 <label className="block text-slate-600 font-semibold mb-1">Screen Glass</label>
                 <select
                   value={screenCrack}
                   onChange={(e) => setScreenCrack(e.target.value)}
-                  className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg outline-none"
+                  className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-semibold"
                 >
                   <option value="No">No Cracks</option>
                   <option value="Minor">Minor Hairline</option>
@@ -612,11 +498,11 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
               </div>
 
               <div>
-                <label className="block text-slate-600 font-semibold mb-1">Scratches</label>
+                <label className="block text-slate-600 font-semibold mb-1">Body Scratches</label>
                 <select
                   value={scratches}
                   onChange={(e) => setScratches(e.target.value)}
-                  className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg outline-none"
+                  className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-semibold"
                 >
                   <option value="None">None</option>
                   <option value="Minor">Minor</option>
@@ -629,19 +515,19 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 <select
                   value={repairHistory}
                   onChange={(e) => setRepairHistory(e.target.value)}
-                  className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg outline-none"
+                  className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-semibold"
                 >
                   <option value="No">None / Original</option>
-                  <option value="Yes">Yes</option>
+                  <option value="Yes">Repaired</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-slate-600 font-semibold mb-1">Warranty</label>
+                <label className="block text-slate-600 font-semibold mb-1">Brand Warranty</label>
                 <select
                   value={warrantyAvailable}
                   onChange={(e) => setWarrantyAvailable(e.target.value)}
-                  className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-lg outline-none"
+                  className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-semibold"
                 >
                   <option value="No">Expired</option>
                   <option value="Yes">Active Warranty</option>
@@ -654,122 +540,111 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
 
       {/* STEP 3: RESALE VALUATION */}
       {currentStep === 3 && (
-        <div className="bg-white rounded-xl p-5 sm:p-6 border border-slate-200 space-y-4 shadow-2xs">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900">Estimated Resale Value</h2>
-            <p className="text-xs text-slate-500">
-              Resale price estimate based on secondary market data and your phone's specifications.
-            </p>
-          </div>
-
-          {aiPriceLoading ? (
-            <div className="text-center py-10 space-y-2">
-              <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-xs text-slate-500">Calculating resale price estimate...</p>
-            </div>
-          ) : priceEstimate ? (
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-slate-900 text-white space-y-3">
-                <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-800">
-                  <span className="text-emerald-400 font-bold uppercase tracking-wider text-[10.5px]">
-                    Estimated Resale Value
-                  </span>
-                  <span className="text-slate-400">{brand} {model}</span>
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
-                  <div>
-                    <span className="text-xs text-slate-400 block">Recommended Price:</span>
-                    <span className="text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-0.5 block">
-                      {formatCurrency(priceEstimate.estimated_price)}
-                    </span>
-                  </div>
-                  <div className="text-xs text-slate-300">
-                    <span className="text-[10px] text-slate-400 block">Estimated Range:</span>
-                    <span>{formatCurrency(priceEstimate.price_range_low)} - {formatCurrency(priceEstimate.price_range_high)}</span>
-                  </div>
-                </div>
-
-                <p className="text-xs text-slate-300 leading-relaxed pt-1 border-t border-slate-800">
-                  {priceEstimate.explanation}
-                </p>
-
-                <p className="text-[11px] text-emerald-300/90 leading-relaxed bg-emerald-950/40 p-2 rounded-lg border border-emerald-800/50">
-                  Note: This estimate serves as an algorithmic secondary market benchmark based on device condition and specifications. It is not a guaranteed sale price; you may apply it or customize your own asking price.
-                </p>
-              </div>
-
-              <div className="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3 text-xs">
-                <span className="text-emerald-950 font-medium">
-                  Use recommended price of {formatCurrency(priceEstimate.estimated_price)}?
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setAskingPrice(String(priceEstimate.estimated_price))}
-                  className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg shrink-0 transition-colors"
-                >
-                  Apply {formatCurrency(priceEstimate.estimated_price)}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-6 space-y-2">
-              <p className="text-xs text-slate-500">Valuation not yet computed.</p>
-              <button
-                type="button"
-                onClick={calculateResalePrice}
-                className="px-4 py-2 bg-slate-900 text-white font-bold text-xs rounded-lg"
-              >
-                Estimate Value
-              </button>
-            </div>
-          )}
-        </div>
+        <AiPriceBenchmarkCard
+          brand={brand}
+          model={model}
+          priceEstimate={priceEstimate}
+          loading={aiPriceLoading}
+          askingPrice={askingPrice}
+          onAskingPriceChange={(val) => {
+            setAskingPrice(val);
+            toast.info(`Asking price set to ${formatCurrency(Number(val))}`);
+          }}
+          onRefreshEstimate={calculateResalePrice}
+        />
       )}
 
-      {/* STEP 4: LISTING DETAILS */}
+      {/* STEP 4: LISTING DETAILS & SMART GENERATION */}
       {currentStep === 4 && (
-        <div className="bg-white rounded-xl p-5 sm:p-6 border border-slate-200 space-y-3.5 shadow-2xs text-xs">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900">Listing Details & Price</h2>
-            <p className="text-slate-500">Set your title, asking price, and seller notes.</p>
+        <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-4 text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700">
+                  <Wand2 className="w-4 h-4" />
+                </div>
+                <h2 className="text-sm font-extrabold text-slate-900 tracking-tight">
+                  Listing Information & AI Suggestions
+                </h2>
+              </div>
+              <p className="text-slate-500 mt-0.5">
+                Set your listing title, asking price, accessories, and description.
+              </p>
+            </div>
           </div>
 
-          <div>
-            <label className="block font-bold text-slate-700 mb-1">Listing Title *</label>
+          {/* Title Suggestions */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <label className="block font-bold text-slate-700">
+                Listing Title <span className="text-rose-500">*</span>
+              </label>
+              <span className="text-[10.5px] text-emerald-700 font-bold flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                AI Smart Suggestions
+              </span>
+            </div>
+
+            {/* Title variation chips */}
+            <div className="flex flex-wrap gap-1.5">
+              {titleSuggestions.map((sug) => (
+                <button
+                  key={sug.id}
+                  type="button"
+                  onClick={() => {
+                    setTitle(sug.title);
+                    toast.info(`Selected ${sug.label} title.`);
+                  }}
+                  className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-semibold text-left transition-all ${
+                    title === sug.title
+                      ? 'border-emerald-600 bg-emerald-50 text-emerald-950 ring-1 ring-emerald-600'
+                      : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  <span className="block font-bold text-[10px] text-slate-400 uppercase">{sug.label}</span>
+                  <span className="line-clamp-1">{sug.title}</span>
+                </button>
+              ))}
+            </div>
+
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Apple iPhone 14 (128GB) - Like New"
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:bg-white focus:border-emerald-600 font-medium"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:border-emerald-600 font-medium text-xs"
               required
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Asking Price & City */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Asking Price (₹) *</label>
+              <label className="block font-bold text-slate-700 mb-1">
+                Asking Price (₹) <span className="text-rose-500">*</span>
+              </label>
               <input
                 type="number"
                 min="500"
                 value={askingPrice}
                 onChange={(e) => setAskingPrice(e.target.value)}
                 placeholder="Enter price in ₹"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-900 focus:bg-white focus:border-emerald-600 outline-none"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:bg-white focus:border-emerald-600 outline-none text-xs"
                 required
               />
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">City Location *</label>
+              <label className="block font-bold text-slate-700 mb-1">
+                City Location <span className="text-rose-500">*</span>
+              </label>
               <div className="relative">
                 <input
                   type="text"
                   value={locationCity}
                   onChange={(e) => setLocationCity(e.target.value)}
-                  placeholder="e.g. Mumbai, Bengaluru"
-                  className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-emerald-600 outline-none"
+                  placeholder="e.g. Mumbai, Bengaluru, Delhi"
+                  className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-600 outline-none text-xs font-semibold"
                   required
                 />
                 <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
@@ -778,47 +653,78 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
           </div>
 
           {/* Accessories Checkboxes */}
-          <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 flex flex-wrap gap-4 text-slate-700">
-            <label className="flex items-center gap-2 cursor-pointer font-medium">
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex flex-wrap gap-4 text-slate-700">
+            <label className="flex items-center gap-2 cursor-pointer font-semibold">
               <input
                 type="checkbox"
                 checked={hasBox}
                 onChange={(e) => setHasBox(e.target.checked)}
                 className="accent-emerald-600 rounded"
               />
-              <span>Original Box included</span>
+              <span>Original Box Included</span>
             </label>
 
-            <label className="flex items-center gap-2 cursor-pointer font-medium">
+            <label className="flex items-center gap-2 cursor-pointer font-semibold">
               <input
                 type="checkbox"
                 checked={hasCharger}
                 onChange={(e) => setHasCharger(e.target.checked)}
                 className="accent-emerald-600 rounded"
               />
-              <span>Original Charger included</span>
+              <span>Original Charger Included</span>
             </label>
           </div>
 
-          <div>
-            <label className="block font-bold text-slate-700 mb-1">Seller Notes / Description</label>
+          {/* Description Suggestions & Textarea */}
+          <div className="space-y-2 pt-1">
+            <div className="flex justify-between items-center">
+              <label className="block font-bold text-slate-700">
+                Seller Description & Notes
+              </label>
+              <span className="text-[10.5px] text-emerald-700 font-bold flex items-center gap-1">
+                <Wand2 className="w-3 h-3" />
+                AI Description Templates
+              </span>
+            </div>
+
+            {/* Template Selector Buttons */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+              {descSuggestions.map((tpl) => (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  onClick={() => {
+                    setDescription(tpl.text);
+                    toast.info(`Applied ${tpl.label} description.`);
+                  }}
+                  className="p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50/40 text-left transition-colors"
+                >
+                  <span className="font-bold text-[10.5px] text-slate-800 block">{tpl.label}</span>
+                  <span className="text-[9.5px] text-slate-400 font-medium block mt-0.5">{tpl.tag}</span>
+                </button>
+              ))}
+            </div>
+
             <textarea
-              rows={3}
+              rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe condition, phone usage, battery health habits..."
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-emerald-600 outline-none"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-600 outline-none text-xs leading-relaxed"
             />
           </div>
 
+          {/* Disclosed Faults */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Disclosed Faults (Optional)</label>
+            <label className="block font-bold text-slate-700 mb-1">
+              Disclosed Cosmetic Faults <span className="text-slate-400 font-normal">(Optional)</span>
+            </label>
             <input
               type="text"
               value={knownFaults}
               onChange={(e) => setKnownFaults(e.target.value)}
-              placeholder="e.g. Minor mark on edge, never dropped"
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none"
+              placeholder="e.g. Tiny pin-sized scuff on lower bezel, never dropped"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs"
             />
           </div>
         </div>
@@ -826,24 +732,28 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
 
       {/* STEP 5: SELLING METHOD */}
       {currentStep === 5 && (
-        <div className="bg-white rounded-xl p-5 sm:p-6 border border-slate-200 space-y-4 shadow-2xs text-xs">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900">Choose How to Sell</h2>
-            <p className="text-slate-500">Select direct purchase with negotiation or a sealed auction.</p>
+        <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-4 text-xs">
+          <div className="border-b border-slate-100 pb-4">
+            <h2 className="text-sm font-extrabold text-slate-900 tracking-tight">
+              Choose How to Sell
+            </h2>
+            <p className="text-slate-500 mt-0.5">
+              Select direct sale with private counteroffer negotiation or a sealed auction.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Direct Buy */}
             <div
               onClick={() => setSellingMethod('negotiation')}
-              className={`p-4 rounded-xl border-2 cursor-pointer transition-colors space-y-2 ${
+              className={`p-4 rounded-2xl border-2 cursor-pointer transition-all space-y-2 ${
                 sellingMethod === 'negotiation'
-                  ? 'border-emerald-600 bg-emerald-50/50'
+                  ? 'border-emerald-600 bg-emerald-50/50 shadow-2xs'
                   : 'border-slate-200 hover:border-slate-300 bg-white'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-900 text-sm">Direct Buy & Offers</span>
+                <span className="font-extrabold text-slate-900 text-sm">Direct Buy & Offers</span>
                 <input
                   type="radio"
                   name="sellingMethod"
@@ -852,7 +762,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                   className="accent-emerald-600"
                 />
               </div>
-              <p className="text-slate-500 leading-relaxed">
+              <p className="text-slate-500 leading-relaxed text-xs">
                 Buyers can buy instantly at {formatCurrency(Number(askingPrice) || 0)} or submit private counteroffers.
               </p>
             </div>
@@ -860,14 +770,14 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
             {/* Sealed Auction */}
             <div
               onClick={() => setSellingMethod('bidding')}
-              className={`p-4 rounded-xl border-2 cursor-pointer transition-colors space-y-2 ${
+              className={`p-4 rounded-2xl border-2 cursor-pointer transition-all space-y-2 ${
                 sellingMethod === 'bidding'
-                  ? 'border-emerald-600 bg-emerald-50/50'
+                  ? 'border-emerald-600 bg-emerald-50/50 shadow-2xs'
                   : 'border-slate-200 hover:border-slate-300 bg-white'
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-900 text-sm">Sealed-Bid Auction</span>
+                <span className="font-extrabold text-slate-900 text-sm">Sealed-Bid Auction</span>
                 <input
                   type="radio"
                   name="sellingMethod"
@@ -876,15 +786,15 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                   className="accent-emerald-600"
                 />
               </div>
-              <p className="text-slate-500 leading-relaxed">
+              <p className="text-slate-500 leading-relaxed text-xs">
                 Buyers place confidential bids. Highest bid meeting your secret reserve price wins.
               </p>
             </div>
           </div>
 
-          {/* Settings depending on method */}
+          {/* Method Settings */}
           {sellingMethod === 'negotiation' ? (
-            <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2.5">
               <label className="block font-bold text-slate-800">
                 Minimum Acceptable Price (Private Floor in ₹)
               </label>
@@ -893,14 +803,14 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 placeholder="e.g. 45000 (offers below this are automatically rejected)"
                 value={minAcceptablePrice}
                 onChange={(e) => setMinAcceptablePrice(e.target.value)}
-                className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg outline-none"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl outline-none font-semibold text-xs"
               />
               <span className="text-[10.5px] text-slate-400 block">
-                This floor is confidential and never shown to buyers.
+                🔒 Security Guarantee: This floor price is confidential and is NEVER revealed to buyers or included in public API responses.
               </span>
             </div>
           ) : (
-            <div className="p-3.5 rounded-lg bg-amber-50/80 border border-amber-200 space-y-3">
+            <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-amber-950 mb-1">Starting Bid Floor (₹) *</label>
@@ -909,7 +819,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                     placeholder="e.g. 35000"
                     value={startingBid}
                     onChange={(e) => setStartingBid(e.target.value)}
-                    className="w-full px-3 py-1.5 bg-white border border-amber-200 rounded-lg outline-none"
+                    className="w-full px-3 py-2 bg-white border border-amber-200 rounded-xl outline-none font-semibold text-xs"
                     required
                   />
                 </div>
@@ -921,9 +831,9 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                     placeholder="e.g. 48000"
                     value={reservePrice}
                     onChange={(e) => setReservePrice(e.target.value)}
-                    className="w-full px-3 py-1.5 bg-white border border-amber-200 rounded-lg outline-none"
+                    className="w-full px-3 py-2 bg-white border border-amber-200 rounded-xl outline-none font-semibold text-xs"
                   />
-                  <span className="text-[10px] text-amber-800 mt-0.5 block">Confidential to you.</span>
+                  <span className="text-[10px] text-amber-800 mt-0.5 block">🔒 Strictly confidential to you.</span>
                 </div>
               </div>
 
@@ -932,12 +842,12 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 <select
                   value={auctionDays}
                   onChange={(e) => setAuctionDays(Number(e.target.value))}
-                  className="w-full sm:w-44 px-3 py-1.5 bg-white border border-amber-200 rounded-lg font-semibold outline-none"
+                  className="w-full sm:w-48 px-3 py-2 bg-white border border-amber-200 rounded-xl font-bold outline-none text-xs"
                 >
-                  <option value={1}>1 Day</option>
-                  <option value={3}>3 Days</option>
-                  <option value={5}>5 Days</option>
-                  <option value={7}>7 Days</option>
+                  <option value={1}>1 Day (Express)</option>
+                  <option value={3}>3 Days (Standard)</option>
+                  <option value={5}>5 Days (Extended)</option>
+                  <option value={7}>7 Days (Maximum Reach)</option>
                 </select>
               </div>
             </div>
@@ -945,66 +855,45 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
         </div>
       )}
 
-      {/* STEP 6: REVIEW */}
+      {/* STEP 6: MARKETPLACE REVIEW */}
       {currentStep === 6 && (
-        <div className="bg-white rounded-xl p-5 sm:p-6 border border-slate-200 space-y-4 shadow-2xs text-xs">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900">Review Your Listing</h2>
-            <p className="text-slate-500">Confirm specifications and price before publishing.</p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-200/80 pb-2.5">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400">{brand} • {model}</span>
-                <h3 className="text-sm font-extrabold text-slate-900">{title}</h3>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                  {sellingMethod === 'bidding' ? 'Starting Bid' : 'Asking Price'}
-                </span>
-                <span className="text-base font-extrabold text-slate-900">
-                  {formatCurrency(Number(sellingMethod === 'bidding' ? startingBid : askingPrice) || 0)}
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-              <div className="p-2.5 rounded bg-white border border-slate-200">
-                <span className="text-slate-400 block text-[9.5px] uppercase">Condition</span>
-                <span className="font-bold text-slate-900">{getConditionMeta(condition).label}</span>
-              </div>
-              <div className="p-2.5 rounded bg-white border border-slate-200">
-                <span className="text-slate-400 block text-[9.5px] uppercase">Storage / RAM</span>
-                <span className="font-bold text-slate-900">{storageGb}GB / {ramGb}GB</span>
-              </div>
-              <div className="p-2.5 rounded bg-white border border-slate-200">
-                <span className="text-slate-400 block text-[9.5px] uppercase">Battery</span>
-                <span className="font-bold text-emerald-700">{batteryHealth}%</span>
-              </div>
-              <div className="p-2.5 rounded bg-white border border-slate-200">
-                <span className="text-slate-400 block text-[9.5px] uppercase">Method</span>
-                <span className="font-bold text-slate-900">{getSellingMethodMeta(sellingMethod).tag}</span>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600 pt-1">
-              <span>Photos: <strong>{images.length} attached</strong></span>
-              <span>City: <strong>{locationCity}</strong></span>
-              <span>Box: <strong>{hasBox ? 'Yes' : 'No'}</strong></span>
-              <span>Charger: <strong>{hasCharger ? 'Yes' : 'No'}</strong></span>
-            </div>
-          </div>
-        </div>
+        <ListingPreviewCard
+          title={title}
+          brand={brand}
+          model={model}
+          condition={condition}
+          askingPrice={askingPrice}
+          sellingMethod={sellingMethod}
+          startingBid={startingBid}
+          reservePrice={reservePrice}
+          minAcceptablePrice={minAcceptablePrice}
+          auctionDays={auctionDays}
+          storageGb={storageGb}
+          ramGb={ramGb}
+          batteryHealth={batteryHealth}
+          color={color}
+          ageMonths={ageMonths}
+          hasBox={hasBox}
+          hasCharger={hasCharger}
+          locationCity={locationCity}
+          description={description}
+          knownFaults={knownFaults}
+          images={images}
+          isAiConditionVerified={isAiConditionVerified}
+          onEditStep={(step) => {
+            setCurrentStep(step);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
       )}
 
-      {/* Navigation Footer */}
+      {/* Wizard Navigation Footer */}
       <div className="flex items-center justify-between pt-3 border-t border-slate-200">
         <button
           type="button"
           onClick={handlePrevStep}
           disabled={currentStep === 1 || submitting}
-          className="px-4 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors disabled:opacity-40"
+          className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors disabled:opacity-40"
         >
           Previous
         </button>
@@ -1013,7 +902,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
           <button
             type="button"
             onClick={handleNextStep}
-            className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
+            className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-2xs transition-colors flex items-center gap-1.5"
           >
             <span>Continue</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -1023,29 +912,31 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
             type="button"
             onClick={handleSubmitListing}
             disabled={submitting}
-            className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5"
+            className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow-2xs transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             {submitting ? (
               <>
-                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Publishing...</span>
+                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Publishing Listing...</span>
               </>
             ) : (
               <>
-                <Check className="w-3.5 h-3.5" />
-                <span>Publish Listing</span>
+                <Check className="w-4 h-4" />
+                <span>Publish to Marketplace</span>
               </>
             )}
           </button>
         )}
       </div>
 
-      {/* Condition Check Modal */}
+      {/* Standalone Condition Check Modal */}
       <AiConditionModal
         isOpen={showConditionModal}
         onClose={() => setShowConditionModal(false)}
         onConditionConfirmed={(assessedCond) => {
           setCondition(assessedCond as ProductCondition);
+          setIsAiConditionVerified(true);
+          toast.success(`Condition updated to ${getConditionMeta(assessedCond as ProductCondition).label}`);
         }}
       />
     </div>
