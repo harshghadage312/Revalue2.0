@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     EMAIL_FROM: Optional[str] = "revalue26@gmail.com"
     SMTP_FROM_NAME: str = "ReValue Marketplace"
 
+    # Google Apps Script HTTPS Email Gateway (Port 443)
+    APPS_SCRIPT_EMAIL_ENABLED: bool = False
+    APPS_SCRIPT_EMAIL_URL: Optional[str] = None
+    APPS_SCRIPT_SHARED_SECRET: Optional[str] = None
+
     # Registration OTP Settings
     OTP_EXPIRE_MINUTES: int = 5
     OTP_RESEND_COOLDOWN_SECONDS: int = 60
@@ -103,6 +108,18 @@ class Settings(BaseSettings):
         user = self.effective_smtp_username
         pw = self.SMTP_PASSWORD
         return bool(user and pw and self.SMTP_ENABLED)
+
+    @property
+    def is_apps_script_configured(self) -> bool:
+        return bool(
+            self.APPS_SCRIPT_EMAIL_ENABLED
+            and self.APPS_SCRIPT_EMAIL_URL
+            and self.APPS_SCRIPT_SHARED_SECRET
+        )
+
+    @property
+    def is_email_configured(self) -> bool:
+        return self.is_apps_script_configured or self.is_smtp_configured
 
     @property
     def is_production(self) -> bool:

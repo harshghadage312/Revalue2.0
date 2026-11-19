@@ -67,8 +67,12 @@ def readiness_check():
             "payment_provider": settings.PAYMENT_PROVIDER,
             "payment_status": payment_status,
             "email": {
+                "active_provider": "apps_script" if settings.is_apps_script_configured else ("smtp" if settings.is_smtp_configured else "none"),
+                "apps_script_enabled": settings.APPS_SCRIPT_EMAIL_ENABLED,
+                "is_apps_script_configured": settings.is_apps_script_configured,
                 "smtp_enabled": settings.SMTP_ENABLED,
-                "is_configured": settings.is_smtp_configured,
+                "is_smtp_configured": settings.is_smtp_configured,
+                "is_configured": settings.is_email_configured,
                 "host": settings.effective_smtp_host,
                 "port": settings.SMTP_PORT,
                 "sender": settings.effective_email_from,

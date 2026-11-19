@@ -123,8 +123,8 @@ class AuthService:
             expires_in_minutes=settings.OTP_EXPIRE_MINUTES,
         )
 
-        # Strictly never expose OTP in production or when SMTP is configured
-        if not settings.is_production and not settings.is_smtp_configured:
+        # Strictly never expose OTP in production or when an email provider is configured
+        if not settings.is_production and not settings.is_email_configured:
             resp.dev_otp = otp
 
         return resp

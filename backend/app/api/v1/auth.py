@@ -18,7 +18,7 @@ def register(req: UserRegisterRequest):
     return AuthService.register_user(req)
 
 
-@router.post("/register/send-otp", response_model=RegisterSendOtpResponse)
+@router.post("/register/send-otp", response_model=RegisterSendOtpResponse, response_model_exclude_none=True)
 def send_register_otp(req: RegisterSendOtpRequest):
     return AuthService.send_registration_otp(req)
 

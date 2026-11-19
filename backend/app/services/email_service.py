@@ -2,7 +2,8 @@ import smtplib
 import socket
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, Any
+import httpx
 from app.core.config import settings
 from app.core.logging import logger
 
@@ -20,61 +21,24 @@ def mask_email(email: str) -> str:
     return f"{masked_user}@{domain}"
 
 
-class EmailService:
-    @staticmethod
-    def send_registration_otp(email: str, name: str, otp: str) -> Tuple[bool, Optional[str]]:
-        """
-        Sends a 6-digit registration OTP verification email via Gmail SMTP.
-        Supports STARTTLS (port 587) with automatic SSL (port 465) fallback for cloud hosts.
-        Returns (success: bool, error_reason: Optional[str]).
-        """
-        masked = mask_email(email)
+def get_otp_email_content(display_name: str, otp: str, expires_in_minutes: int) -> Tuple[str, str]:
+    """Generates consistent branded plaintext and HTML email bodies for ReValue OTP verification."""
+    subject = f"{otp} is your ReValue verification code"
 
-        if not settings.is_smtp_configured:
-            if settings.is_production:
-                err_msg = "SMTP is not configured in production (missing SMTP_PASSWORD or SMTP_ENABLED=false)."
-                logger.error(f"[EmailService] {err_msg} Cannot deliver OTP to {masked}.")
-                return False, err_msg
-            logger.info(
-                f"[EmailService] SMTP not configured or disabled (SMTP_ENABLED={settings.SMTP_ENABLED}). "
-                f"Registration OTP delivery simulated for {masked}."
-            )
-            return True, None
+    text_content = (
+        f"Hello {display_name},\n\n"
+        f"Thank you for registering on ReValue!\n\n"
+        f"Your one-time verification code is:\n"
+        f"    {otp}\n\n"
+        f"This code is valid for {expires_in_minutes} minutes. "
+        f"Never share this code with anyone.\n\n"
+        f"If you did not attempt to register on ReValue, please ignore this email.\n\n"
+        f"Best regards,\n"
+        f"The ReValue Team\n"
+        f"https://revalue.market\n"
+    )
 
-        smtp_host = settings.effective_smtp_host
-        configured_port = settings.SMTP_PORT
-        smtp_user = settings.effective_smtp_username
-        raw_password = settings.SMTP_PASSWORD
-        # Strip spaces from 16-character Google App Password (e.g. 'abcd efgh ijkl mnop' -> 'abcdefghijklmnop')
-        smtp_password = raw_password.replace(" ", "").strip() if raw_password else None
-        sender_email = settings.effective_email_from
-        sender_name = settings.SMTP_FROM_NAME or "ReValue Marketplace"
-
-        subject = f"{otp} is your ReValue verification code"
-
-        # Construct MIME Message
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = f"{sender_name} <{sender_email}>"
-        msg["To"] = email
-
-        # Plain text fallback
-        display_name = name.strip() if name else "ReValue User"
-        text_content = (
-            f"Hello {display_name},\n\n"
-            f"Thank you for registering on ReValue!\n\n"
-            f"Your one-time verification code is:\n"
-            f"    {otp}\n\n"
-            f"This code is valid for {settings.OTP_EXPIRE_MINUTES} minutes. "
-            f"Never share this code with anyone.\n\n"
-            f"If you did not attempt to register on ReValue, please ignore this email.\n\n"
-            f"Best regards,\n"
-            f"The ReValue Team\n"
-            f"https://revalue.market\n"
-        )
-
-        # High-quality HTML template branded for ReValue
-        html_content = f"""<!DOCTYPE html>
+    html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -158,7 +122,7 @@ class EmailService:
       color: #065f46;
       font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
       margin: 0;
-      padding-left: 8px; /* offset trailing letter spacing */
+      padding-left: 8px;
     }}
     .otp-meta {{
       margin: 10px 0 0 0;
@@ -205,7 +169,7 @@ class EmailService:
       <div class="otp-box">
         <div class="otp-label">Verification Code (OTP)</div>
         <div class="otp-code">{otp}</div>
-        <p class="otp-meta">&#9201; Expires in {settings.OTP_EXPIRE_MINUTES} minutes</p>
+        <p class="otp-meta">&#9201; Expires in {expires_in_minutes} minutes</p>
       </div>
       <div class="notice-card">
         <p class="notice-text">
@@ -220,6 +184,166 @@ class EmailService:
   </div>
 </body>
 </html>"""
+
+    return text_content, html_content
+
+
+class AppsScriptEmailProvider:
+    """
+    Google Apps Script HTTPS email gateway adapter.
+    Dispatches transactional registration OTP emails over standard HTTPS (Port 443),
+    bypassing outbound SMTP port blocks on cloud hosting providers like Render Free.
+    """
+
+    @staticmethod
+    def send_otp(email: str, name: str, otp: str) -> Tuple[bool, Optional[str]]:
+        masked = mask_email(email)
+        url = settings.APPS_SCRIPT_EMAIL_URL
+        secret = settings.APPS_SCRIPT_SHARED_SECRET
+
+        if not settings.APPS_SCRIPT_EMAIL_ENABLED:
+            return False, "Google Apps Script email provider is disabled (APPS_SCRIPT_EMAIL_ENABLED=false)."
+
+        if not url or not secret:
+            err_msg = "Google Apps Script email gateway is incompletely configured (missing URL or shared secret)."
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+            return False, err_msg
+
+        payload = {
+            "action": "send_otp",
+            "shared_secret": secret,
+            "email": email.strip(),
+            "name": (name or "").strip()[:100],
+            "otp": otp.strip(),
+            "expires_in_minutes": settings.OTP_EXPIRE_MINUTES,
+        }
+
+        try:
+            # Google Apps Script Web App responds with a 302 redirect to script.googleusercontent.com
+            # follow_redirects=True ensures the client follows the redirect and reads the JSON response
+            with httpx.Client(timeout=15.0, follow_redirects=True) as client:
+                response = client.post(
+                    url,
+                    json=payload,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "User-Agent": "ReValue-Backend/1.0",
+                    },
+                )
+
+            if response.status_code != 200:
+                err_msg = f"Email gateway returned HTTP status {response.status_code}."
+                logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+                return False, err_msg
+
+            try:
+                data = response.json()
+            except Exception:
+                err_msg = "Email gateway returned an invalid or non-JSON response."
+                logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+                return False, err_msg
+
+            if not isinstance(data, dict):
+                err_msg = "Email gateway returned an unexpected response structure."
+                logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+                return False, err_msg
+
+            if data.get("success") is True:
+                logger.info(f"[AppsScriptEmail] Registration OTP email successfully dispatched to {masked} via Google Apps Script.")
+                return True, None
+
+            # Handle structured error response from Google Apps Script
+            error_data = data.get("error", {})
+            if isinstance(error_data, dict):
+                error_code = error_data.get("code", "GATEWAY_ERROR")
+                error_message = error_data.get("message", "Email delivery failed at gateway.")
+            else:
+                error_code = "GATEWAY_ERROR"
+                error_message = str(error_data)
+
+            err_msg = f"Email gateway error ({error_code}): {error_message}"
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+            return False, err_msg
+
+        except httpx.TimeoutException:
+            err_msg = "Email gateway connection timed out (exceeded 15s)."
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+            return False, err_msg
+        except httpx.RequestError as req_err:
+            err_msg = f"Network connection to email gateway failed: {type(req_err).__name__}."
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+            return False, err_msg
+        except Exception as ex:
+            err_msg = f"Unexpected error while communicating with email gateway: {type(ex).__name__}."
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+            return False, err_msg
+
+    @staticmethod
+    def ping() -> Tuple[bool, Optional[str]]:
+        """Health-check ping to verify Apps Script connectivity and shared secret without sending an email."""
+        url = settings.APPS_SCRIPT_EMAIL_URL
+        secret = settings.APPS_SCRIPT_SHARED_SECRET
+
+        if not url or not secret:
+            return False, "Google Apps Script email gateway is not configured."
+
+        payload = {
+            "action": "ping",
+            "shared_secret": secret,
+        }
+
+        try:
+            with httpx.Client(timeout=10.0, follow_redirects=True) as client:
+                response = client.post(
+                    url,
+                    json=payload,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "User-Agent": "ReValue-Backend/1.0",
+                    },
+                )
+            if response.status_code != 200:
+                return False, f"Gateway returned HTTP {response.status_code}."
+            data = response.json()
+            if data.get("success") is True:
+                return True, None
+            error_msg = data.get("error", {}).get("message", "Ping failed.")
+            return False, error_msg
+        except Exception as e:
+            return False, str(e)
+
+
+class SmtpEmailProvider:
+    """
+    Standard SMTP provider connecting directly to Gmail SMTP (smtp.gmail.com).
+    Intended for local development or paid cloud hosting instances where outbound ports 587/465 are unblocked.
+    """
+
+    @staticmethod
+    def send_otp(email: str, name: str, otp: str) -> Tuple[bool, Optional[str]]:
+        masked = mask_email(email)
+
+        smtp_host = settings.effective_smtp_host
+        configured_port = settings.SMTP_PORT
+        smtp_user = settings.effective_smtp_username
+        raw_password = settings.SMTP_PASSWORD
+        # Strip spaces from 16-character Google App Password (e.g. 'abcd efgh ijkl mnop' -> 'abcdefghijklmnop')
+        smtp_password = raw_password.replace(" ", "").strip() if raw_password else None
+        sender_email = settings.effective_email_from
+        sender_name = settings.SMTP_FROM_NAME or "ReValue Marketplace"
+
+        subject = f"{otp} is your ReValue verification code"
+
+        # Construct MIME Message
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = f"{sender_name} <{sender_email}>"
+        msg["To"] = email
+
+        display_name = name.strip() if name else "ReValue User"
+        text_content, html_content = get_otp_email_content(display_name, otp, settings.OTP_EXPIRE_MINUTES)
 
         msg.attach(MIMEText(text_content, "plain", "utf-8"))
         msg.attach(MIMEText(html_content, "html", "utf-8"))
@@ -245,22 +369,22 @@ class EmailService:
                 return True, None
             except smtplib.SMTPAuthenticationError as auth_err:
                 err_detail = f"Authentication rejected by Gmail (code {auth_err.smtp_code}). Please verify your 16-character Google App Password."
-                logger.error(f"[EmailService] {err_detail} Target: {masked}")
+                logger.error(f"[SmtpEmail] {err_detail} Target: {masked}")
                 return False, err_detail
             except (socket.timeout, smtplib.SMTPConnectError, ConnectionRefusedError, OSError) as net_err:
                 err_detail = f"Network connection failed on {smtp_host}:{port} ({type(net_err).__name__})."
-                logger.warning(f"[EmailService] {err_detail} Target: {masked}")
+                logger.warning(f"[SmtpEmail] {err_detail} Target: {masked}")
                 return False, err_detail
             except Exception as ex:
                 err_detail = f"Delivery failed on port {port}: {type(ex).__name__}."
-                logger.error(f"[EmailService] {err_detail} Target: {masked}")
+                logger.error(f"[SmtpEmail] {err_detail} Target: {masked}")
                 return False, err_detail
 
         # Primary attempt based on configured port
         use_ssl_primary = (configured_port == 465)
         success, err = _attempt_send(configured_port, use_ssl_primary)
         if success:
-            logger.info(f"[EmailService] Registration OTP successfully delivered to {masked} via port {configured_port}")
+            logger.info(f"[SmtpEmail] Registration OTP successfully delivered to {masked} via port {configured_port}")
             return True, None
 
         # If primary failed with auth error, do not retry other ports because credentials are bad
@@ -269,11 +393,50 @@ class EmailService:
 
         # Resilient fallback: If port 587 failed due to network/firewall, try port 465 SSL
         if configured_port != 465:
-            logger.info(f"[EmailService] Attempting SSL fallback on port 465 for {masked}...")
+            logger.info(f"[SmtpEmail] Attempting SSL fallback on port 465 for {masked}...")
             fallback_success, fallback_err = _attempt_send(465, True)
             if fallback_success:
-                logger.info(f"[EmailService] Registration OTP successfully delivered to {masked} via fallback port 465")
+                logger.info(f"[SmtpEmail] Registration OTP successfully delivered to {masked} via fallback port 465")
                 return True, None
             return False, f"Primary ({err}) and fallback ({fallback_err}) failed."
 
         return False, err
+
+
+class EmailService:
+    @staticmethod
+    def send_registration_otp(email: str, name: str, otp: str) -> Tuple[bool, Optional[str]]:
+        """
+        Routes registration OTP email through the appropriate provider:
+        1. Google Apps Script HTTPS Gateway (Primary for Render Free & cloud HTTPS environments).
+        2. Gmail SMTP (Supported in local development or paid instances; prevented on Render Free).
+        3. Local simulation (Development only; never in production).
+        """
+        masked = mask_email(email)
+
+        # 1. Google Apps Script HTTPS Gateway (Primary for Render Free)
+        if settings.is_apps_script_configured:
+            return AppsScriptEmailProvider.send_otp(email, name, otp)
+
+        # 2. Gmail SMTP / Generic SMTP
+        if settings.is_smtp_configured:
+            if settings.is_production:
+                err_msg = (
+                    "Direct outbound SMTP (ports 25, 465, 587) is blocked on Render Free Tier. "
+                    "Please configure Google Apps Script (APPS_SCRIPT_EMAIL_ENABLED, APPS_SCRIPT_EMAIL_URL, APPS_SCRIPT_SHARED_SECRET)."
+                )
+                logger.error(f"[EmailService] {err_msg}")
+                return False, err_msg
+            return SmtpEmailProvider.send_otp(email, name, otp)
+
+        # 3. Development Simulation or Production Error
+        if settings.is_production:
+            err_msg = "No email delivery provider is configured in production."
+            logger.error(f"[EmailService] {err_msg} Cannot deliver OTP to {masked}.")
+            return False, err_msg
+
+        logger.info(
+            f"[EmailService] No email provider configured. "
+            f"Registration OTP delivery simulated for {masked}."
+        )
+        return True, None
