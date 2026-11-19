@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import { OrderTrackingResponse, InspectionChecklist } from '../types';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 interface DeliveryTrackingPageProps {
   orderId: string;
@@ -16,6 +18,8 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
   orderId,
   onNavigate,
 }) => {
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [tracking, setTracking] = useState<OrderTrackingResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,11 +89,13 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
     setOtpError(null);
     try {
       await api.verifyDeliveryOtp(orderId, enteredOtp);
-      alert('Delivery verified! 48-Hour Buyer Inspection Period is now active.');
+      toast.success('Delivery verified! 48-Hour Buyer Inspection Period is now active.');
       setEnteredOtp('');
       fetchTracking();
     } catch (err: any) {
-      setOtpError(err.message || 'Invalid or expired OTP.');
+      const msg = err.message || 'Invalid or expired OTP.';
+      setOtpError(msg);
+      toast.error(msg);
     } finally {
       setVerifyingOtp(false);
     }
@@ -101,23 +107,30 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
     try {
       await api.submitInspectionChecklist(orderId, checklist);
       setChecklistSuccess(true);
-      alert('Hardware inspection checklist submitted successfully.');
+      toast.success('Hardware inspection checklist submitted successfully.');
       fetchTracking();
     } catch (err: any) {
-      alert(err.message || 'Failed to submit inspection checklist.');
+      toast.error(err.message || 'Failed to submit inspection checklist.');
     } finally {
       setSubmittingChecklist(false);
     }
   };
 
   const handleConfirmReceipt = async () => {
-    if (!confirm('Are you satisfied with the smartphone? Confirming receipt will immediately release seller payout.')) return;
+    const ok = await confirm({
+      title: 'Confirm Smartphone Receipt',
+      message: 'Are you satisfied with the smartphone? Confirming receipt will immediately release the seller payout.',
+      confirmText: 'Yes, Confirm Receipt',
+      variant: 'primary',
+    });
+    if (!ok) return;
+
     try {
       await api.confirmReceipt(orderId);
-      alert('Receipt confirmed! Order completed and seller payout released.');
+      toast.success('Receipt confirmed! Order completed and seller payout released.');
       fetchTracking();
     } catch (err: any) {
-      alert(err.message || 'Failed to confirm receipt.');
+      toast.error(err.message || 'Failed to confirm receipt.');
     }
   };
 
@@ -127,11 +140,11 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
     try {
       const evidence = disputeEvidence ? [disputeEvidence] : [];
       await api.openDispute(orderId, disputeReason, disputeDetails, evidence, preferredResolution);
-      alert('Dispute opened. Seller payout is FROZEN pending marketplace administration review.');
+      toast.warning('Dispute opened. Seller payout is FROZEN pending marketplace administration review.');
       setShowDisputeModal(false);
       fetchTracking();
     } catch (err: any) {
-      alert(err.message || 'Failed to submit dispute.');
+      toast.error(err.message || 'Failed to submit dispute.');
     } finally {
       setDisputeLoading(false);
     }

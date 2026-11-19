@@ -7,6 +7,8 @@ import {
 import { api } from '../services/api';
 import { Product, Offer, Order, NegotiationSuggestion } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 interface SellerDashboardProps {
   onNavigate: (page: string, params?: any) => void;
@@ -18,6 +20,8 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
   onOpenAuth,
 }) => {
   const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const [activeTab, setActiveTab] = useState<'offers' | 'shipments' | 'listings'>('offers');
 
   const [listings, setListings] = useState<Product[]>([]);
@@ -87,7 +91,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
         setCounterAmount(String(advice.suggested_counter_amount));
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to fetch negotiation advice.');
+      toast.error(err.message || 'Failed to fetch negotiation advice.');
       setSuggestionOffer(null);
     } finally {
       setSuggestionLoading(false);
@@ -97,10 +101,10 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
   const handleAcceptOffer = async (offerId: string) => {
     try {
       await api.acceptOffer(offerId);
-      alert('Offer accepted! The listing is now reserved for the buyer.');
+      toast.success('Offer accepted! The listing is now reserved for the buyer.');
       loadData();
     } catch (err: any) {
-      alert(err.message || 'Failed to accept offer.');
+      toast.error(err.message || 'Failed to accept offer.');
     }
   };
 
@@ -108,22 +112,31 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
     if (!counterAmount) return;
     try {
       await api.counterOffer(offerId, Number(counterAmount), counterNote);
-      alert('Counteroffer sent to buyer!');
+      toast.success('Counteroffer sent to buyer!');
       setSuggestionOffer(null);
       setCounterAmount('');
       setCounterNote('');
       loadData();
     } catch (err: any) {
-      alert(err.message || 'Failed to submit counteroffer.');
+      toast.error(err.message || 'Failed to submit counteroffer.');
     }
   };
 
   const handleRejectOffer = async (offerId: string) => {
+    const ok = await confirm({
+      title: 'Reject Buyer Offer',
+      message: 'Are you sure you want to decline this buyer offer?',
+      confirmText: 'Decline Offer',
+      variant: 'danger',
+    });
+    if (!ok) return;
+
     try {
       await api.rejectOffer(offerId);
+      toast.info('Buyer offer declined.');
       loadData();
     } catch (err: any) {
-      alert(err.message || 'Failed to reject offer.');
+      toast.error(err.message || 'Failed to reject offer.');
     }
   };
 
@@ -133,12 +146,12 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
     setShipLoading(true);
     try {
       await api.updateShipment(shippingOrderId, courierName, trackingNumber);
-      alert('Order marked as SHIPPED! Courier tracking information updated.');
+      toast.success('Order marked as SHIPPED! Courier tracking information updated.');
       setShippingOrderId(null);
       setTrackingNumber('');
       loadData();
     } catch (err: any) {
-      alert(err.message || 'Failed to dispatch order.');
+      toast.error(err.message || 'Failed to dispatch order.');
     } finally {
       setShipLoading(false);
     }
@@ -148,7 +161,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
     e.preventDefault();
     if (!bookingOrder) return;
     if (!batteryDeclared) {
-      alert('Contained Lithium-ion battery declaration is required by Indian transit safety regulations.');
+      toast.warning('Contained Lithium-ion battery declaration is required by Indian transit safety regulations.');
       return;
     }
     setBookingLoading(true);
@@ -163,25 +176,32 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
         is_battery_declared: batteryDeclared,
         pickup_time_slot: pickupSlot,
       });
-      alert(`Shipment booked with ${res.courier_name}! AWB: ${res.awb_code}. Shipping label is ready to print.`);
+      toast.success(`Shipment booked with ${res.courier_name}! AWB: ${res.awb_code}. Shipping label is ready to print.`);
       setBookingOrder(null);
       loadData();
     } catch (err: any) {
-      alert(err.message || 'Failed to book shipment.');
+      toast.error(err.message || 'Failed to book shipment.');
     } finally {
       setBookingLoading(false);
     }
   };
 
   const handleConfirmHandover = async (orderId: string) => {
-    if (!confirm('Confirm that the courier agent has arrived and physically collected the smartphone parcel?')) return;
+    const ok = await confirm({
+      title: 'Confirm Courier Handover',
+      message: 'Confirm that the courier agent has arrived and physically collected the smartphone parcel?',
+      confirmText: 'Confirm Handover',
+      variant: 'primary',
+    });
+    if (!ok) return;
+
     setHandoverLoading(orderId);
     try {
       await api.confirmHandover(orderId);
-      alert('Physical handover recorded! Order moved to courier transit network. Delivery verification OTP sent to recipient.');
+      toast.success('Physical handover recorded! Order moved to courier transit network. Delivery verification OTP sent to recipient.');
       loadData();
     } catch (err: any) {
-      alert(err.message || 'Failed to record handover.');
+      toast.error(err.message || 'Failed to record handover.');
     } finally {
       setHandoverLoading(null);
     }
@@ -193,10 +213,10 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
       if (res.label_url) {
         window.open(res.label_url, '_blank');
       } else {
-        alert('Label URL not yet ready. Please try again.');
+        toast.info('Label URL not yet ready. Please try again.');
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to retrieve shipping label.');
+      toast.error(err.message || 'Failed to retrieve shipping label.');
     }
   };
 

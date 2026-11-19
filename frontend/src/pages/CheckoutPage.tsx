@@ -6,6 +6,7 @@ import {
 import { api } from '../services/api';
 import { Product, Order, ShippingRateQuote } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 interface CheckoutPageProps {
   productId?: string;
@@ -27,6 +28,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   onOpenAuth,
 }) => {
   const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
   const [existingOrder, setExistingOrder] = useState<Order | null>(null);
   const [createdOrder, setCreatedOrder] = useState<Order | null>(null);
@@ -175,7 +177,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
       await api.completeSandboxPayment(oId);
       const updated = await api.getOrder(oId);
       setCreatedOrder(updated);
-      alert('Payment confirmed! Funds are held in escrow. 48-Hour Seller Dispatch Deadline is now active.');
+      toast.success('Payment confirmed! Funds are held in escrow. 48-Hour Seller Dispatch Deadline is active.');
     } catch (err: any) {
       setError(err.message || 'Payment processing failed.');
     } finally {

@@ -7,6 +7,7 @@ import {
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { RiderProfile, DeliveryJob } from '../types';
+import { useToast } from '../context/ToastContext';
 
 interface RiderDashboardProps {
   onNavigate: (page: string, params?: any) => void;
@@ -18,6 +19,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
   onOpenAuth,
 }) => {
   const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<RiderProfile | null>(null);
   const [activeJob, setActiveJob] = useState<DeliveryJob | null>(null);
   const [availableJobs, setAvailableJobs] = useState<DeliveryJob[]>([]);
@@ -66,7 +68,9 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
   const handleToggleOnline = async () => {
     if (!profile) return;
     if (profile.application_status !== 'approved') {
-      setError('You can only go online after your application has been approved by Operations.');
+      const msg = 'You can only go online after your application has been approved by Operations.';
+      setError(msg);
+      toast.warning(msg);
       return;
     }
 
@@ -79,7 +83,13 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
         ...updated,
         is_online: updated.is_online,
       } : updated);
-      setSuccessMsg(updated.is_online ? 'You are now ONLINE and ready for local dispatches!' : 'You are now OFFLINE.');
+      const msg = updated.is_online ? 'You are now ONLINE and ready for local dispatches!' : 'You are now OFFLINE.';
+      setSuccessMsg(msg);
+      if (updated.is_online) {
+        toast.success(msg);
+      } else {
+        toast.info(msg);
+      }
       setTimeout(() => setSuccessMsg(null), 3000);
 
       if (updated.is_online) {
@@ -87,7 +97,9 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
         setAvailableJobs(jobs);
       }
     } catch (err: any) {
-      setError(err?.message || 'Could not update online status.');
+      const msg = err?.message || 'Could not update online status.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setTogglingStatus(false);
     }
@@ -95,7 +107,9 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
 
   const handleSyncGps = () => {
     if (!navigator.geolocation) {
-      setError('Geolocation is not supported by your browser.');
+      const msg = 'Geolocation is not supported by your browser.';
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -105,18 +119,21 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
       async (pos) => {
         try {
           await api.updateRiderLocation(pos.coords.latitude, pos.coords.longitude);
-          setSuccessMsg('GPS location updated successfully.');
-          setTimeout(() => setSuccessMsg(null), 3000);
+          toast.success('GPS location updated successfully.');
           await loadData(true);
         } catch (err: any) {
-          setError(err?.message || 'Failed to save location update.');
+          const msg = err?.message || 'Failed to save location update.';
+          setError(msg);
+          toast.error(msg);
         } finally {
           setUpdatingGps(false);
         }
       },
       (geoErr) => {
         setUpdatingGps(false);
-        setError(`Location access denied or unavailable: ${geoErr.message}`);
+        const msg = `Location access denied: ${geoErr.message}`;
+        setError(msg);
+        toast.error(msg);
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -129,10 +146,12 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
       const job = await api.acceptRiderJob(jobId);
       setActiveJob(job);
       setAvailableJobs(prev => prev.filter(j => j.id !== jobId));
-      setSuccessMsg(`Delivery job accepted! Navigate to pickup.`);
+      toast.success('Delivery job accepted! Navigate to pickup.');
       onNavigate('rider-job-detail', { jobId: job.id });
     } catch (err: any) {
-      setError(err?.message || 'Failed to accept job. It may have already been claimed.');
+      const msg = err?.message || 'Failed to accept job. It may have already been claimed.';
+      setError(msg);
+      toast.error(msg);
       await loadData(true);
     } finally {
       setAcceptingJobId(null);
