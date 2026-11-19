@@ -107,7 +107,7 @@ class AuthService:
         # Send OTP email via EmailService
         email_sent = EmailService.send_registration_otp(email, req.name, otp)
         if not email_sent:
-            if settings.ENVIRONMENT == "production":
+            if settings.is_production:
                 raise AppException(
                     message="Failed to dispatch verification email. Please verify system email settings or try again later.",
                     code="EMAIL_DELIVERY_FAILED",
@@ -122,8 +122,8 @@ class AuthService:
             expires_in_minutes=settings.OTP_EXPIRE_MINUTES,
         )
 
-        # Strictly never expose OTP in production responses
-        if settings.ENVIRONMENT != "production" and (not settings.is_smtp_configured or settings.ENVIRONMENT in ["development", "test"]):
+        # Strictly never expose OTP in production or when SMTP is configured
+        if not settings.is_production and not settings.is_smtp_configured:
             resp.dev_otp = otp
 
         return resp

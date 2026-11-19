@@ -104,9 +104,18 @@ class Settings(BaseSettings):
         pw = self.SMTP_PASSWORD
         return bool(user and pw and self.SMTP_ENABLED)
 
+    @property
+    def is_production(self) -> bool:
+        return (
+            self.ENVIRONMENT.lower() == "production"
+            or bool(os.environ.get("RENDER"))
+            or bool(os.environ.get("RENDER_INSTANCE_ID"))
+            or bool(os.environ.get("VERCEL"))
+        )
+
     @model_validator(mode="after")
     def validate_production_security(self):
-        if self.ENVIRONMENT == "production":
+        if self.is_production and self.ENVIRONMENT == "production":
             if "local" in self.JWT_SECRET_KEY.lower() or "development" in self.JWT_SECRET_KEY.lower():
                 raise ValueError("FATAL: In production mode, JWT_SECRET_KEY must be a cryptographically strong unique secret, not the default development key.")
             if self.INITIAL_ADMIN_PASSWORD == "AdminSecurePass!2026":

@@ -66,6 +66,13 @@ def readiness_check():
         "integrations": {
             "payment_provider": settings.PAYMENT_PROVIDER,
             "payment_status": payment_status,
+            "email": {
+                "smtp_enabled": settings.SMTP_ENABLED,
+                "is_configured": settings.is_smtp_configured,
+                "host": settings.effective_smtp_host,
+                "port": settings.SMTP_PORT,
+                "sender": settings.effective_email_from,
+            },
         },
         "machine_learning": {
             "random_forest_price_estimator": price_ml_status,

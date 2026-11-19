@@ -31,7 +31,7 @@ class EmailService:
         masked = mask_email(email)
 
         if not settings.is_smtp_configured:
-            if settings.ENVIRONMENT == "production":
+            if settings.is_production:
                 logger.error(
                     f"[EmailService] FATAL: SMTP is not configured or disabled in production mode. "
                     f"Cannot send registration OTP to {masked}."
@@ -46,7 +46,9 @@ class EmailService:
         smtp_host = settings.effective_smtp_host
         smtp_port = settings.SMTP_PORT
         smtp_user = settings.effective_smtp_username
-        smtp_password = settings.SMTP_PASSWORD
+        raw_password = settings.SMTP_PASSWORD
+        # Strip any formatting spaces from Google App Password (e.g. 'abcd efgh ijkl mnop' -> 'abcdefghijklmnop')
+        smtp_password = raw_password.replace(" ", "").strip() if raw_password else None
         sender_email = settings.effective_email_from
         sender_name = settings.SMTP_FROM_NAME or "ReValue Marketplace"
 
