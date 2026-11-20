@@ -150,6 +150,20 @@ class ApiClient {
     localStorage.removeItem('revalue_user');
   }
 
+  async forgotPassword(email: string): Promise<{ message: string; cooldown_seconds?: number }> {
+    return this.request<{ message: string; cooldown_seconds?: number }>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async resetPassword(token: string, new_password: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, new_password }),
+    });
+  }
+
   // --- Products Endpoints ---
   async listProducts(params: Record<string, any> = {}): Promise<ProductListResponse> {
     const query = new URLSearchParams();

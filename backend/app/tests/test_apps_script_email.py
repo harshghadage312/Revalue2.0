@@ -336,3 +336,101 @@ def test_full_registration_flow_with_apps_script():
         settings.APPS_SCRIPT_EMAIL_ENABLED = orig_enabled
         settings.APPS_SCRIPT_EMAIL_URL = orig_url
         settings.APPS_SCRIPT_SHARED_SECRET = orig_secret
+
+
+def test_apps_script_send_password_reset_success():
+    """Verify AppsScriptEmailProvider.send_password_reset sends action 'send_password_reset'."""
+    orig_enabled = settings.APPS_SCRIPT_EMAIL_ENABLED
+    orig_url = settings.APPS_SCRIPT_EMAIL_URL
+    orig_secret = settings.APPS_SCRIPT_SHARED_SECRET
+
+    try:
+        settings.APPS_SCRIPT_EMAIL_ENABLED = True
+        settings.APPS_SCRIPT_EMAIL_URL = "https://script.google.com/macros/s/AKfycb_test/exec"
+        settings.APPS_SCRIPT_SHARED_SECRET = "super_secure_random_shared_secret_12345"
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {
+            "success": True,
+            "message": "Password reset email dispatched successfully.",
+            "timestamp": "2026-11-20T12:00:00.000Z"
+        }
+
+        with patch("httpx.Client.post", return_value=mock_resp) as mock_post:
+            success, err = AppsScriptEmailProvider.send_password_reset(
+                email="reset_target@example.com",
+                name="Target User",
+                reset_url="https://revalue-nine.vercel.app/reset-password?token=secret123",
+                expires_in_minutes=15
+            )
+            assert success is True
+            assert err is None
+            mock_post.assert_called_once()
+            called_kwargs = mock_post.call_args[1]
+            payload = called_kwargs["json"]
+            assert payload["action"] == "send_password_reset"
+            assert payload["email"] == "reset_target@example.com"
+            assert payload["name"] == "Target User"
+            assert "secret123" in payload["reset_url"]
+            assert payload["expires_in_minutes"] == 15
+            assert payload["shared_secret"] == "super_secure_random_shared_secret_12345"
+    finally:
+        settings.APPS_SCRIPT_EMAIL_ENABLED = orig_enabled
+        settings.APPS_SCRIPT_EMAIL_URL = orig_url
+        settings.APPS_SCRIPT_SHARED_SECRET = orig_secret
+
+
+def test_full_forgot_password_flow_with_apps_script():
+    """End-to-end integration test of forgot-password requesting email dispatch via Google Apps Script."""
+    orig_enabled = settings.APPS_SCRIPT_EMAIL_ENABLED
+    orig_url = settings.APPS_SCRIPT_EMAIL_URL
+    orig_secret = settings.APPS_SCRIPT_SHARED_SECRET
+
+    try:
+        settings.APPS_SCRIPT_EMAIL_ENABLED = True
+        settings.APPS_SCRIPT_EMAIL_URL = "https://script.google.com/macros/s/AKfycb_test/exec"
+        settings.APPS_SCRIPT_SHARED_SECRET = "super_secure_random_shared_secret_12345"
+
+        captured_urls = []
+
+        def capture_send(email, name, reset_url, expires_in_minutes=15):
+            captured_urls.append(reset_url)
+            return True, None
+
+        with patch("app.services.email_service.AppsScriptEmailProvider.send_password_reset", side_effect=capture_send):
+            email = f"as_reset_{uuid.uuid4().hex[:8]}@example.com"
+            # 1. Register user
+            client.post("/api/v1/auth/register", json={
+                "name": "AppsScript Reset User",
+                "email": email,
+                "password": "InitialPass123!",
+                "role": "buyer"
+            })
+
+            # 2. Request forgot password
+            res = client.post("/api/v1/auth/forgot-password", json={"email": email})
+            assert res.status_code == 200
+            assert res.json()["message"] == "If an account exists with this email, you will receive a password reset link."
+            assert len(captured_urls) == 1
+            reset_url = captured_urls[0]
+            assert "reset-password?token=" in reset_url
+            raw_token = reset_url.split("token=")[1]
+
+            # 3. Complete password reset with extracted token
+            reset_res = client.post("/api/v1/auth/reset-password", json={
+                "token": raw_token,
+                "new_password": "NewAppsScriptPassword123!"
+            })
+            assert reset_res.status_code == 200
+
+            # 4. Login with new password works
+            login_res = client.post("/api/v1/auth/login", json={
+                "email": email,
+                "password": "NewAppsScriptPassword123!"
+            })
+            assert login_res.status_code == 200
+    finally:
+        settings.APPS_SCRIPT_EMAIL_ENABLED = orig_enabled
+        settings.APPS_SCRIPT_EMAIL_URL = orig_url
+        settings.APPS_SCRIPT_SHARED_SECRET = orig_secret

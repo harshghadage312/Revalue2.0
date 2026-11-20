@@ -2,7 +2,8 @@ from typing import Dict, Any
 from fastapi import APIRouter, Depends, Header
 from app.schemas.auth import (
     UserRegisterRequest, UserLoginRequest, TokenResponse,
-    RefreshTokenRequest, ForgotPasswordRequest, ResetPasswordRequest,
+    RefreshTokenRequest, ForgotPasswordRequest, ForgotPasswordResponse,
+    ResetPasswordRequest, ResetPasswordResponse,
     UserProfileResponse, UpdateProfileRequest,
     RegisterSendOtpRequest, RegisterSendOtpResponse,
     RegisterVerifyOtpRequest, RegisterVerifyOtpResponse
@@ -89,11 +90,11 @@ def update_me(req: UpdateProfileRequest, current_user: Dict[str, Any] = Depends(
     )
 
 
-@router.post("/forgot-password")
+@router.post("/forgot-password", response_model=ForgotPasswordResponse, response_model_exclude_none=True)
 def forgot_password(req: ForgotPasswordRequest):
     return AuthService.request_password_reset(req.email)
 
 
-@router.post("/reset-password")
+@router.post("/reset-password", response_model=ResetPasswordResponse)
 def reset_password(req: ResetPasswordRequest):
     return AuthService.reset_password(req.token, req.new_password)

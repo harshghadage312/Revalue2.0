@@ -1,6 +1,6 @@
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class UserRegisterRequest(BaseModel):
@@ -73,9 +73,36 @@ class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 
+class ForgotPasswordResponse(BaseModel):
+    message: str
+    cooldown_seconds: int = 60
+    dev_reset_token: Optional[str] = None
+    dev_reset_url: Optional[str] = None
+
+
 class ResetPasswordRequest(BaseModel):
-    token: str
+    token: str = Field(..., min_length=1)
     new_password: str = Field(..., min_length=8, max_length=128)
+
+    @field_validator("token")
+    @classmethod
+    def clean_token(cls, v: str) -> str:
+        clean = v.strip()
+        if not clean:
+            raise ValueError("Token must not be empty.")
+        return clean
+
+    @field_validator("new_password")
+    @classmethod
+    def clean_password(cls, v: str) -> str:
+        clean = v.strip()
+        if len(clean) < 8:
+            raise ValueError("Password must be at least 8 characters long.")
+        return clean
+
+
+class ResetPasswordResponse(BaseModel):
+    message: str
 
 
 class UpdateProfileRequest(BaseModel):
