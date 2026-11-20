@@ -11,6 +11,7 @@
  *   - 'ping' / 'health': Connectivity health check without email dispatch
  *   - 'send_otp': Registration/authentication email verification code (5-min expiry)
  *   - 'send_delivery_otp': Order-specific buyer doorstep delivery verification code (48-hr expiry)
+ *   - 'send_password_reset': Password reset link with branded HTML email (15-min expiry)
  */
 
 // Configuration constants
@@ -24,6 +25,7 @@ var CONFIG = {
   MAX_CARRIER_LENGTH: 64,
   DEFAULT_EXPIRY_MINUTES: 5,
   DEFAULT_DELIVERY_EXPIRY_HOURS: 48,
+  DEFAULT_PASSWORD_RESET_EXPIRY_MINUTES: 15,
   EMAIL_REGEX: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/,
   OTP_REGEX: /^\d{6}$/,
   ORDER_ID_REGEX: /^[a-zA-Z0-9_\-#]+$/
@@ -115,12 +117,17 @@ function doPost(e) {
       return handleSendDeliveryOtp(payload);
     }
 
-    // 4d. Unknown action
+    // 4d. Send password reset link action
+    if (action === "send_password_reset" || action === "password_reset") {
+      return handleSendPasswordReset(payload);
+    }
+
+    // 4e. Unknown action
     return jsonResponse({
       success: false,
       error: {
         code: "UNKNOWN_ACTION",
-        message: "Unsupported action '" + action + "'. Supported actions: 'ping', 'send_otp', 'send_delivery_otp'."
+        message: "Unsupported action '" + action + "'. Supported actions: 'ping', 'send_otp', 'send_delivery_otp', 'send_password_reset'."
       }
     });
 
@@ -143,7 +150,7 @@ function doGet(e) {
     service: "ReValue Google Apps Script Email Gateway",
     status: "active",
     sender: Session.getActiveUser().getEmail() || "revalue26@gmail.com",
-    supported_actions: ["ping", "send_otp", "send_delivery_otp"],
+    supported_actions: ["ping", "send_otp", "send_delivery_otp", "send_password_reset"],
     usage: "POST with JSON payload containing 'action' and authorized 'shared_secret'."
   });
 }
@@ -517,6 +524,151 @@ function buildDeliveryHtmlEmail(displayName, otp, orderId, productTitle, carrier
   '    <div class="footer">' +
   '      <p style="margin: 0 0 6px 0;">&copy; ' + CONFIG.SENDER_NAME + ' &bull; All rights reserved.</p>' +
   '      <p style="margin: 0;">Automated delivery dispatch notice from ReValue. Please do not reply directly to this email.</p>' +
+  '    </div>' +
+  '  </div>' +
+  '</body>' +
+  '</html>';
+}
+
+/**
+ * Validates parameters and sends the branded ReValue Password Reset email.
+ */
+function handleSendPasswordReset(payload) {
+  var rawEmail = payload.email;
+  var rawName = payload.name;
+  var rawUrl = payload.reset_url || payload.url;
+  var expiresInMinutes = parseInt(payload.expires_in_minutes, 10) || CONFIG.DEFAULT_PASSWORD_RESET_EXPIRY_MINUTES;
+
+  // Validate recipient email
+  if (typeof rawEmail !== "string" || !rawEmail.trim() || rawEmail.length > CONFIG.MAX_EMAIL_LENGTH) {
+    return jsonResponse({
+      success: false,
+      error: { code: "INVALID_EMAIL", message: "Missing or invalid recipient email." }
+    });
+  }
+  var email = rawEmail.trim().toLowerCase();
+  if (!CONFIG.EMAIL_REGEX.test(email)) {
+    return jsonResponse({
+      success: false,
+      error: { code: "INVALID_EMAIL", message: "Recipient email address does not match standard RFC format." }
+    });
+  }
+
+  // Validate reset URL
+  if (typeof rawUrl !== "string" || !rawUrl.trim()) {
+    return jsonResponse({
+      success: false,
+      error: { code: "INVALID_RESET_URL", message: "Missing or invalid password reset URL." }
+    });
+  }
+  var resetUrl = rawUrl.trim();
+
+  // Sanitize user display name
+  var displayName = "Valued Member";
+  if (typeof rawName === "string" && rawName.trim().length > 0) {
+    displayName = sanitizeHtml(rawName.trim().slice(0, CONFIG.MAX_NAME_LENGTH));
+  }
+
+  var subject = "Reset Your ReValue Password";
+
+  var textBody = [
+    "Hello " + displayName + ",",
+    "",
+    "We received a request to reset your ReValue account password.",
+    "",
+    "To choose a new password, visit the link below:",
+    "    " + resetUrl,
+    "",
+    "This link is valid for " + expiresInMinutes + " minutes and can only be used once.",
+    "",
+    "If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.",
+    "",
+    "Best regards,",
+    CONFIG.SENDER_NAME,
+    "https://revalue.market"
+  ].join("\n");
+
+  var htmlBody = buildPasswordResetHtmlEmail(displayName, resetUrl, expiresInMinutes);
+
+  try {
+    MailApp.sendEmail({
+      to: email,
+      subject: subject,
+      body: textBody,
+      htmlBody: htmlBody,
+      name: CONFIG.SENDER_NAME
+    });
+
+    return jsonResponse({
+      success: true,
+      message: "Password reset email dispatched successfully.",
+      timestamp: new Date().toISOString()
+    });
+  } catch (mailErr) {
+    var errorMsg = (mailErr && mailErr.message) ? String(mailErr.message) : "MailApp dispatch error.";
+    return jsonResponse({
+      success: false,
+      error: {
+        code: "DELIVERY_FAILED",
+        message: "Google MailApp failed to dispatch password reset email: " + errorMsg
+      }
+    });
+  }
+}
+
+/**
+ * Builds responsive, branded HTML email for ReValue password reset.
+ */
+function buildPasswordResetHtmlEmail(displayName, resetUrl, expiresInMinutes) {
+  return '<!DOCTYPE html>' +
+  '<html lang="en">' +
+  '<head>' +
+  '  <meta charset="UTF-8">' +
+  '  <meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+  '  <title>Reset Your ReValue Password</title>' +
+  '  <style>' +
+  '    body { margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #1e293b; }' +
+  '    .email-container { max-width: 520px; margin: 32px auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }' +
+  '    .header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 28px 24px; text-align: center; border-bottom: 3px solid #059669; }' +
+  '    .brand-title { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: #ffffff; }' +
+  '    .brand-accent { color: #10b981; }' +
+  '    .brand-tagline { margin: 6px 0 0 0; font-size: 12px; color: #94a3b8; letter-spacing: 0.5px; text-transform: uppercase; }' +
+  '    .content { padding: 32px 28px; }' +
+  '    .greeting { font-size: 16px; font-weight: 600; color: #0f172a; margin: 0 0 12px 0; }' +
+  '    .lead-text { font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 24px 0; }' +
+  '    .btn-container { text-align: center; margin: 28px 0; }' +
+  '    .btn { display: inline-block; background: #059669; color: #ffffff; font-size: 14px; font-weight: 700; text-decoration: none; padding: 14px 28px; border-radius: 8px; letter-spacing: 0.3px; }' +
+  '    .url-fallback { background: #f1f5f9; padding: 12px; border-radius: 6px; font-size: 11px; word-break: break-all; color: #334155; margin: 16px 0; }' +
+  '    .notice-card { background: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px; padding: 12px 14px; margin: 24px 0 0 0; }' +
+  '    .notice-text { margin: 0; font-size: 12px; line-height: 1.5; color: #92400e; }' +
+  '    .footer { background: #f8fafc; padding: 20px 24px; border-top: 1px solid #f1f5f9; text-align: center; font-size: 11px; color: #64748b; line-height: 1.5; }' +
+  '  </style>' +
+  '</head>' +
+  '<body>' +
+  '  <div class="email-container">' +
+  '    <div class="header">' +
+  '      <h1 class="brand-title">Re<span class="brand-accent">Value</span></h1>' +
+  '      <p class="brand-tagline">Pre-Owned Smartphone Marketplace</p>' +
+  '    </div>' +
+  '    <div class="content">' +
+  '      <p class="greeting">Hello ' + displayName + ',</p>' +
+  '      <p class="lead-text">' +
+  '        We received a request to reset the password for your ReValue account. Click the button below to choose a new password:' +
+  '      </p>' +
+  '      <div class="btn-container">' +
+  '        <a href="' + resetUrl + '" class="btn" style="color: #ffffff;">Reset Password</a>' +
+  '      </div>' +
+  '      <p style="font-size: 12px; color: #64748b; margin-bottom: 6px;">If the button above does not work, copy and paste this link into your browser:</p>' +
+  '      <div class="url-fallback">' + resetUrl + '</div>' +
+  '      <div class="notice-card">' +
+  '        <p class="notice-text">' +
+  '          <strong>Security Notice:</strong> This link is valid for ' + expiresInMinutes + ' minutes and can only be used once. If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.' +
+  '        </p>' +
+  '      </div>' +
+  '    </div>' +
+  '    <div class="footer">' +
+  '      <p style="margin: 0 0 6px 0;">&copy; ' + CONFIG.SENDER_NAME + ' &bull; All rights reserved.</p>' +
+  '      <p style="margin: 0;">Automated message sent by ReValue. Please do not reply directly to this email.</p>' +
   '    </div>' +
   '  </div>' +
   '</body>' +

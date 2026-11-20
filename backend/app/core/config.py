@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     PASSWORD_RESET_EXPIRE_MINUTES: int = 15
+    PASSWORD_RESET_COOLDOWN_SECONDS: int = 60
+    PASSWORD_RESET_MAX_HOURLY_REQUESTS: int = 5
 
     # Storage
     STORAGE_BACKEND: str = "local"
@@ -126,6 +128,12 @@ class Settings(BaseSettings):
     @property
     def is_email_configured(self) -> bool:
         return self.is_apps_script_configured or self.is_smtp_configured
+
+    @property
+    def effective_frontend_url(self) -> str:
+        if self.is_production:
+            return os.environ.get("FRONTEND_URL") or "https://revalue-nine.vercel.app"
+        return self.FRONTEND_URL or "http://localhost:5173"
 
     @property
     def is_production(self) -> bool:

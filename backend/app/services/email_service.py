@@ -188,6 +188,165 @@ def get_otp_email_content(display_name: str, otp: str, expires_in_minutes: int) 
     return text_content, html_content
 
 
+def get_password_reset_email_content(display_name: str, reset_url: str, expires_in_minutes: int) -> Tuple[str, str]:
+    """Generates consistent branded plaintext and HTML email bodies for ReValue password reset."""
+    subject = "Reset Your ReValue Password"
+
+    text_content = (
+        f"Hello {display_name},\n\n"
+        f"We received a request to reset your ReValue account password.\n\n"
+        f"To reset your password, visit the link below:\n"
+        f"    {reset_url}\n\n"
+        f"This link is valid for {expires_in_minutes} minutes and can only be used once.\n\n"
+        f"If you did not request this, please ignore this email. Your password will remain unchanged.\n\n"
+        f"Best regards,\n"
+        f"The ReValue Team\n"
+        f"https://revalue.market\n"
+    )
+
+    html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{subject}</title>
+  <style>
+    body {{
+      margin: 0;
+      padding: 0;
+      background-color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #1e293b;
+    }}
+    .email-container {{
+      max-width: 520px;
+      margin: 32px auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }}
+    .header {{
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      padding: 28px 24px;
+      text-align: center;
+      border-bottom: 3px solid #059669;
+    }}
+    .brand-title {{
+      margin: 0;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+    }}
+    .brand-accent {{
+      color: #10b981;
+    }}
+    .brand-tagline {{
+      margin: 6px 0 0 0;
+      font-size: 12px;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }}
+    .content {{
+      padding: 32px 28px;
+    }}
+    .greeting {{
+      font-size: 16px;
+      font-weight: 600;
+      color: #0f172a;
+      margin: 0 0 12px 0;
+    }}
+    .lead-text {{
+      font-size: 14px;
+      line-height: 1.6;
+      color: #475569;
+      margin: 0 0 24px 0;
+    }}
+    .btn-container {{
+      text-align: center;
+      margin: 28px 0;
+    }}
+    .btn {{
+      display: inline-block;
+      background: #059669;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      letter-spacing: 0.3px;
+    }}
+    .url-fallback {{
+      background: #f1f5f9;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      word-break: break-all;
+      color: #334155;
+      margin: 16px 0;
+    }}
+    .notice-card {{
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      border-left: 4px solid #f59e0b;
+      border-radius: 6px;
+      padding: 12px 14px;
+      margin: 24px 0 0 0;
+    }}
+    .notice-text {{
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #92400e;
+    }}
+    .footer {{
+      background: #f8fafc;
+      padding: 20px 24px;
+      border-top: 1px solid #f1f5f9;
+      text-align: center;
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.5;
+    }}
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1 class="brand-title">Re<span class="brand-accent">Value</span></h1>
+      <p class="brand-tagline">Pre-Owned Smartphone Marketplace</p>
+    </div>
+    <div class="content">
+      <p class="greeting">Hello {display_name},</p>
+      <p class="lead-text">
+        We received a request to reset the password for your ReValue account. Click the button below to choose a new password:
+      </p>
+      <div class="btn-container">
+        <a href="{reset_url}" class="btn" style="color: #ffffff;">Reset Password</a>
+      </div>
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 6px;">If the button above does not work, copy and paste this link into your browser:</p>
+      <div class="url-fallback">{reset_url}</div>
+      <div class="notice-card">
+        <p class="notice-text">
+          <strong>Security Notice:</strong> This link is valid for {expires_in_minutes} minutes and can only be used once. If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.
+        </p>
+      </div>
+    </div>
+    <div class="footer">
+      <p style="margin: 0 0 6px 0;">&copy; {settings.SMTP_FROM_NAME} &bull; All rights reserved.</p>
+      <p style="margin: 0;">Automated message sent by ReValue. Please do not reply directly to this email.</p>
+    </div>
+  </div>
+</body>
+</html>"""
+
+    return text_content, html_content
+
+
 class AppsScriptEmailProvider:
     """
     Google Apps Script HTTPS email gateway adapter.
@@ -377,6 +536,96 @@ class AppsScriptEmailProvider:
             return False, err_msg
 
     @staticmethod
+    def send_password_reset(
+        email: str,
+        name: str,
+        reset_url: str,
+        expires_in_minutes: int = 15
+    ) -> Tuple[bool, Optional[str]]:
+        """
+        Dispatches password reset email via Google Apps Script HTTPS gateway.
+        Uses action: 'send_password_reset'.
+        """
+        masked = mask_email(email)
+        url = settings.APPS_SCRIPT_EMAIL_URL
+        secret = settings.APPS_SCRIPT_SHARED_SECRET
+
+        if not settings.APPS_SCRIPT_EMAIL_ENABLED:
+            return False, "Google Apps Script email provider is disabled (APPS_SCRIPT_EMAIL_ENABLED=false)."
+
+        if not url or not secret:
+            err_msg = "Google Apps Script email gateway is incompletely configured (missing URL or shared secret)."
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+            return False, err_msg
+
+        payload = {
+            "action": "send_password_reset",
+            "shared_secret": secret,
+            "email": email.strip(),
+            "name": (name or "").strip()[:100],
+            "reset_url": reset_url.strip(),
+            "expires_in_minutes": expires_in_minutes,
+        }
+
+        try:
+            with httpx.Client(timeout=15.0, follow_redirects=True) as client:
+                response = client.post(
+                    url,
+                    json=payload,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "User-Agent": "ReValue-Backend/1.0",
+                    },
+                )
+
+            if response.status_code != 200:
+                err_msg = f"Email gateway returned HTTP status {response.status_code}."
+                logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+                return False, err_msg
+
+            try:
+                data = response.json()
+            except Exception:
+                err_msg = "Email gateway returned an invalid or non-JSON response."
+                logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+                return False, err_msg
+
+            if not isinstance(data, dict):
+                err_msg = "Email gateway returned an unexpected response structure."
+                logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+                return False, err_msg
+
+            if data.get("success") is True:
+                logger.info(f"[AppsScriptEmail] Password reset email successfully dispatched to {masked} via Google Apps Script.")
+                return True, None
+
+            error_data = data.get("error", {})
+            if isinstance(error_data, dict):
+                error_code = error_data.get("code", "GATEWAY_ERROR")
+                error_message = error_data.get("message", "Email delivery failed at gateway.")
+            else:
+                error_code = "GATEWAY_ERROR"
+                error_message = str(error_data)
+
+            err_msg = f"Email gateway error ({error_code}): {error_message}"
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+            return False, err_msg
+
+        except httpx.TimeoutException:
+            err_msg = "Email gateway connection timed out (exceeded 15s)."
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+            return False, err_msg
+        except httpx.RequestError as req_err:
+            err_msg = f"Network connection to email gateway failed: {type(req_err).__name__}."
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+            return False, err_msg
+        except Exception as ex:
+            err_msg = f"Unexpected error while communicating with email gateway: {type(ex).__name__}."
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+            return False, err_msg
+
+    @staticmethod
     def ping() -> Tuple[bool, Optional[str]]:
         """Health-check ping to verify Apps Script connectivity and shared secret without sending an email."""
         url = settings.APPS_SCRIPT_EMAIL_URL
@@ -499,6 +748,44 @@ class SmtpEmailProvider:
 
         return False, err
 
+    @staticmethod
+    def send_password_reset(
+        email: str,
+        name: str,
+        reset_url: str,
+        expires_in_minutes: int = 15
+    ) -> Tuple[bool, Optional[str]]:
+        masked = mask_email(email)
+        subject = "Reset Your ReValue Password"
+        display_name = name or "Valued Member"
+        text_content, html_content = get_password_reset_email_content(display_name, reset_url, expires_in_minutes)
+
+        def _send(port: int, use_ssl: bool):
+            try:
+                msg = MIMEMultipart("alternative")
+                msg["Subject"] = subject
+                msg["From"] = f"{settings.SMTP_FROM_NAME} <{settings.effective_smtp_username}>"
+                msg["To"] = email
+                msg.attach(MIMEText(text_content, "plain", "utf-8"))
+                msg.attach(MIMEText(html_content, "html", "utf-8"))
+
+                if use_ssl:
+                    with smtplib.SMTP_SSL(settings.effective_smtp_host, port, timeout=12) as server:
+                        server.login(settings.effective_smtp_username, settings.SMTP_PASSWORD)
+                        server.sendmail(settings.effective_smtp_username, [email], msg.as_string())
+                else:
+                    with smtplib.SMTP(settings.effective_smtp_host, port, timeout=12) as server:
+                        server.ehlo()
+                        server.starttls()
+                        server.ehlo()
+                        server.login(settings.effective_smtp_username, settings.SMTP_PASSWORD)
+                        server.sendmail(settings.effective_smtp_username, [email], msg.as_string())
+                return True, None
+            except Exception as e:
+                return False, str(e)
+
+        return _send(settings.SMTP_PORT, settings.SMTP_PORT == 465)
+
 
 class EmailService:
     @staticmethod
@@ -576,4 +863,51 @@ class EmailService:
         logger.info(
             f"[EmailService] Delivery OTP email simulated for {masked} (Order: {order_id})."
         )
+        return True, None
+
+    @staticmethod
+    def send_password_reset(
+        email: str,
+        name: str,
+        reset_url: str,
+        expires_in_minutes: int = 15
+    ) -> Tuple[bool, Optional[str]]:
+        """
+        Dispatches password reset email to user's registered email address:
+        1. Google Apps Script HTTPS Gateway (Primary).
+        2. SMTP provider (Supported in non-production).
+        3. Local simulation (Development only).
+        """
+        masked = mask_email(email)
+
+        # 1. Google Apps Script HTTPS Gateway (Primary)
+        if settings.is_apps_script_configured:
+            return AppsScriptEmailProvider.send_password_reset(
+                email=email,
+                name=name,
+                reset_url=reset_url,
+                expires_in_minutes=expires_in_minutes,
+            )
+
+        # 2. SMTP provider
+        if settings.is_smtp_configured:
+            if settings.is_production:
+                err_msg = "Direct outbound SMTP is blocked on Render Free Tier. Please configure Google Apps Script."
+                logger.error(f"[EmailService] {err_msg}")
+                return False, err_msg
+            return SmtpEmailProvider.send_password_reset(
+                email=email,
+                name=name,
+                reset_url=reset_url,
+                expires_in_minutes=expires_in_minutes,
+            )
+
+        # 3. Production check
+        if settings.is_production:
+            err_msg = "No email delivery provider is configured in production for password reset."
+            logger.error(f"[EmailService] {err_msg} Cannot deliver password reset to {masked}.")
+            return False, err_msg
+
+        # 4. Development simulation
+        logger.info(f"[EmailService] Password reset email simulated for {masked}.")
         return True, None

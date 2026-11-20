@@ -258,7 +258,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Password</label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block font-bold text-slate-700">Password</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onNavigate?.('forgot-password');
+                  }}
+                  className="text-[11px] text-emerald-600 hover:text-emerald-700 font-semibold transition-colors cursor-pointer"
+                >
+                  Forgot Password?
+                </button>
+              </div>
               <div className="relative">
                 <input
                   type="password"

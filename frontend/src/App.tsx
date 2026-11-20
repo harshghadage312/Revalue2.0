@@ -20,6 +20,8 @@ import { RiderJobsPage } from './pages/RiderJobsPage';
 import { RiderJobDetailPage } from './pages/RiderJobDetailPage';
 import { RiderEarningsPage } from './pages/RiderEarningsPage';
 import { RiderProfilePage } from './pages/RiderProfilePage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { AiPriceValuatorModal } from './components/AiPriceValuatorModal';
 import { AuthModal } from './components/AuthModal';
 
@@ -156,6 +158,21 @@ export const AppContent: React.FC = () => {
         {currentPage === 'admin-dashboard' && (
           <AdminDashboard
             onNavigate={navigate}
+          />
+        )}
+
+        {(currentPage === 'forgot-password' || currentPage === 'forgot') && (
+          <ForgotPasswordPage
+            onNavigate={navigate}
+            onOpenAuth={() => setShowAuthModal(true)}
+          />
+        )}
+
+        {(currentPage === 'reset-password' || currentPage === 'reset') && (
+          <ResetPasswordPage
+            token={pageParams.token}
+            onNavigate={navigate}
+            onOpenAuth={() => setShowAuthModal(true)}
           />
         )}
 

@@ -435,56 +435,207 @@ class AuthService:
 
     @staticmethod
     def request_password_reset(email: str) -> Dict[str, Any]:
+        """
+        Initiates a secure password reset workflow:
+        1. Normalizes email and applies rate limiting (60s cooldown & 5 requests/hr).
+        2. Always returns a generic response to prevent account enumeration.
+        3. If user exists and is active, generates a cryptographically secure token.
+        4. Stores ONLY the SHA-256 hash of the token in MongoDB with a 15-minute expiry.
+        5. Invalidates previous unconsumed reset tokens for the user.
+        6. Dispatches branded HTML reset email via Google Apps Script gateway.
+        """
         db = get_db()
         email = email.lower().strip()
+        now = datetime.now(timezone.utc)
+        generic_msg = "If an account exists with this email, you will receive a password reset link."
+
+        # 1. Rate limiting & Cooldown check
+        one_hour_ago = now - timedelta(hours=1)
+        recent_resets = list(
+            db.password_resets.find({"email": email, "created_at": {"$gte": one_hour_ago}})
+            .sort("created_at", -1)
+        )
+
+        if recent_resets:
+            # Check resend cooldown (60 seconds)
+            latest = recent_resets[0]
+            latest_time = latest.get("created_at")
+            if latest_time:
+                if latest_time.tzinfo is None:
+                    latest_time = latest_time.replace(tzinfo=timezone.utc)
+                elapsed_seconds = (now - latest_time).total_seconds()
+                cooldown_window = settings.PASSWORD_RESET_COOLDOWN_SECONDS
+                if elapsed_seconds < cooldown_window:
+                    remaining = max(1, int(cooldown_window - elapsed_seconds))
+                    raise ValidationError(f"Please wait {remaining} seconds before requesting another password reset link.")
+
+            # Check hourly request ceiling (max 5)
+            if len(recent_resets) >= settings.PASSWORD_RESET_MAX_HOURLY_REQUESTS:
+                raise ValidationError("Maximum password reset request limit reached for this email. Please wait an hour before requesting again.")
+
+        # 2. Check if user exists
         user = db.users.find_one({"email": email})
 
-        # Do not leak whether user exists to prevent email enumeration
-        if not user:
-            return {"message": "If this email is registered, a password reset token has been generated."}
+        # To prevent account enumeration, if user does not exist or is inactive,
+        # record a throttler entry and return the identical generic success response
+        if not user or user.get("is_active") is False:
+            db.password_resets.insert_one({
+                "_id": str(uuid.uuid4()),
+                "token_hash": None,
+                "user_id": None,
+                "email": email,
+                "expires_at": now + timedelta(minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES),
+                "used": True,
+                "created_at": now,
+            })
+            return {
+                "message": generic_msg,
+                "cooldown_seconds": settings.PASSWORD_RESET_COOLDOWN_SECONDS,
+            }
 
-        reset_token = generate_secure_token()
-        expires_at = datetime.now(timezone.utc) + timedelta(minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES)
+        # 3. Invalidate any previously issued active tokens for this user
+        db.password_resets.update_many(
+            {"user_id": user["id"], "used": False},
+            {"$set": {"used": True, "invalidated_at": now}}
+        )
+
+        # 4. Generate secure token & SHA-256 hash (Zero Plaintext Token Storage)
+        raw_token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
+        expires_at = now + timedelta(minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES)
 
         db.password_resets.insert_one({
-            "_id": reset_token,
-            "token": reset_token,
+            "_id": str(uuid.uuid4()),
+            "token_hash": token_hash,
             "user_id": user["id"],
             "email": email,
             "expires_at": expires_at,
             "used": False,
-            "created_at": datetime.now(timezone.utc),
+            "created_at": now,
         })
 
-        logger.info(f"Password reset token created for user {user['id']}")
+        # 5. Build frontend reset URL
+        frontend_base = settings.effective_frontend_url.rstrip("/")
+        reset_url = f"{frontend_base}/reset-password?token={raw_token}"
 
-        # If SMTP is not configured, we provide dev testing info safely in logs
-        response_data = {"message": "If this email is registered, a password reset token has been generated."}
-        if settings.ENVIRONMENT == "development" or not settings.SMTP_ENABLED:
-            response_data["dev_reset_token"] = reset_token
-            response_data["notice"] = "SMTP is disabled. Dev reset token provided for testing."
+        # 6. Dispatch branded email via EmailService (Google Apps Script gateway)
+        display_name = user.get("name") or "Valued Member"
+        try:
+            EmailService.send_password_reset(
+                email=email,
+                name=display_name,
+                reset_url=reset_url,
+                expires_in_minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES,
+            )
+        except Exception as ex:
+            logger.error(f"[AuthService] Password reset dispatch failed for {mask_email(email)}: {type(ex).__name__}")
+
+        logger.info(f"Password reset link generated and dispatched for user {user['id']} (masked: {mask_email(email)})")
+
+        response_data = {
+            "message": generic_msg,
+            "cooldown_seconds": settings.PASSWORD_RESET_COOLDOWN_SECONDS,
+        }
+
+        # Safe development/testing simulation: include dev token only when in local dev & email unconfigured
+        if not settings.is_production and not settings.is_apps_script_configured:
+            response_data["dev_reset_token"] = raw_token
+            response_data["dev_reset_url"] = reset_url
+
         return response_data
 
     @staticmethod
     def reset_password(token: str, new_password: str) -> Dict[str, Any]:
+        """
+        Validates the submitted reset token, checks expiration, atomically consumes it,
+        and securely updates the user's password using bcrypt.
+        """
         db = get_db()
-        record = db.password_resets.find_one({"token": token, "used": False})
         now = datetime.now(timezone.utc)
 
-        if not record or record.get("expires_at") < now:
-            raise ValidationError("Password reset token is invalid or has expired.")
+        clean_token = str(token or "").strip()
+        if not clean_token:
+            raise ValidationError("Password reset token is required.")
 
-        hashed_pw = hash_password(new_password)
-        db.users.update_one(
-            {"id": record["user_id"]},
-            {"$set": {"password_hash": hashed_pw, "updated_at": now}}
+        clean_password = str(new_password or "").strip()
+        if len(clean_password) < 8 or len(clean_password) > 128:
+            raise ValidationError("Password must be between 8 and 128 characters long.")
+
+        token_hash = hashlib.sha256(clean_token.encode("utf-8")).hexdigest()
+
+        # Atomic compare-and-swap consumption:
+        # Matches token_hash (or legacy plaintext token for backward compatibility)
+        record = db.password_resets.find_one_and_update(
+            {
+                "$or": [
+                    {"token_hash": token_hash},
+                    {"token": clean_token}
+                ],
+                "used": False,
+                "expires_at": {"$gt": now}
+            },
+            {
+                "$set": {
+                    "used": True,
+                    "used_at": now,
+                    "updated_at": now
+                }
+            },
+            return_document=True
         )
-        db.password_resets.update_one({"token": token}, {"$set": {"used": True}})
 
-        # Revoke all existing refresh tokens for security
-        db.refresh_tokens.update_many({"user_id": record["user_id"]}, {"$set": {"is_revoked": True}})
+        if not record:
+            # Diagnose specific reason for user-friendly error message
+            existing = db.password_resets.find_one({
+                "$or": [
+                    {"token_hash": token_hash},
+                    {"token": clean_token}
+                ]
+            })
+            if not existing:
+                raise ValidationError("Password reset link is invalid or has expired.")
+            if existing.get("used"):
+                raise ValidationError("This password reset link has already been used. Please request a new one.")
+            exp = existing.get("expires_at")
+            if exp:
+                if exp.tzinfo is None:
+                    exp = exp.replace(tzinfo=timezone.utc)
+                if exp <= now:
+                    raise ValidationError("This password reset link has expired. Please request a new one.")
+            raise ValidationError("Password reset link is invalid or has expired.")
 
-        return {"message": "Password has been successfully updated. Please log in with your new password."}
+        user_id = record.get("user_id")
+        if not user_id:
+            raise ValidationError("Invalid password reset token.")
+
+        user = db.users.find_one({"id": user_id})
+        if not user or user.get("is_active") is False:
+            raise ValidationError("Account is inactive or not found.")
+
+        # Hash new password using existing bcrypt method
+        hashed_pw = hash_password(clean_password)
+        db.users.update_one(
+            {"id": user_id},
+            {
+                "$set": {
+                    "password_hash": hashed_pw,
+                    "updated_at": now,
+                    "password_reset_at": now
+                }
+            }
+        )
+
+        # Invalidate all remaining reset tokens for this account
+        db.password_resets.update_many(
+            {"user_id": user_id, "used": False},
+            {"$set": {"used": True, "invalidated_at": now}}
+        )
+
+        # Invalidate existing active refresh tokens/sessions for security
+        db.refresh_tokens.update_many({"user_id": user_id}, {"$set": {"is_revoked": True}})
+
+        logger.info(f"Password successfully reset for user {user_id}")
+        return {"message": "Your password has been successfully reset. Please log in with your new password."}
 
 
 # FastAuth dependencies
