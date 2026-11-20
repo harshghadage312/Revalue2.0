@@ -493,9 +493,11 @@ class AuthService:
                 "cooldown_seconds": settings.PASSWORD_RESET_COOLDOWN_SECONDS,
             }
 
+        user_id = user.get("id") or str(user.get("_id", ""))
+
         # 3. Invalidate any previously issued active tokens for this user
         db.password_resets.update_many(
-            {"user_id": user["id"], "used": False},
+            {"$or": [{"user_id": user_id}, {"email": email}], "used": False},
             {"$set": {"used": True, "invalidated_at": now}}
         )
 
@@ -507,7 +509,7 @@ class AuthService:
         db.password_resets.insert_one({
             "_id": str(uuid.uuid4()),
             "token_hash": token_hash,
-            "user_id": user["id"],
+            "user_id": user_id,
             "email": email,
             "expires_at": expires_at,
             "used": False,
@@ -519,7 +521,7 @@ class AuthService:
         reset_url = f"{frontend_base}/reset-password?token={raw_token}"
 
         # 6. Dispatch branded email via EmailService (Google Apps Script gateway)
-        display_name = user.get("name") or "Valued Member"
+        display_name = user.get("full_name") or user.get("name") or "Valued Member"
         try:
             EmailService.send_password_reset(
                 email=email,
@@ -530,7 +532,7 @@ class AuthService:
         except Exception as ex:
             logger.error(f"[AuthService] Password reset dispatch failed for {mask_email(email)}: {type(ex).__name__}")
 
-        logger.info(f"Password reset link generated and dispatched for user {user['id']} (masked: {mask_email(email)})")
+        logger.info(f"Password reset link generated and dispatched for user {user_id} (masked: {mask_email(email)})")
 
         response_data = {
             "message": generic_msg,
@@ -605,17 +607,19 @@ class AuthService:
             raise ValidationError("Password reset link is invalid or has expired.")
 
         user_id = record.get("user_id")
-        if not user_id:
-            raise ValidationError("Invalid password reset token.")
+        user = None
+        if user_id:
+            user = db.users.find_one({"$or": [{"id": user_id}, {"_id": user_id}]})
+        if not user and record.get("email"):
+            user = db.users.find_one({"email": record.get("email")})
 
-        user = db.users.find_one({"id": user_id})
         if not user or user.get("is_active") is False:
             raise ValidationError("Account is inactive or not found.")
 
         # Hash new password using existing bcrypt method
         hashed_pw = hash_password(clean_password)
         db.users.update_one(
-            {"id": user_id},
+            {"_id": user["_id"]},
             {
                 "$set": {
                     "password_hash": hashed_pw,
@@ -627,14 +631,18 @@ class AuthService:
 
         # Invalidate all remaining reset tokens for this account
         db.password_resets.update_many(
-            {"user_id": user_id, "used": False},
+            {"$or": [{"user_id": user_id}, {"email": record.get("email")}], "used": False},
             {"$set": {"used": True, "invalidated_at": now}}
         )
 
         # Invalidate existing active refresh tokens/sessions for security
-        db.refresh_tokens.update_many({"user_id": user_id}, {"$set": {"is_revoked": True}})
+        effective_uid = user.get("id") or str(user.get("_id", ""))
+        db.refresh_tokens.update_many(
+            {"$or": [{"user_id": user_id}, {"user_id": effective_uid}]},
+            {"$set": {"is_revoked": True}}
+        )
 
-        logger.info(f"Password successfully reset for user {user_id}")
+        logger.info(f"Password successfully reset for user {effective_uid}")
         return {"message": "Your password has been successfully reset. Please log in with your new password."}
 
 
