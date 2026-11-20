@@ -76,6 +76,7 @@ def get_order_tracking(
 
 
 @router.post("/{order_id}/delivery/otp/verify")
+@router.post("/{order_id}/verify-otp")
 def verify_delivery_otp(
     order_id: str,
     req: DeliveryOtpVerifyRequest,
@@ -89,6 +90,22 @@ def verify_delivery_otp(
         actor_id=current_user["id"],
         order_id=order_id,
         entered_otp=req.entered_otp
+    )
+
+
+@router.post("/{order_id}/delivery/otp/resend")
+@router.post("/{order_id}/delivery-otp/resend")
+def resend_delivery_otp(
+    order_id: str,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Resends a fresh 6-digit delivery verification OTP to the buyer's registered email.
+    Enforces a 60-second cooldown and 10-minute validity.
+    """
+    return DeliveryService.resend_delivery_otp(
+        user_id=current_user["id"],
+        order_id=order_id
     )
 
 

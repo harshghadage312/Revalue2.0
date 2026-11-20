@@ -280,6 +280,103 @@ class AppsScriptEmailProvider:
             return False, err_msg
 
     @staticmethod
+    def send_delivery_otp(
+        email: str,
+        name: str,
+        otp: str,
+        order_id: str,
+        product_title: Optional[str] = None,
+        carrier_name: Optional[str] = None,
+        expires_in_hours: int = 48
+    ) -> Tuple[bool, Optional[str]]:
+        """
+        Dispatches buyer doorstep delivery verification code via Google Apps Script HTTPS gateway.
+        Uses action: 'send_delivery_otp' with order context.
+        """
+        masked = mask_email(email)
+        url = settings.APPS_SCRIPT_EMAIL_URL
+        secret = settings.APPS_SCRIPT_SHARED_SECRET
+
+        if not settings.APPS_SCRIPT_EMAIL_ENABLED:
+            return False, "Google Apps Script email provider is disabled (APPS_SCRIPT_EMAIL_ENABLED=false)."
+
+        if not url or not secret:
+            err_msg = "Google Apps Script email gateway is incompletely configured (missing URL or shared secret)."
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked}")
+            return False, err_msg
+
+        payload = {
+            "action": "send_delivery_otp",
+            "shared_secret": secret,
+            "email": email.strip(),
+            "name": (name or "").strip()[:100],
+            "otp": otp.strip(),
+            "order_id": order_id.strip()[:64],
+            "product_title": (product_title or "").strip()[:120],
+            "carrier_name": (carrier_name or "").strip()[:64],
+            "expires_in_hours": expires_in_hours,
+        }
+
+        try:
+            with httpx.Client(timeout=15.0, follow_redirects=True) as client:
+                response = client.post(
+                    url,
+                    json=payload,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "User-Agent": "ReValue-Backend/1.0",
+                    },
+                )
+
+            if response.status_code != 200:
+                err_msg = f"Email gateway returned HTTP status {response.status_code}."
+                logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked} Order: {order_id}")
+                return False, err_msg
+
+            try:
+                data = response.json()
+            except Exception:
+                err_msg = "Email gateway returned an invalid or non-JSON response."
+                logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked} Order: {order_id}")
+                return False, err_msg
+
+            if not isinstance(data, dict):
+                err_msg = "Email gateway returned an unexpected response structure."
+                logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked} Order: {order_id}")
+                return False, err_msg
+
+            if data.get("success") is True:
+                logger.info(f"[AppsScriptEmail] Delivery OTP email successfully dispatched to {masked} for order {order_id} via Google Apps Script.")
+                return True, None
+
+            # Handle structured error response from Google Apps Script
+            error_data = data.get("error", {})
+            if isinstance(error_data, dict):
+                error_code = error_data.get("code", "GATEWAY_ERROR")
+                error_message = error_data.get("message", "Email delivery failed at gateway.")
+            else:
+                error_code = "GATEWAY_ERROR"
+                error_message = str(error_data)
+
+            err_msg = f"Email gateway error ({error_code}): {error_message}"
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked} Order: {order_id}")
+            return False, err_msg
+
+        except httpx.TimeoutException:
+            err_msg = "Email gateway connection timed out (exceeded 15s)."
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked} Order: {order_id}")
+            return False, err_msg
+        except httpx.RequestError as req_err:
+            err_msg = f"Network connection to email gateway failed: {type(req_err).__name__}."
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked} Order: {order_id}")
+            return False, err_msg
+        except Exception as ex:
+            err_msg = f"Unexpected error while communicating with email gateway: {type(ex).__name__}."
+            logger.error(f"[AppsScriptEmail] {err_msg} Target: {masked} Order: {order_id}")
+            return False, err_msg
+
+    @staticmethod
     def ping() -> Tuple[bool, Optional[str]]:
         """Health-check ping to verify Apps Script connectivity and shared secret without sending an email."""
         url = settings.APPS_SCRIPT_EMAIL_URL
@@ -438,5 +535,45 @@ class EmailService:
         logger.info(
             f"[EmailService] No email provider configured. "
             f"Registration OTP delivery simulated for {masked}."
+        )
+        return True, None
+
+    @staticmethod
+    def send_delivery_otp(
+        email: str,
+        name: str,
+        otp: str,
+        order_id: str,
+        product_title: Optional[str] = None,
+        carrier_name: Optional[str] = None
+    ) -> Tuple[bool, Optional[str]]:
+        """
+        Dispatches order-specific doorstep delivery verification OTP email to authenticated buyer:
+        1. Google Apps Script HTTPS Gateway (Primary for Render Free & cloud HTTPS environments).
+        2. Local simulation (Development only; never in production).
+        """
+        masked = mask_email(email)
+
+        # 1. Google Apps Script HTTPS Gateway (Primary)
+        if settings.is_apps_script_configured:
+            return AppsScriptEmailProvider.send_delivery_otp(
+                email=email,
+                name=name,
+                otp=otp,
+                order_id=order_id,
+                product_title=product_title,
+                carrier_name=carrier_name,
+                expires_in_hours=48,
+            )
+
+        # 2. Production check: If in production without Apps Script, fail explicitly
+        if settings.is_production:
+            err_msg = "No email delivery provider is configured in production for delivery OTP."
+            logger.error(f"[EmailService] {err_msg} Cannot deliver OTP to {masked} for order {order_id}.")
+            return False, err_msg
+
+        # 3. Development Simulation
+        logger.info(
+            f"[EmailService] Delivery OTP email simulated for {masked} (Order: {order_id})."
         )
         return True, None
