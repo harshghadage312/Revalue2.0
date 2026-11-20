@@ -171,6 +171,22 @@ def verify_doorstep_otp(
     )
 
 
+@router.post("/me/jobs/{job_id}/resend-delivery-otp")
+@router.post("/jobs/{job_id}/resend-delivery-otp")
+def resend_doorstep_otp(
+    job_id: str,
+    current_user: Dict[str, Any] = Depends(require_role("rider"))
+):
+    """
+    Allows delivery partner to trigger a fresh delivery verification code at buyer's doorstep.
+    Dispatches code to buyer's registered verified email with a 60-second cooldown.
+    """
+    return RiderService.resend_delivery_otp(
+        user_id=current_user["id"],
+        job_id=job_id
+    )
+
+
 @router.post("/me/jobs/{job_id}/report-failure")
 @router.post("/jobs/{job_id}/report-failure")
 def report_delivery_failure(

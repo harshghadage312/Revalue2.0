@@ -55,6 +55,12 @@ class Settings(BaseSettings):
     OTP_EXPIRE_MINUTES: int = 5
     OTP_RESEND_COOLDOWN_SECONDS: int = 60
     OTP_MAX_ATTEMPTS: int = 5
+
+    # Doorstep Delivery Verification OTP Settings (Phase B)
+    DELIVERY_OTP_EXPIRE_MINUTES: int = 10
+    DELIVERY_OTP_RESEND_COOLDOWN_SECONDS: int = 60
+    DELIVERY_OTP_MAX_ATTEMPTS: int = 5
+    DELIVERY_OTP_MAX_HOURLY_REQUESTS: int = 5
     # Payments
     PAYMENT_PROVIDER: str = "sandbox"  # "sandbox", "razorpay", "disabled"
     PAYMENT_CURRENCY: str = "INR"

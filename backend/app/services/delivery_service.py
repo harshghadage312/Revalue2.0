@@ -423,7 +423,9 @@ class DeliveryService:
 
         buyer_otp_plain = None
         if user_id == order.get("buyer_id") and order.get("delivery_otp"):
-            buyer_otp_plain = order["delivery_otp"].get("otp")
+            # Strictly never expose plaintext OTP in production or when email gateway is active
+            if not settings.is_production and not settings.is_apps_script_configured:
+                buyer_otp_plain = order["delivery_otp"].get("_dev_plain_otp") or order["delivery_otp"].get("otp")
 
         return {
             "local_delivery_job": local_job_clean,
@@ -563,6 +565,20 @@ class DeliveryService:
         # Generate Delivery OTP for buyer upon physical handover
         buyer_phone = order["shipping_address"].get("phone", "")
         otp_res = courier_provider.generate_delivery_otp(order_id, buyer_phone)
+        otp_masked = otp_res.otp_masked
+
+        # Dispatch secure delivery verification OTP via Gmail gateway
+        from app.services.delivery_otp_service import DeliveryOtpService
+        try:
+            dispatch_res = DeliveryOtpService.generate_and_dispatch_delivery_otp(
+                order_id=order_id,
+                actor_id=actor_id,
+                carrier_name=order.get("shipment_info", {}).get("courier_name") or "Courier Partner"
+            )
+            if dispatch_res.get("delivery_otp_masked"):
+                otp_masked = dispatch_res["delivery_otp_masked"]
+        except Exception as otp_err:
+            logger.warning(f"[DeliveryService] Could not dispatch email delivery OTP during handover: {otp_err}")
 
         history_item = {
             "status": OrderStatus.PICKED_UP.value,
@@ -576,7 +592,7 @@ class DeliveryService:
             {
                 "$set": {
                     "status": OrderStatus.PICKED_UP.value,
-                    "delivery_otp_masked": otp_res.otp_masked,
+                    "delivery_otp_masked": otp_masked,
                     "shipment_info.is_courier_verified": True,
                     "shipment_info.handover_confirmed_at": now,
                     "updated_at": now,
@@ -590,17 +606,17 @@ class DeliveryService:
             "_id": str(uuid.uuid4()),
             "user_id": order["buyer_id"],
             "title": "Parcel Picked Up by Courier",
-            "message": f"Your package for order {order_id} has been physically collected by the courier. Your delivery verification OTP is {otp_res.otp_masked}.",
+            "message": f"Your package for order {order_id} has been physically collected by the courier. Your delivery verification OTP is {otp_masked}.",
             "link": f"/orders/{order_id}/tracking",
             "is_read": False,
             "created_at": now,
         })
 
-        logger.info(f"Physical handover confirmed for order {order_id}. OTP: {otp_res.otp_masked}")
+        logger.info(f"Physical handover confirmed for order {order_id}. OTP: {otp_masked}")
         return {
             "order_id": order_id,
             "status": OrderStatus.PICKED_UP.value,
-            "delivery_otp_masked": otp_res.otp_masked,
+            "delivery_otp_masked": otp_masked,
             "handover_confirmed_at": now
         }
 
@@ -615,38 +631,68 @@ class DeliveryService:
         if not order:
             raise NotFoundError("Order not found.")
 
-        # Check OTP with courier adapter
-        courier_provider = get_courier_provider()
-        is_valid = courier_provider.verify_delivery_otp(order_id, entered_otp)
-        if not is_valid:
-            raise ValidationError("Invalid or expired delivery OTP. Please verify with the recipient.")
+        from app.services.delivery_otp_service import DeliveryOtpService
+        if order.get("delivery_otp"):
+            DeliveryOtpService.verify_delivery_otp(order_id, entered_otp, actor_id=actor_id)
+        else:
+            # Fallback for courier adapter (sandbox/mock provider)
+            courier_provider = get_courier_provider()
+            is_valid = courier_provider.verify_delivery_otp(order_id, entered_otp)
+            if not is_valid:
+                raise ValidationError("Invalid or expired delivery OTP. Please verify with the recipient.")
 
         now = datetime.now(timezone.utc)
         inspection_deadline = now + timedelta(hours=settings.INSPECTION_WINDOW_HOURS)
 
-        # Update order to DELIVERED
-        history_item = {
-            "status": OrderStatus.DELIVERED.value,
-            "timestamp": now,
-            "updated_by": actor_id,
-            "note": f"Delivered to doorstep. Delivery OTP verified. 48-Hour Buyer Inspection Period started (Deadline: {inspection_deadline.strftime('%Y-%m-%d %H:%M UTC')})."
-        }
-
-        db.orders.update_one(
-            {"order_id": order_id},
-            {
-                "$set": {
-                    "status": OrderStatus.DELIVERED.value,
-                    "payout_status": PayoutStatus.HELD_INSPECTION.value,
-                    "inspection_deadline": inspection_deadline,
-                    "shipment_info.delivered_at": now,
-                    "updated_at": now,
-                },
-                "$push": {"status_history": history_item}
-            }
+        # Update order to DELIVERED atomically
+        updated_order = DeliveryOtpService.complete_delivery_atomically(
+            order_id=order_id,
+            actor_id=actor_id,
+            notes=f"Delivered to doorstep. Delivery OTP verified. 48-Hour Buyer Inspection Period started (Deadline: {inspection_deadline.strftime('%Y-%m-%d %H:%M UTC')})."
         )
 
         # Notify buyer to start inspection
+        db.notifications.insert_one({
+            "_id": str(uuid.uuid4()),
+            "user_id": order["buyer_id"],
+            "title": "Phone Delivered — 48h Inspection Period Active",
+            "message": f"Your smartphone has been delivered! You have 48 hours to complete the hardware checklist. Payout remains securely held until you confirm or the deadline passes.",
+            "link": f"/orders/{order_id}/tracking",
+            "is_read": False,
+            "created_at": now,
+        })
+
+        return {
+            "order_id": order_id,
+            "status": OrderStatus.DELIVERED.value,
+            "inspection_deadline": inspection_deadline,
+            "payout_status": PayoutStatus.HELD_INSPECTION.value,
+            "message": "Delivery completed successfully. 48-Hour Buyer Inspection Period activated."
+        }
+
+    @staticmethod
+    def resend_delivery_otp(user_id: str, order_id: str) -> Dict[str, Any]:
+        """
+        Allows the authenticated buyer or an administrator to request a fresh delivery verification code.
+        Enforces 60-second cooldown and dispatches to buyer's verified registered email.
+        """
+        db = get_db()
+        order = db.orders.find_one({"order_id": order_id})
+        if not order:
+            raise NotFoundError("Order not found.")
+
+        user = db.users.find_one({"id": user_id})
+        is_admin = user and user.get("role") == "admin"
+        if order.get("buyer_id") != user_id and not is_admin:
+            raise ForbiddenError("Only the order buyer or an administrator can request a delivery OTP resend.")
+
+        from app.services.delivery_otp_service import DeliveryOtpService
+        return DeliveryOtpService.generate_and_dispatch_delivery_otp(
+            order_id=order_id,
+            actor_id=user_id,
+            is_resend=True,
+            carrier_name=order.get("shipment_info", {}).get("courier_name") or "Courier Partner"
+        )
         db.notifications.insert_one({
             "_id": str(uuid.uuid4()),
             "user_id": order["buyer_id"],

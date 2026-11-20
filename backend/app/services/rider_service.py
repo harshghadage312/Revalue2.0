@@ -146,6 +146,7 @@ class RiderService:
         if "_id" in j_copy:
             j_copy["_id"] = str(j_copy["_id"])
         j_copy.pop("delivery_otp_hash", None)
+        j_copy.pop("delivery_otp", None)
         return j_copy
 
     @staticmethod
@@ -432,30 +433,16 @@ class RiderService:
         if not job:
             raise ValidationError("Job not found or not ready for pickup confirmation.")
 
-        # Sync with order and generate/confirm buyer delivery OTP
-        from app.services.delivery_service import DeliveryService
+        # Sync with order and generate/dispatch secure buyer doorstep delivery OTP
+        from app.services.delivery_otp_service import DeliveryOtpService
         order = db.orders.find_one({"order_id": job["order_id"]})
         if order:
-            buyer = db.users.find_one({"id": order["buyer_id"]})
-            buyer_phone = (buyer.get("phone") or "9999999999") if buyer else "9999999999"
-            
-            # Generate masked OTP for buyer
-            import secrets
-            otp_plain = f"{secrets.randbelow(900000) + 100000:06d}"
-            
             db.orders.update_one(
                 {"order_id": job["order_id"]},
                 {
                     "$set": {
                         "status": "picked_up",
                         "shipment_info.is_courier_verified": True,
-                        "delivery_otp": {
-                            "otp": otp_plain,
-                            "masked": f"**{otp_plain[-2:]}",
-                            "expires_at": now + timedelta(hours=48),
-                            "verified": False,
-                            "generated_at": now
-                        },
                         "local_delivery_info.status": "picked_up",
                         "local_delivery_info.picked_up_at": now
                     },
@@ -464,10 +451,16 @@ class RiderService:
                             "status": "picked_up",
                             "timestamp": now,
                             "updated_by": f"rider_{rider['name']}",
-                            "note": f"Parcel collected by local partner {rider['name']}. Buyer delivery OTP generated."
+                            "note": f"Parcel collected by local partner {rider['name']}. Doorstep delivery OTP dispatched to buyer."
                         }
                     }
                 }
+            )
+            # Dispatch secure HMAC delivery OTP via Google Apps Script Gmail gateway
+            DeliveryOtpService.generate_and_dispatch_delivery_otp(
+                order_id=job["order_id"],
+                actor_id=rider["id"],
+                carrier_name=f"ReValue Local Partner ({rider['name']})"
             )
 
         return job
@@ -543,16 +536,15 @@ class RiderService:
         if not order:
             raise NotFoundError("Associated order not found.")
 
-        # Check OTP
-        otp_info = order.get("delivery_otp", {})
-        expected_otp = otp_info.get("otp")
-
-        if not expected_otp or str(entered_otp).strip() != str(expected_otp).strip():
-            logger.warning(f"Invalid delivery OTP entered for job {job_id} by rider {rider['id']}")
-            raise ValidationError("Invalid Doorstep Delivery OTP. Please verify with buyer.")
+        # Verify Doorstep Delivery OTP via centralized DeliveryOtpService
+        from app.services.delivery_otp_service import DeliveryOtpService
+        DeliveryOtpService.verify_delivery_otp(
+            order_id=job["order_id"],
+            entered_otp=entered_otp,
+            actor_id=rider["id"]
+        )
 
         now = datetime.now(timezone.utc)
-        inspection_deadline = now + timedelta(hours=48)
 
         # 1. Update Job Status to Delivered
         updated_job = db.delivery_jobs.find_one_and_update(
@@ -578,29 +570,11 @@ class RiderService:
             return_document=True
         )
 
-        # 2. Update Order to DELIVERED and start 48h Inspection Window
-        db.orders.update_one(
-            {"order_id": job["order_id"]},
-            {
-                "$set": {
-                    "status": "delivered",
-                    "delivery_otp.verified": True,
-                    "delivery_otp.verified_at": now,
-                    "delivery_timestamp": now,
-                    "inspection_deadline": inspection_deadline,
-                    "inspection_status": "in_inspection",
-                    "local_delivery_info.status": "delivered",
-                    "local_delivery_info.delivered_at": now
-                },
-                "$push": {
-                    "status_history": {
-                        "status": "delivered",
-                        "timestamp": now,
-                        "updated_by": f"rider_{rider['name']}",
-                        "note": "Package delivered and verified via OTP. 48-Hour Buyer Inspection Period is active."
-                    }
-                }
-            }
+        # 2. Update Order to DELIVERED atomically and start 48h Inspection Window
+        DeliveryOtpService.complete_delivery_atomically(
+            order_id=job["order_id"],
+            actor_id=f"rider_{rider['name']}",
+            notes=notes or f"Package delivered by {rider['name']} and verified via OTP. 48-Hour Buyer Inspection Period is active."
         )
 
         # 3. Increment Rider Completed Deliveries Counter
@@ -614,6 +588,29 @@ class RiderService:
 
         logger.info(f"Rider {rider['id']} successfully delivered order {job['order_id']} via OTP verification.")
         return updated_job
+
+    @staticmethod
+    def resend_delivery_otp(user_id: str, job_id: str) -> Dict[str, Any]:
+        """
+        Allows delivery partner to request a fresh delivery verification code at buyer's doorstep.
+        Enforces 60-second cooldown and dispatches to buyer's verified registered email.
+        """
+        db = get_db()
+        rider = db.rider_profiles.find_one({"user_id": user_id})
+        if not rider:
+            raise NotFoundError("Rider profile not found.")
+
+        job = db.delivery_jobs.find_one({"id": job_id, "assigned_rider_id": rider["id"]})
+        if not job:
+            raise NotFoundError("Delivery job not found.")
+
+        from app.services.delivery_otp_service import DeliveryOtpService
+        return DeliveryOtpService.generate_and_dispatch_delivery_otp(
+            order_id=job["order_id"],
+            actor_id=rider["id"],
+            is_resend=True,
+            carrier_name=f"ReValue Local Partner ({rider['name']})"
+        )
 
     @staticmethod
     def report_failure(user_id: str, job_id: str, reason: str, notes: Optional[str] = None) -> Dict[str, Any]:
