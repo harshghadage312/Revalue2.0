@@ -88,8 +88,8 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-10 2xl:px-12">
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold mb-3">
@@ -112,16 +112,16 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
             </div>
             <div>
               <p className="text-xs font-bold text-slate-900">₹100 Base + ₹15/km</p>
-              <p className="text-[11px] text-slate-500">Transparent compensation</p>
+              <p className="text-2xs text-slate-500">Transparent compensation</p>
             </div>
           </div>
           <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
               <p className="text-xs font-bold text-slate-900">OTP-Secured Handover</p>
-              <p className="text-[11px] text-slate-500">Zero buyer fraud liability</p>
+              <p className="text-2xs text-slate-500">Zero buyer fraud liability</p>
             </div>
           </div>
           <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs flex items-center gap-3">
@@ -130,7 +130,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
             </div>
             <div>
               <p className="text-xs font-bold text-slate-900">Choose Your Pincodes</p>
-              <p className="text-[11px] text-slate-500">Flexible local service radius</p>
+              <p className="text-2xs text-slate-500">Flexible local service radius</p>
             </div>
           </div>
         </div>
@@ -157,21 +157,21 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Section 1: Personal Details */}
             <div>
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 text-emerald-700">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3 text-emerald-700">
                 1. Personal & Contact Information
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Full Legal Name *</label>
                   <div className="relative">
-                    <UserIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <UserIcon className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       required
                       placeholder="e.g. Ramesh Kumar"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
@@ -179,14 +179,14 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address *</label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="email"
                       required
                       placeholder="ramesh@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
@@ -194,14 +194,14 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Mobile Phone (WhatsApp enabled) *</label>
                   <div className="relative">
-                    <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="tel"
                       required
                       placeholder="9876543210"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
@@ -209,7 +209,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Account Password *</label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="password"
                       required
@@ -217,7 +217,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
                       placeholder="Minimum 6 characters"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
@@ -226,7 +226,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
 
             {/* Section 2: Service City & Pincodes */}
             <div>
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 text-emerald-700">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3 text-emerald-700">
                 2. Operating City & Covered Pincodes
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -235,7 +235,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
                   <select
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                    className="w-full px-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
                   >
                     <option value="Mumbai">Mumbai</option>
                     <option value="Pune">Pune</option>
@@ -256,9 +256,9 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
                     placeholder="400001, 400002, 400050"
                     value={pincodesInput}
                     onChange={(e) => setPincodesInput(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
-                  <p className="mt-1 text-[11px] text-slate-500">
+                  <p className="mt-1 text-2xs text-slate-500">
                     You will receive order dispatch broadcasts when deliveries fall within these pincodes.
                   </p>
                 </div>
@@ -267,7 +267,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
 
             {/* Section 3: Vehicle & Driving License */}
             <div>
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 text-emerald-700">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3 text-emerald-700">
                 3. Vehicle & License Information
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -276,7 +276,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
                   <select
                     value={vehicleType}
                     onChange={(e) => setVehicleType(e.target.value as RiderVehicleType)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                    className="w-full px-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
                   >
                     <option value="motorcycle">Motorcycle</option>
                     <option value="scooter">Scooter</option>
@@ -293,7 +293,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
                     placeholder="MH-02-CD-1234"
                     value={vehicleReg}
                     onChange={(e) => setVehicleReg(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 uppercase"
+                    className="w-full px-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 uppercase"
                   />
                 </div>
 
@@ -305,7 +305,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
                     placeholder="MH0220200012345"
                     value={licenseNumber}
                     onChange={(e) => setLicenseNumber(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 uppercase"
+                    className="w-full px-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 uppercase"
                   />
                 </div>
               </div>
@@ -313,7 +313,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
 
             {/* Section 4: Emergency Contact */}
             <div>
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 text-emerald-700">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3 text-emerald-700">
                 4. Emergency Contact
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -325,7 +325,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
                     placeholder="e.g. Sunita Kumar"
                     value={emergencyName}
                     onChange={(e) => setEmergencyName(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
@@ -334,7 +334,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
                   <select
                     value={emergencyRelation}
                     onChange={(e) => setEmergencyRelation(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                    className="w-full px-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
                   >
                     <option value="Family">Family / Parent</option>
                     <option value="Spouse">Spouse</option>
@@ -351,7 +351,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
                     placeholder="9812345678"
                     value={emergencyPhone}
                     onChange={(e) => setEmergencyPhone(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
@@ -364,7 +364,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
                   type="checkbox"
                   checked={agreed}
                   onChange={(e) => setAgreed(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                  className="mt-1 h-4 w-4 rounded-xl border-slate-300 text-emerald-600 focus:ring-emerald-500"
                 />
                 <span className="text-xs text-slate-600 leading-relaxed">
                   I agree to ReValue's partner guidelines, device safety standards, and strict OTP doorstep handover protocol. I confirm all details provided above are authentic and accurate.
@@ -388,7 +388,7 @@ export const DeliveryPartnerSignupPage: React.FC<DeliveryPartnerSignupPageProps>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rv-btn-primary text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50"
               >
                 {loading ? 'Submitting Application...' : 'Submit Partner Application'}
                 <ArrowRight className="w-4 h-4" />

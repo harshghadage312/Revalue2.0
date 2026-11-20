@@ -1,29 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { AuthProvider } from './context/AuthContext';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { PageLoader, FullScreenLoader } from './components/ui/Loader';
 import { ToastProvider } from './context/ToastContext';
 import { ConfirmProvider } from './context/ConfirmContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { LandingPage } from './pages/LandingPage';
-import { MarketplacePage } from './pages/MarketplacePage';
-import { ProductDetailPage } from './pages/ProductDetailPage';
-import { CreateListingPage } from './pages/CreateListingPage';
-import { BuyerDashboard } from './pages/BuyerDashboard';
-import { SellerDashboard } from './pages/SellerDashboard';
-import { CheckoutPage } from './pages/CheckoutPage';
-import { DeliveryTrackingPage } from './pages/DeliveryTrackingPage';
-import { AdminDashboard } from './pages/AdminDashboard';
-import { DeliveryPartnerSignupPage } from './pages/DeliveryPartnerSignupPage';
-import { DeliveryPartnerApplicationStatusPage } from './pages/DeliveryPartnerApplicationStatusPage';
-import { RiderDashboard } from './pages/RiderDashboard';
-import { RiderJobsPage } from './pages/RiderJobsPage';
-import { RiderJobDetailPage } from './pages/RiderJobDetailPage';
-import { RiderEarningsPage } from './pages/RiderEarningsPage';
-import { RiderProfilePage } from './pages/RiderProfilePage';
-import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
-import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { AiPriceValuatorModal } from './components/AiPriceValuatorModal';
 import { AuthModal } from './components/AuthModal';
+const MarketplacePage = lazy(() => import('./pages/MarketplacePage').then((m) => ({ default: m.MarketplacePage })));
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage').then((m) => ({ default: m.ProductDetailPage })));
+const CreateListingPage = lazy(() => import('./pages/CreateListingPage').then((m) => ({ default: m.CreateListingPage })));
+const BuyerDashboard = lazy(() => import('./pages/BuyerDashboard').then((m) => ({ default: m.BuyerDashboard })));
+const SellerDashboard = lazy(() => import('./pages/SellerDashboard').then((m) => ({ default: m.SellerDashboard })));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage').then((m) => ({ default: m.CheckoutPage })));
+const DeliveryTrackingPage = lazy(() => import('./pages/DeliveryTrackingPage').then((m) => ({ default: m.DeliveryTrackingPage })));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard').then((m) => ({ default: m.AdminDashboard })));
+const DeliveryPartnerSignupPage = lazy(() => import('./pages/DeliveryPartnerSignupPage').then((m) => ({ default: m.DeliveryPartnerSignupPage })));
+const DeliveryPartnerApplicationStatusPage = lazy(() => import('./pages/DeliveryPartnerApplicationStatusPage').then((m) => ({ default: m.DeliveryPartnerApplicationStatusPage })));
+const RiderDashboard = lazy(() => import('./pages/RiderDashboard').then((m) => ({ default: m.RiderDashboard })));
+const RiderJobsPage = lazy(() => import('./pages/RiderJobsPage').then((m) => ({ default: m.RiderJobsPage })));
+const RiderJobDetailPage = lazy(() => import('./pages/RiderJobDetailPage').then((m) => ({ default: m.RiderJobDetailPage })));
+const RiderEarningsPage = lazy(() => import('./pages/RiderEarningsPage').then((m) => ({ default: m.RiderEarningsPage })));
+const RiderProfilePage = lazy(() => import('./pages/RiderProfilePage').then((m) => ({ default: m.RiderProfilePage })));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })));
 
 const getInitialPage = () => {
   if (typeof window !== 'undefined') {
@@ -55,6 +56,9 @@ export const AppContent: React.FC = () => {
   const [pageParams, setPageParams] = useState<any>(getInitialParams);
   const [showValuator, setShowValuator] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const { isLoading: authLoading } = useAuth();
+  // Only show the boot splash when a stored session is actually being restored
+  const [restoringSession] = useState(() => typeof window !== 'undefined' && !!localStorage.getItem('revalue_token'));
 
   // Sync with browser hash if present
   useEffect(() => {
@@ -82,6 +86,8 @@ export const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 font-sans">
+      {restoringSession && authLoading && <FullScreenLoader label="Restoring your session…" />}
+
       <Navbar
         onNavigate={navigate}
         currentPage={currentPage}
@@ -89,7 +95,9 @@ export const AppContent: React.FC = () => {
         onOpenAuth={() => setShowAuthModal(true)}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 min-w-0">
+        <Suspense fallback={<PageLoader label="Loading page…" />}>
+        <div key={currentPage} className="rv-page-enter">
         {currentPage === 'landing' && (
           <LandingPage
             onNavigate={navigate}
@@ -225,6 +233,8 @@ export const AppContent: React.FC = () => {
             onOpenAuth={() => setShowAuthModal(true)}
           />
         )}
+        </div>
+        </Suspense>
       </main>
 
       <Footer

@@ -1,33 +1,30 @@
 {
-  "model_version": "mindvalue_rf_v2.0",
-  "model_name": "MindValue Random Forest Resale Price Regressor",
+  "model_version": "rf_v1.0.0",
   "algorithm": "RandomForestRegressor",
-  "n_estimators": 200,
-  "random_state": 42,
-  "features_count": 17,
-  "input_features": [
-    "Brand",
-    "Model",
-    "OS",
-    "RAM_GB",
-    "Storage_GB",
-    "Battery_mAh",
-    "Display_Size_Inches",
-    "Refresh_Rate_Hz",
-    "5G_Support",
-    "Original_Price_INR",
-    "Days_Used",
-    "Condition",
-    "Battery_Health_Percent",
-    "Screen_Crack",
-    "Scratches",
-    "Repair_History",
-    "Warranty_Available"
+  "n_estimators": 120,
+  "features": [
+    "brand",
+    "model",
+    "condition",
+    "category",
+    "approximate_age_months",
+    "storage_gb",
+    "ram_gb",
+    "original_retail_price",
+    "battery_health_percent"
   ],
-  "target": "Used_Resale_Price_INR",
-  "known_brands_count": 26,
-  "known_models_count": 754,
+  "dataset_name": "ReValue Smartphone Secondary Market Dataset v1",
+  "dataset_samples": 1200,
+  "train_samples": 960,
+  "test_samples": 240,
   "currency": "INR",
-  "source": "MindValue production-trained model (mindvalue_random_forest_model.pkl)",
-  "integrated_at": "2026-10-25T11:00:00Z"
+  "trained_at": "2026-11-20T15:46:17.332424+00:00",
+  "metrics": {
+    "mae": 1836.8944710940893,
+    "rmse": 2431.8772684856563,
+    "r2_score": 0.9804954867710918,
+    "baseline_mae": 15121.6875,
+    "baseline_rmse": 17513.253762081717,
+    "baseline_r2": -0.011545659030848698
+  }
 }

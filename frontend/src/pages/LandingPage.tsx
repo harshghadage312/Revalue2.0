@@ -29,15 +29,15 @@ const CONDITION_TIERS = [
     id: 'excellent',
     label: 'Like New',
     description: 'Flawless screen and casing. Virtually zero visible marks.',
-    dot: 'bg-emerald-500',
-    badge: 'text-emerald-800 bg-emerald-50 border-emerald-200',
+    dot: 'bg-green-500',
+    badge: 'text-green-800 bg-green-50 border-green-200',
   },
   {
     id: 'good',
     label: 'Good Condition',
     description: 'Screen in great shape with light micro-marks from normal use.',
-    dot: 'bg-blue-500',
-    badge: 'text-blue-800 bg-blue-50 border-blue-200',
+    dot: 'bg-indigo-500',
+    badge: 'text-indigo-800 bg-indigo-50 border-indigo-200',
   },
   {
     id: 'bad',
@@ -84,36 +84,48 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     return p.selling_method === activeTab;
   });
 
+  const tabCls = (active: boolean) =>
+    `px-3.5 sm:px-4 py-2 rounded-lg whitespace-nowrap transition-all ${
+      active ? 'bg-white text-brand-700 shadow-sm font-bold' : 'text-slate-600 hover:text-slate-900'
+    }`;
+
   return (
-    <div className="space-y-10 sm:space-y-14 pb-16">
-      {/* 1. DISTINCTIVE CONSUMER HERO WITH EDITORIAL SHOWCASE */}
-      <section className="bg-white border-b border-slate-200 py-8 sm:py-12 lg:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            {/* Left: Brand Positioning & Actionable Copy (7 Cols) */}
-            <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-left">
-              {/* Eyebrow */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-[11px] font-bold text-emerald-800 tracking-wider uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+    <div className="space-y-14 sm:space-y-20 pb-16 sm:pb-24">
+      {/* 1. HERO */}
+      <section className="relative overflow-hidden bg-page-gradient border-b border-slate-200/70">
+        <div aria-hidden="true" className="pointer-events-none absolute -top-32 -right-32 w-[38rem] h-[38rem] rounded-full bg-brand-300/30 blur-3xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -left-24 w-[30rem] h-[30rem] rounded-full bg-indigo-300/20 blur-3xl" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.35]"
+          style={{ backgroundImage: 'radial-gradient(rgb(87 48 187 / 0.12) 1px, transparent 1px)', backgroundSize: '22px 22px', maskImage: 'linear-gradient(to bottom, black, transparent 85%)' }}
+        />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12 pt-10 pb-14 sm:pt-16 sm:pb-20 lg:pt-20 lg:pb-24">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+            {/* Left: Brand Positioning & Actionable Copy */}
+            <div className="lg:col-span-7 space-y-6 sm:space-y-7 text-left">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur border border-brand-100 shadow-xs text-2xs font-bold text-brand-700 tracking-wider uppercase">
+                <span className="relative flex w-2 h-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-60 animate-ping" />
+                  <span className="relative inline-flex w-2 h-2 rounded-full bg-brand-600" />
+                </span>
                 <span>The Smarter Way to Reshop</span>
               </div>
 
-              {/* Headline */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
-                Every phone has <span className="text-emerald-700 underline decoration-emerald-300 decoration-wavy decoration-2 underline-offset-4">more value.</span>
+              <h1 className="text-[2.5rem] leading-[1.05] sm:text-6xl lg:text-[4.25rem] 2xl:text-[5rem] font-extrabold text-slate-900 tracking-[-0.035em]">
+                Every phone has <span className="text-brand-gradient">more value.</span>
               </h1>
 
-              {/* Supporting Copy */}
-              <p className="text-sm sm:text-base text-slate-600 max-w-xl leading-relaxed">
+              <p className="text-sm sm:text-lg text-slate-600 max-w-2xl leading-relaxed">
                 Find your next smartphone or discover what your current one could be worth. Real seller listings, transparent condition checks, and fair resale price estimates.
               </p>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 pt-1">
                 <button
                   type="button"
                   onClick={() => onNavigate('marketplace')}
-                  className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs hover:shadow transition-all flex items-center gap-2"
+                  className="h-12 sm:h-14 px-7 rv-btn-primary font-bold text-sm sm:text-base rounded-2xl flex items-center justify-center gap-2"
                 >
                   <span>Shop Phones</span>
                   <ArrowRight className="w-4 h-4" />
@@ -122,103 +134,106 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigate('create-listing')}
-                  className="px-6 py-3 bg-white hover:bg-slate-50 text-slate-900 font-bold text-xs sm:text-sm rounded-xl border border-slate-300 hover:border-slate-400 shadow-2xs transition-colors flex items-center gap-2"
+                  className="h-12 sm:h-14 px-7 bg-white hover:bg-slate-50 text-slate-900 font-bold text-sm sm:text-base rounded-2xl border border-slate-200 hover:border-brand-200 shadow-sm transition-colors flex items-center justify-center gap-2"
                 >
+                  <PlusCircle className="w-4 h-4 text-brand-600" />
                   <span>Sell Your Phone</span>
-                  <PlusCircle className="w-4 h-4 text-emerald-700" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onOpenValuator}
+                  className="h-12 sm:h-14 px-5 text-brand-700 hover:text-brand-800 font-bold text-sm rounded-2xl flex items-center justify-center gap-2 hover:bg-white/60 transition-colors"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Estimate my phone</span>
                 </button>
               </div>
 
               {/* Core Commercial Clarity Metrics */}
-              <div className="grid grid-cols-3 gap-3 pt-4 border-t border-slate-100 max-w-lg text-left">
-                <div>
-                  <span className="block text-xs font-extrabold text-slate-900">Condition Check</span>
-                  <span className="text-[11px] text-slate-500">4 transparent tiers</span>
-                </div>
-                <div>
-                  <span className="block text-xs font-extrabold text-slate-900">Fair Valuations</span>
-                  <span className="text-[11px] text-slate-500">Secondary market data</span>
-                </div>
-                <div>
-                  <span className="block text-xs font-extrabold text-slate-900">Direct or Auction</span>
-                  <span className="text-[11px] text-slate-500">Flexible selling options</span>
-                </div>
+              <div className="grid grid-cols-3 gap-3 sm:gap-6 pt-6 border-t border-slate-200/80 max-w-2xl">
+                {[
+                  { icon: ShieldCheck, t: 'Condition Check', d: '4 transparent tiers' },
+                  { icon: Cpu, t: 'Fair Valuations', d: 'Secondary market data' },
+                  { icon: Gavel, t: 'Direct or Auction', d: 'Flexible selling options' },
+                ].map(({ icon: Icon, t, d }) => (
+                  <div key={t} className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+                    <span className="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-xs text-brand-600 flex items-center justify-center shrink-0">
+                      <Icon className="w-[18px] h-[18px]" />
+                    </span>
+                    <div>
+                      <span className="block text-xs font-extrabold text-slate-900">{t}</span>
+                      <span className="text-2xs text-slate-500">{d}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Right: Editorial Product Showcase Card (5 Cols) */}
+            {/* Right: Editorial Product Showcase Card */}
             <div className="lg:col-span-5">
-              <div className="relative max-w-sm mx-auto lg:ml-auto">
-                {/* Smartphone Showcase Chassis */}
-                <div className="bg-slate-950 rounded-3xl p-3 shadow-xl border-2 border-slate-800 text-white relative">
-                  {/* Speaker slot & status */}
-                  <div className="flex items-center justify-between px-3 pt-1 pb-2">
-                    <span className="text-[10px] text-slate-400 font-bold">ReValue Live</span>
-                    <div className="w-12 h-1 bg-slate-800 rounded-full" />
-                    <span className="text-[10px] text-emerald-400 font-semibold">Verified</span>
+              <div className="relative max-w-md mx-auto lg:ml-auto">
+                <div aria-hidden="true" className="absolute inset-6 rounded-[2.5rem] bg-brand-gradient blur-2xl opacity-40" />
+                <div className="relative bg-slate-950 rounded-[2.25rem] p-3.5 shadow-2xl ring-1 ring-white/10 text-white">
+                  <div className="flex items-center justify-between px-3 pt-1 pb-2.5">
+                    <span className="text-3xs text-slate-400 font-bold">ReValue Live</span>
+                    <div className="w-16 h-1.5 bg-slate-800 rounded-full" />
+                    <span className="text-3xs text-brand-300 font-semibold">Verified</span>
                   </div>
 
-                  {/* Device Screen Preview */}
-                  <div className="bg-slate-900 rounded-2xl p-4 border border-slate-800 space-y-3">
-                    {/* Top Device Specs Bar */}
-                    <div className="flex items-center justify-between text-[10.5px]">
-                      <span className="px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-300 font-bold border border-emerald-800/60">
+                  <div className="bg-gradient-to-b from-slate-900 to-slate-950 rounded-[1.75rem] p-5 sm:p-6 border border-white/5 space-y-4">
+                    <div className="flex items-center justify-between gap-2 text-2xs">
+                      <span className="px-2.5 py-1 rounded-full bg-brand-500/15 text-brand-200 font-bold border border-brand-400/25">
                         Like New • 92% Battery
                       </span>
                       <span className="text-slate-400 font-medium">128 GB Storage</span>
                     </div>
 
-                    {/* Editorial Device Focus */}
-                    <div className="py-2 space-y-1">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Featured Flagship</span>
-                      <h3 className="text-lg font-black text-white leading-tight">
-                        Apple iPhone 14 Pro
-                      </h3>
+                    <div className="py-1 space-y-1.5">
+                      <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider block">Featured Flagship</span>
+                      <h3 className="text-2xl font-extrabold text-white leading-tight tracking-tight">Apple iPhone 14 Pro</h3>
                       <p className="text-xs text-slate-400">Deep Purple • Flawless Display • Original Box</p>
                     </div>
 
-                    {/* Price & Valuation Benchmark Card */}
-                    <div className="p-3 rounded-xl bg-slate-950/90 border border-slate-800 space-y-2">
-                      <div className="flex items-baseline justify-between">
+                    <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 space-y-3">
+                      <div className="flex items-end justify-between">
                         <div>
-                          <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Deal Asking Price</span>
-                          <span className="text-xl font-black text-emerald-400">₹48,500</span>
+                          <span className="text-3xs uppercase font-bold text-slate-400 block tracking-wider">Deal Asking Price</span>
+                          <span className="text-3xl font-extrabold text-white tracking-tight">₹48,500</span>
                         </div>
                         <div className="text-right">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 block">Original MSRP</span>
+                          <span className="text-3xs uppercase font-bold text-slate-500 block">Original MSRP</span>
                           <span className="text-xs line-through text-slate-500 font-semibold">₹1,19,900</span>
                         </div>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-                        <span className="text-slate-300">Resale Valuation Index:</span>
-                        <span className="font-bold text-slate-200">₹49,200</span>
+                      <div className="pt-3 border-t border-white/10 flex items-center justify-between text-2xs">
+                        <span className="text-slate-400">Resale Valuation Index:</span>
+                        <span className="font-bold text-slate-100">₹49,200</span>
                       </div>
 
-                      <div className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+                      <div className="inline-flex px-2.5 py-1 rounded-full text-3xs font-bold bg-green-500/15 text-green-300 border border-green-400/20">
                         Buyer Saves ₹71,400 (60% vs New)
                       </div>
                     </div>
 
-                    {/* Quick CTA inside editorial preview card */}
                     <button
                       type="button"
                       onClick={() => onNavigate('marketplace', { brand: 'Apple' })}
-                      className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
+                      className="w-full h-12 rv-btn-primary font-bold text-xs rounded-xl flex items-center justify-center gap-1.5"
                     >
                       <span>Explore Similar Deals</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  {/* Floating Contextual Badges */}
-                  <div className="hidden sm:flex absolute -top-3 -right-3 bg-white text-slate-900 border border-slate-200 shadow-md rounded-xl px-2.5 py-1.5 items-center gap-1.5 text-[10.5px] font-bold">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <div className="hidden sm:flex absolute -top-4 -right-4 bg-white text-slate-900 border border-slate-200 shadow-lg rounded-2xl px-3.5 py-2.5 items-center gap-2 text-2xs font-bold">
+                    <span className="w-6 h-6 rounded-lg bg-green-100 text-green-700 flex items-center justify-center"><CheckCircle2 className="w-3.5 h-3.5" /></span>
                     <span>Flawless Screen Inspected</span>
                   </div>
 
-                  <div className="hidden sm:flex absolute -bottom-3 -left-3 bg-white text-slate-900 border border-slate-200 shadow-md rounded-xl px-2.5 py-1.5 items-center gap-1.5 text-[10.5px] font-bold">
-                    <Handshake className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <div className="hidden sm:flex absolute -bottom-4 -left-4 bg-white text-slate-900 border border-slate-200 shadow-lg rounded-2xl px-3.5 py-2.5 items-center gap-2 text-2xs font-bold">
+                    <span className="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center"><Handshake className="w-3.5 h-3.5" /></span>
                     <span>Direct Buy or Private Offer</span>
                   </div>
                 </div>
@@ -228,115 +243,76 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
-      {/* 2. POPULAR BRANDS BAR */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h2 className="text-sm sm:text-base font-bold text-slate-900">
-              Popular Smartphone Brands
-            </h2>
-            <p className="text-xs text-slate-500">Filter catalogue by certified models</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => onNavigate('marketplace')}
-            className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-0.5"
-          >
-            <span>View All</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
+      {/* 2. POPULAR BRANDS */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12">
+        <SectionHead
+          eyebrow="Browse"
+          title="Popular Smartphone Brands"
+          subtitle="Filter catalogue by certified models"
+          action={
+            <button type="button" onClick={() => onNavigate('marketplace')} className="text-xs font-bold text-brand-700 hover:text-brand-800 flex items-center gap-1 px-3 py-2 rounded-xl hover:bg-brand-50">
+              <span>View All</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          }
+        />
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
           {POPULAR_BRANDS.map((b) => (
             <button
               key={b.name}
               type="button"
               onClick={() => onNavigate('marketplace', { brand: b.name })}
-              className="p-3 rounded-xl bg-white border border-slate-200 hover:border-emerald-600 text-left transition-colors group flex flex-col justify-between shadow-2xs"
+              className="group p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 hover:border-brand-300 hover:shadow-lg text-left transition-all hover:-translate-y-0.5 flex items-center gap-3"
             >
-              <div>
-                <span className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors block">
-                  {b.name}
-                </span>
-                <span className="text-[10px] text-slate-400 block mt-0.5 truncate">
-                  {b.hint}
-                </span>
-              </div>
+              <span className="w-11 h-11 rounded-xl bg-page-gradient border border-slate-100 text-brand-700 font-extrabold text-base flex items-center justify-center shrink-0 group-hover:bg-brand-gradient group-hover:text-white transition-colors">
+                {b.name.charAt(0)}
+              </span>
+              <span className="min-w-0">
+                <span className="text-sm font-bold text-slate-900 group-hover:text-brand-700 transition-colors block">{b.name}</span>
+                <span className="text-2xs text-slate-400 block mt-0.5 truncate">{b.hint}</span>
+              </span>
             </button>
           ))}
         </div>
       </section>
 
-      {/* 3. REAL LIVE MARKETPLACE INVENTORY (DIRECTLY NEAR THE TOP FOLD) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                Recently Listed Phones
-              </h2>
-              <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 rounded-md">
-                Live
-              </span>
+      {/* 3. LIVE MARKETPLACE INVENTORY */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12">
+        <SectionHead
+          eyebrow={<span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-green-500" />Live</span>}
+          title="Recently Listed Phones"
+          subtitle="Real pre-owned smartphones ready for direct purchase, negotiation, or auction."
+          action={
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold border border-slate-200 overflow-x-auto rv-no-scrollbar max-w-full" role="tablist" aria-label="Filter listings">
+              <button type="button" role="tab" aria-selected={activeTab === 'all'} onClick={() => setActiveTab('all')} className={tabCls(activeTab === 'all')}>All Phones</button>
+              <button type="button" role="tab" aria-selected={activeTab === 'negotiation'} onClick={() => setActiveTab('negotiation')} className={tabCls(activeTab === 'negotiation')}>Direct Buy / Offers</button>
+              <button type="button" role="tab" aria-selected={activeTab === 'bidding'} onClick={() => setActiveTab('bidding')} className={tabCls(activeTab === 'bidding')}>Sealed Auctions</button>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Real pre-owned smartphones ready for direct purchase, negotiation, or auction.
-            </p>
-          </div>
+          }
+        />
 
-          {/* Filter Segment Tabs */}
-          <div className="flex items-center bg-slate-100 p-0.5 rounded-lg text-xs font-semibold self-start sm:self-auto border border-slate-200">
-            <button
-              type="button"
-              onClick={() => setActiveTab('all')}
-              className={`px-3 py-1.5 rounded-md transition-colors ${
-                activeTab === 'all' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              All Phones
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('negotiation')}
-              className={`px-3 py-1.5 rounded-md transition-colors ${
-                activeTab === 'negotiation' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Direct Buy / Offers
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('bidding')}
-              className={`px-3 py-1.5 rounded-md transition-colors ${
-                activeTab === 'bidding' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Sealed Auctions
-            </button>
-          </div>
-        </div>
-
-        {/* 2-Column on Mobile, 4-Column on Desktop */}
         {loading ? (
           <MarketplaceGridSkeleton count={4} />
         ) : filteredListings.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border border-slate-200 p-6 space-y-2">
-            <Smartphone className="w-8 h-8 text-slate-300 mx-auto" />
-            <h4 className="text-xs sm:text-sm font-bold text-slate-800">No active listings found in this category</h4>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300 px-6">
+            <div className="w-14 h-14 rounded-2xl bg-brand-50 text-brand-500 flex items-center justify-center mx-auto mb-4">
+              <Smartphone className="w-6 h-6" />
+            </div>
+            <h4 className="text-base font-bold text-slate-900">No active listings found in this category</h4>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1.5">
               Be the first to list a smartphone or explore all available models.
             </p>
             <button
               type="button"
               onClick={() => onNavigate('create-listing')}
-              className="mt-2 px-4 py-2 bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-2xs"
+              className="mt-5 h-11 px-5 rv-btn-primary text-xs font-bold rounded-xl"
             >
               List a Phone
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
             {filteredListings.slice(0, 8).map((p) => (
               <ProductCard
                 key={p.id}
@@ -347,101 +323,82 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         )}
 
-        {/* Explore All CTA */}
-        <div className="text-center mt-6">
+        <div className="text-center mt-8">
           <button
             type="button"
             onClick={() => onNavigate('marketplace')}
-            className="px-6 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs sm:text-sm font-bold shadow-2xs transition-colors inline-flex items-center gap-1.5"
+            className="h-12 px-7 rounded-2xl border border-slate-200 bg-white hover:border-brand-300 hover:text-brand-700 text-slate-800 text-sm font-bold shadow-sm transition-colors inline-flex items-center gap-2"
           >
             <span>Explore All Available Phones</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </section>
 
-      {/* 4. SELLING EXPERIENCE & QUICK ESTIMATE SECTION */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 lg:p-10 text-white border border-slate-800">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Left: Selling Path Explanation (7 cols) */}
-            <div className="lg:col-span-7 space-y-5">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-800/60 text-[11px] font-bold text-emerald-400 uppercase tracking-wider">
-                <Tag className="w-3 h-3" />
+      {/* 4. SELLING EXPERIENCE & QUICK ESTIMATE */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12">
+        <div className="relative overflow-hidden bg-slate-950 rounded-[2rem] p-6 sm:p-10 lg:p-14 text-white">
+          <div aria-hidden="true" className="absolute -top-32 -right-20 w-[32rem] h-[32rem] rounded-full bg-brand-600/35 blur-3xl" />
+          <div aria-hidden="true" className="absolute -bottom-40 left-10 w-[26rem] h-[26rem] rounded-full bg-indigo-600/20 blur-3xl" />
+          <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-2xs font-bold text-brand-200 uppercase tracking-wider">
+                <Tag className="w-3.5 h-3.5" />
                 <span>Sell With Confidence</span>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-snug">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
                 Know what your phone is worth before you list it.
               </h2>
 
-              <p className="text-xs sm:text-sm text-slate-400 max-w-xl leading-relaxed">
+              <p className="text-sm text-slate-400 max-w-xl leading-relaxed">
                 ReValue replaces lowball guesswork with data-backed resale benchmarks and transparent cosmetic grading. Here is how selling works:
               </p>
 
-              {/* 3 Step Selling Journey */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                <div className="p-3.5 rounded-xl bg-slate-800/70 border border-slate-700/80 space-y-1.5">
-                  <div className="w-6 h-6 rounded-md bg-emerald-600/30 text-emerald-400 font-bold text-xs flex items-center justify-center">
-                    1
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                {[
+                  { n: 1, t: 'Device Details', d: 'Select brand, model, storage, and disclosed hardware condition.' },
+                  { n: 2, t: 'Condition Check', d: 'Upload photos for automated exterior grading and physical checks.' },
+                  { n: 3, t: 'Resale Valuation', d: 'View fair market price benchmark, set asking price, and publish.' },
+                ].map((step) => (
+                  <div key={step.n} className="p-4 sm:p-5 rounded-2xl bg-white/[0.04] border border-white/10 space-y-2 hover:bg-white/[0.07] transition-colors">
+                    <div className="w-8 h-8 rounded-xl bg-brand-gradient text-white font-bold text-xs flex items-center justify-center shadow-md shadow-brand-900/40">
+                      {step.n}
+                    </div>
+                    <h4 className="text-sm font-bold text-white pt-1">{step.t}</h4>
+                    <p className="text-2xs text-slate-400 leading-relaxed">{step.d}</p>
                   </div>
-                  <h4 className="text-xs font-bold text-white">Device Details</h4>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    Select brand, model, storage, and disclosed hardware condition.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-800/70 border border-slate-700/80 space-y-1.5">
-                  <div className="w-6 h-6 rounded-md bg-emerald-600/30 text-emerald-400 font-bold text-xs flex items-center justify-center">
-                    2
-                  </div>
-                  <h4 className="text-xs font-bold text-white">Condition Check</h4>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    Upload photos for automated exterior grading and physical checks.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-800/70 border border-slate-700/80 space-y-1.5">
-                  <div className="w-6 h-6 rounded-md bg-emerald-600/30 text-emerald-400 font-bold text-xs flex items-center justify-center">
-                    3
-                  </div>
-                  <h4 className="text-xs font-bold text-white">Resale Valuation</h4>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    View fair market price benchmark, set asking price, and publish.
-                  </p>
-                </div>
+                ))}
               </div>
 
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => onNavigate('create-listing')}
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors inline-flex items-center gap-1.5"
-                >
-                  <span>Start Selling Your Phone</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate('create-listing')}
+                className="h-12 px-6 rv-btn-primary font-bold text-sm rounded-2xl inline-flex items-center gap-2"
+              >
+                <span>Start Selling Your Phone</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Right: Quick Valuation Teaser Card (5 cols) */}
             <div className="lg:col-span-5">
-              <div className="bg-slate-800/90 rounded-2xl p-5 border border-slate-700 space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-700">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                    <Sparkles className="w-4 h-4 text-emerald-400" />
+              <div className="bg-white/[0.06] backdrop-blur rounded-3xl p-5 sm:p-7 border border-white/10 space-y-5">
+                <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                  <div className="flex items-center gap-2 text-sm font-bold text-white">
+                    <Sparkles className="w-4 h-4 text-brand-300" />
                     <span>Quick Resale Estimate</span>
                   </div>
-                  <span className="text-[10px] text-slate-400">Algorithmic Benchmark</span>
+                  <span className="text-3xs text-slate-400">Algorithmic Benchmark</span>
                 </div>
 
-                <div className="space-y-3 text-xs">
+                <div className="space-y-4 text-xs">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-300 mb-1">Select Brand</label>
+                    <label htmlFor="teaser-brand" className="block text-2xs font-bold text-slate-300 mb-1.5">Select Brand</label>
                     <select
+                      id="teaser-brand"
                       value={teaserBrand}
                       onChange={(e) => setTeaserBrand(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-medium outline-none focus:border-emerald-500"
+                      className="w-full px-3.5 py-3 bg-slate-900 border-white/10 border rounded-xl text-white font-medium outline-none"
                     >
                       <option value="Apple">Apple iPhone</option>
                       <option value="Samsung">Samsung Galaxy</option>
@@ -452,17 +409,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-300 mb-1">Storage Tier</label>
+                    <span className="block text-2xs font-bold text-slate-300 mb-1.5">Storage Tier</span>
                     <div className="grid grid-cols-3 gap-2">
                       {['64', '128', '256'].map((storage) => (
                         <button
                           key={storage}
                           type="button"
+                          aria-pressed={teaserStorage === storage}
                           onClick={() => setTeaserStorage(storage)}
-                          className={`py-1.5 text-xs font-semibold rounded-lg border transition-colors ${
+                          className={`h-11 text-xs font-semibold rounded-xl border transition-colors ${
                             teaserStorage === storage
-                              ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300'
-                              : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'
+                              ? 'bg-brand-500/25 border-brand-400 text-white'
+                              : 'bg-slate-900 border-white/10 text-slate-400 hover:text-white'
                           }`}
                         >
                           {storage} GB
@@ -471,14 +429,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </div>
                   </div>
 
-                  <p className="text-[11px] text-slate-400 leading-relaxed pt-1">
+                  <p className="text-2xs text-slate-400 leading-relaxed">
                     Secondary market pricing trained on tens of thousands of real smartphone transactions across India.
                   </p>
 
                   <button
                     type="button"
                     onClick={onOpenValuator}
-                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                    className="w-full h-12 bg-white hover:bg-brand-50 text-brand-800 font-bold text-sm rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
                     <span>Check Instant Resale Value</span>
                     <ArrowUpRight className="w-4 h-4" />
@@ -491,124 +449,96 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* 5. SHOP BY CONDITION */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-3">
-          <h2 className="text-sm sm:text-base font-bold text-slate-900">
-            Shop by Condition
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Transparent exterior condition tiers to match your expectations and budget.
-          </p>
-        </div>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12">
+        <SectionHead
+          eyebrow="Condition tiers"
+          title="Shop by Condition"
+          subtitle="Transparent exterior condition tiers to match your expectations and budget."
+        />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {CONDITION_TIERS.map((tier) => (
-            <div
+            <button
+              type="button"
               key={tier.id}
               onClick={() => onNavigate('marketplace', { condition: tier.id })}
-              className="p-3.5 rounded-xl bg-white border border-slate-200 hover:border-emerald-600 cursor-pointer transition-colors group flex flex-col justify-between shadow-2xs"
+              className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-brand-300 hover:shadow-lg hover:-translate-y-0.5 text-left transition-all group flex flex-col justify-between"
             >
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5">
-                  <span className={`w-2 h-2 rounded-full ${tier.dot}`} />
-                  <span className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
-                    {tier.label}
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 leading-relaxed">
-                  {tier.description}
-                </p>
+              <div className="space-y-2">
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-3xs font-bold uppercase tracking-wider border ${tier.badge}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${tier.dot}`} />
+                  {tier.label}
+                </span>
+                <p className="text-xs text-slate-600 leading-relaxed pt-1">{tier.description}</p>
               </div>
 
-              <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-emerald-700">
+              <div className="pt-3 mt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-700">
                 <span>View Phones</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </section>
 
-      {/* 6. HOW IT WORKS (HONEST COMMERCIAL CLARITY) */}
-      <section id="how-it-works" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-20">
-        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-2xs space-y-6">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10.5px] font-bold uppercase tracking-wider mb-1.5">
-              <span>Transparent Marketplace Process</span>
-            </div>
-            <h2 className="text-base sm:text-xl font-bold text-slate-900">
+      {/* 6. HOW IT WORKS */}
+      <section id="how-it-works" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12 scroll-mt-24">
+        <div className="bg-white rounded-[2rem] p-6 sm:p-10 lg:p-12 border border-slate-200 shadow-sm">
+          <div className="max-w-2xl">
+            <span className="inline-flex px-3 py-1 rounded-full bg-brand-50 text-brand-700 text-2xs font-bold uppercase tracking-wider">
+              Transparent Marketplace Process
+            </span>
+            <h2 className="mt-3 text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               How Buying & Selling Works on ReValue
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            <p className="text-sm text-slate-500 mt-2">
               Clear condition checks, fair market valuations, and protected delivery tracking.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center">
-                1
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-10">
+            {[
+              { n: 1, icon: Search, t: 'Find or List Phones', d: 'Browse real phone listings with full hardware specs. Sellers run automated condition checks and view fair pricing benchmarks before publishing.' },
+              { n: 2, icon: Handshake, t: 'Buy, Offer, or Bid', d: 'Buy immediately at the asking price, send private counteroffers with seller price floors, or join sealed-bid auctions with confidential reserve prices.' },
+              { n: 3, icon: Package, t: 'Fulfillment & Delivery', d: "Track door-to-door courier delivery. Buyer payments are held securely until the shipment is received and verified against the seller's condition notes." },
+            ].map(({ n, icon: Icon, t, d }) => (
+              <div key={n} className="relative p-6 rounded-2xl bg-page-gradient border border-slate-200/80 space-y-3">
+                <span className="absolute top-5 right-6 text-5xl font-extrabold text-brand-100 leading-none select-none" aria-hidden="true">{n}</span>
+                <div className="w-11 h-11 rounded-xl bg-white border border-slate-200 shadow-xs text-brand-600 flex items-center justify-center">
+                  <Icon className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-slate-900">{t}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">{d}</p>
               </div>
-              <h3 className="text-xs sm:text-sm font-bold text-slate-900">Find or List Phones</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Browse real phone listings with full hardware specs. Sellers run automated condition checks and view fair pricing benchmarks before publishing.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center">
-                2
-              </div>
-              <h3 className="text-xs sm:text-sm font-bold text-slate-900">Buy, Offer, or Bid</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Buy immediately at the asking price, send private counteroffers with seller price floors, or join sealed-bid auctions with confidential reserve prices.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center">
-                3
-              </div>
-              <h3 className="text-xs sm:text-sm font-bold text-slate-900">Fulfillment & Delivery</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Track door-to-door courier delivery. Buyer payments are held securely until the shipment is received and verified against the seller's condition notes.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* 7. RECOMMENDATIONS (WHEN AVAILABLE) */}
       {recommendations.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h2 className="text-sm sm:text-base font-bold text-slate-900">
-                Recommended For You
-              </h2>
-              <p className="text-xs text-slate-500">
-                Matches based on secondary market pricing and hardware specs.
-              </p>
-            </div>
-          </div>
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12">
+          <SectionHead
+            eyebrow="For you"
+            title="Recommended For You"
+            subtitle="Matches based on secondary market pricing and hardware specs."
+          />
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             {recommendations.slice(0, 3).map((item) => (
-              <div
+              <button
+                type="button"
                 key={item.product_id}
                 onClick={() => onNavigate('product-detail', { id: item.product_id })}
-                className="bg-white hover:border-emerald-600 border border-slate-200 rounded-xl p-3.5 transition-colors cursor-pointer group shadow-2xs"
+                className="text-left bg-white hover:border-brand-300 hover:shadow-lg border border-slate-200 rounded-2xl p-5 transition-all group"
               >
-                <div className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-0.5">
-                  {item.recommendation_reason}
+                <div className="text-3xs font-bold text-brand-600 uppercase tracking-wider mb-1.5">{item.recommendation_reason}</div>
+                <div className="font-bold text-slate-900 text-sm line-clamp-1 group-hover:text-brand-700">{item.title}</div>
+                <div className="flex items-center justify-between mt-3">
+                  <span className="text-lg font-extrabold text-slate-900">{formatCurrency(item.asking_price)}</span>
+                  <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-brand-500 group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <div className="font-bold text-slate-900 text-xs sm:text-sm line-clamp-1 group-hover:text-emerald-700">
-                  {item.title}
-                </div>
-                <div className="text-sm font-extrabold text-slate-900 mt-1.5">
-                  {formatCurrency(item.asking_price)}
-                </div>
-              </div>
+              </button>
             ))}
           </div>
         </section>
@@ -616,3 +546,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     </div>
   );
 };
+
+const SectionHead: React.FC<{
+  eyebrow?: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  action?: React.ReactNode;
+}> = ({ eyebrow, title, subtitle, action }) => (
+  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
+    <div className="min-w-0">
+      {eyebrow && <p className="text-2xs font-bold uppercase tracking-[0.14em] text-brand-600 mb-1.5">{eyebrow}</p>}
+      <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{title}</h2>
+      {subtitle && <p className="text-xs sm:text-sm text-slate-500 mt-1.5 max-w-2xl">{subtitle}</p>}
+    </div>
+    {action && <div className="shrink-0 max-w-full">{action}</div>}
+  </div>
+);

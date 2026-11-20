@@ -8,6 +8,7 @@ import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { RiderProfile, DeliveryJob } from '../types';
 import { useToast } from '../context/ToastContext';
+import { PageLoader } from '../components/ui/Loader';
 
 interface RiderDashboardProps {
   onNavigate: (page: string, params?: any) => void;
@@ -169,7 +170,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
           </p>
           <button
             onClick={() => onOpenAuth ? onOpenAuth() : onNavigate('landing')}
-            className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+            className="w-full py-2.5 px-4 rv-btn-primary text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
           >
             Sign In to Account
           </button>
@@ -180,12 +181,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 py-16 px-4 flex items-center justify-center">
-        <div className="text-center">
-          <RotateCw className="w-8 h-8 text-emerald-600 animate-spin mx-auto mb-3" />
-          <p className="text-xs text-slate-500 font-medium">Loading partner dashboard...</p>
-        </div>
-      </div>
+      <PageLoader label="Loading partner dashboard..." />
     );
   }
 
@@ -202,7 +198,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
               </p>
               <button
                 onClick={() => loadData(true)}
-                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+                className="w-full py-2.5 px-4 rv-btn-primary text-white text-xs font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
               >
                 <RotateCw className="w-4 h-4" />
                 <span>Retry Connection</span>
@@ -217,7 +213,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
               </p>
               <button
                 onClick={() => onNavigate('delivery-partner-signup')}
-                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+                className="w-full py-2.5 px-4 rv-btn-primary text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
               >
                 Apply to Become a Partner
               </button>
@@ -241,7 +237,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
           <div className="space-y-2">
             <button
               onClick={() => onNavigate('delivery-partner-application')}
-              className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+              className="w-full py-2.5 px-4 rv-btn-primary text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
             >
               View Full Application Details
             </button>
@@ -259,10 +255,11 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-24 sm:pb-12">
+
       {/* Top Header / App Bar */}
-      <div className="bg-slate-900 text-white px-4 sm:px-6 py-4 shadow-md sticky top-14 sm:top-16 z-30">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
+      <div className="bg-brand-gradient text-white px-4 sm:px-6 lg:px-10 py-4 shadow-lg shadow-brand-900/20 sticky top-14 sm:top-16 z-30">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm border border-emerald-500/40 shrink-0">
               <Bike className="w-5 h-5" />
@@ -270,11 +267,11 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-sm sm:text-base leading-tight">{profile.name}</span>
-                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-semibold uppercase">
+                <span className="text-3xs bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-semibold uppercase">
                   Verified
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-2xs text-slate-400">
                 {profile.city} • {profile.vehicle_type.replace(/_/g, ' ')}
               </p>
             </div>
@@ -307,7 +304,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-5 space-y-5">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-5 space-y-5">
         {/* Alerts */}
         {error && (
           <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
@@ -324,12 +321,12 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
         )}
 
         {/* GPS Location Bar */}
-        <div className="bg-white rounded-xl border border-slate-200 p-3.5 flex items-center justify-between gap-3 shadow-2xs">
+        <div className="bg-white rounded-2xl border border-slate-200 p-3.5 flex items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-2.5 text-xs text-slate-700">
             <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
             <div>
               <span className="font-semibold block">GPS Location Broadcast</span>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-2xs text-slate-400">
                 {profile.current_location
                   ? `Active (${profile.current_location.latitude.toFixed(3)}, ${profile.current_location.longitude.toFixed(3)})`
                   : 'Location not updated yet'}
@@ -353,13 +350,13 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
             className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs cursor-pointer hover:border-emerald-300 transition-colors"
           >
             <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-[11px] font-semibold">Earnings</span>
+              <span className="text-2xs font-semibold">Earnings</span>
               <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
             </div>
             <p className="text-base sm:text-lg font-extrabold text-slate-900">
               ₹{((profile.successful_deliveries ?? (profile as any).total_deliveries_completed ?? 0) * 135).toLocaleString('en-IN')}
             </p>
-            <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5 mt-0.5">
+            <span className="text-3xs text-emerald-600 font-bold flex items-center gap-0.5 mt-0.5">
               <span>View breakdown</span>
               <ChevronRight className="w-3 h-3" />
             </span>
@@ -370,24 +367,24 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
             className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs cursor-pointer hover:border-emerald-300 transition-colors"
           >
             <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-[11px] font-semibold">Completed</span>
-              <PackageCheck className="w-3.5 h-3.5 text-blue-600" />
+              <span className="text-2xs font-semibold">Completed</span>
+              <PackageCheck className="w-3.5 h-3.5 text-indigo-600" />
             </div>
             <p className="text-base sm:text-lg font-extrabold text-slate-900">
               {profile.successful_deliveries ?? (profile as any).total_deliveries_completed ?? 0}
             </p>
-            <span className="text-[10px] text-slate-400">Total verified</span>
+            <span className="text-3xs text-slate-400">Total verified</span>
           </div>
 
           <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs">
             <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-[11px] font-semibold">Rating</span>
+              <span className="text-2xs font-semibold">Rating</span>
               <Award className="w-3.5 h-3.5 text-amber-500" />
             </div>
             <p className="text-base sm:text-lg font-extrabold text-slate-900">
               ⭐ {Number(profile.rating ?? (profile as any).average_rating ?? 5.0).toFixed(1)}
             </p>
-            <span className="text-[10px] text-emerald-600 font-semibold">Top tier</span>
+            <span className="text-3xs text-emerald-600 font-semibold">Top tier</span>
           </div>
         </div>
 
@@ -395,7 +392,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
         {activeJob && (
           <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-2xl p-5 shadow-md">
             <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-3xs font-bold uppercase tracking-wider">
                 ⚡ Active Delivery in Progress
               </span>
               <span className="text-xs font-mono bg-black/20 px-2 py-0.5 rounded">
@@ -464,7 +461,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
           ) : availableJobs.length === 0 ? (
             <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center space-y-2 shadow-2xs">
               <PackageCheck className="w-10 h-10 text-slate-300 mx-auto" />
-              <h3 className="text-xs font-bold text-slate-800">No active delivery requests right now</h3>
+              <h3 className="text-sm font-bold text-slate-800">No active delivery requests right now</h3>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
                 Stay online! New smartphone orders in your covered pincodes will broadcast here automatically.
               </p>
@@ -478,7 +475,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
                 >
                   <div className="space-y-2 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-[10px] uppercase">
+                      <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-3xs uppercase">
                         Smartphone Delivery
                       </span>
                       <span className="text-xs text-slate-400">Order #{job.order_id.slice(-6)}</span>
@@ -488,13 +485,13 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
 
                     <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 pt-1">
                       <div>
-                        <span className="text-slate-400 block text-[10px] uppercase font-semibold">Pickup Area</span>
+                        <span className="text-slate-400 block text-3xs uppercase font-semibold">Pickup Area</span>
                         <span className="font-semibold text-slate-800">
                           {job.pickup_location.city} ({job.pickup_location.pincode})
                         </span>
                       </div>
                       <div>
-                        <span className="text-slate-400 block text-[10px] uppercase font-semibold">Dropoff Area</span>
+                        <span className="text-slate-400 block text-3xs uppercase font-semibold">Dropoff Area</span>
                         <span className="font-semibold text-slate-800">
                           {job.dropoff_location.city} ({job.dropoff_location.pincode})
                         </span>
@@ -504,11 +501,11 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
 
                   <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 shrink-0 gap-3">
                     <div className="sm:text-right">
-                      <span className="text-[10px] text-slate-400 block uppercase font-bold">Earnings</span>
+                      <span className="text-3xs text-slate-400 block uppercase font-bold">Earnings</span>
                       <span className="text-base sm:text-lg font-extrabold text-emerald-600">
                         ₹{job.compensation.total_compensation}
                       </span>
-                      <span className="text-[10px] text-slate-400 block">
+                      <span className="text-3xs text-slate-400 block">
                         (₹{job.compensation.base_pay} + ₹{job.compensation.distance_bonus} bonus)
                       </span>
                     </div>
@@ -516,7 +513,7 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
                     <button
                       onClick={() => handleAcceptJob(job.id)}
                       disabled={acceptingJobId === job.id}
-                      className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50"
+                      className="px-5 py-2 rv-btn-primary text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50"
                     >
                       {acceptingJobId === job.id ? 'Claiming...' : 'Accept Job'}
                     </button>
@@ -529,33 +526,38 @@ export const RiderDashboard: React.FC<RiderDashboardProps> = ({
       </div>
 
       {/* Bottom Mobile Tab Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-2 px-6 flex items-center justify-around z-40 sm:hidden">
+      <div
+        className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200 h-16 px-2 grid grid-cols-4 z-40 sm:hidden shadow-[0_-8px_24px_-16px_rgb(53_20_127/0.25)]"
+        style={{ boxSizing: 'content-box', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
         <button
           onClick={() => onNavigate('rider-dashboard')}
-          className="flex flex-col items-center text-emerald-600 font-bold text-[10px]"
+          aria-current="page"
+          className="relative flex flex-col items-center justify-center gap-1 text-brand-600 font-bold text-3xs"
         >
-          <Bike className="w-5 h-5 mb-0.5" />
+          <span className="absolute top-0 h-[3px] w-8 rounded-b-full bg-brand-gradient" />
+          <Bike className="w-[22px] h-[22px]" />
           <span>Home</span>
         </button>
         <button
           onClick={() => onNavigate('rider-jobs')}
-          className="flex flex-col items-center text-slate-500 hover:text-slate-900 text-[10px]"
+          className="flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-slate-900 font-bold text-3xs"
         >
-          <PackageCheck className="w-5 h-5 mb-0.5" />
+          <PackageCheck className="w-[22px] h-[22px]" />
           <span>Jobs</span>
         </button>
         <button
           onClick={() => onNavigate('rider-earnings')}
-          className="flex flex-col items-center text-slate-500 hover:text-slate-900 text-[10px]"
+          className="flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-slate-900 font-bold text-3xs"
         >
-          <DollarSign className="w-5 h-5 mb-0.5" />
+          <DollarSign className="w-[22px] h-[22px]" />
           <span>Earnings</span>
         </button>
         <button
           onClick={() => onNavigate('rider-profile')}
-          className="flex flex-col items-center text-slate-500 hover:text-slate-900 text-[10px]"
+          className="flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-slate-900 font-bold text-3xs"
         >
-          <User className="w-5 h-5 mb-0.5" />
+          <User className="w-[22px] h-[22px]" />
           <span>Profile</span>
         </button>
       </div>

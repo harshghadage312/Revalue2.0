@@ -108,21 +108,21 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50">
+    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-10 2xl:px-12 bg-page-gradient">
       <div className="max-w-md w-full">
         {/* Card Header */}
         <div className="text-center mb-8">
           <div className="inline-flex justify-center mb-4">
             <BrandLogo />
           </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Set New Password</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Set New Password</h1>
           <p className="mt-2 text-sm text-slate-500">
             Create a strong, secure password for your ReValue account.
           </p>
         </div>
 
         {/* Main Card */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200/80 p-8">
+        <div className="bg-white rounded-2xl shadow-xl shadow-brand-900/5 border border-slate-200 p-6 sm:p-8">
           {error && (
             <div className="mb-6 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-start gap-2.5 text-xs font-medium">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-500" />
@@ -132,7 +132,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
                   <button
                     type="button"
                     onClick={() => onNavigate?.('forgot-password')}
-                    className="mt-2 text-[11px] font-bold text-rose-700 underline hover:text-rose-800 transition-colors inline-flex items-center gap-1 cursor-pointer"
+                    className="mt-2 text-2xs font-bold text-rose-700 underline hover:text-rose-800 transition-colors inline-flex items-center gap-1 cursor-pointer"
                   >
                     <span>Request a new reset link</span>
                     <ArrowRight className="w-3 h-3" />
@@ -157,7 +157,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
                     onChange={(e) => setNewPassword(e.target.value)}
                     className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 outline-none transition-all placeholder:text-slate-400"
                   />
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -167,7 +167,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
                   </button>
                 </div>
                 {newPassword && (
-                  <p className={`mt-1.5 text-[11px] font-medium ${newPassword.length >= 8 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                  <p className={`mt-1.5 text-2xs font-medium ${newPassword.length >= 8 ? 'text-emerald-600' : 'text-slate-400'}`}>
                     {newPassword.length >= 8 ? '✓ Minimum length satisfied' : `• Minimum 8 characters (${newPassword.length}/8)`}
                   </p>
                 )}
@@ -186,7 +186,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 outline-none transition-all placeholder:text-slate-400"
                   />
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -196,7 +196,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
                   </button>
                 </div>
                 {confirmPassword && (
-                  <p className={`mt-1.5 text-[11px] font-medium ${newPassword === confirmPassword ? 'text-emerald-600' : 'text-rose-500'}`}>
+                  <p className={`mt-1.5 text-2xs font-medium ${newPassword === confirmPassword ? 'text-emerald-600' : 'text-rose-500'}`}>
                     {newPassword === confirmPassword ? '✓ Passwords match' : '✕ Passwords do not match'}
                   </p>
                 )}
@@ -205,16 +205,16 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
               <button
                 type="submit"
                 disabled={loading || (newPassword.length > 0 && newPassword.length < 8)}
-                className="w-full mt-2 py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-slate-900/10 hover:shadow-slate-900/20 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full mt-2 py-3 px-4 rv-btn-primary min-h-12 font-bold rounded-xl text-sm flex items-center justify-center gap-2 cursor-pointer"
               >
                 {loading ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span className="rv-spinner rv-spinner-light w-4 h-4" aria-hidden="true" />
                     <span>Updating Password...</span>
                   </>
                 ) : (
                   <>
-                    <KeyRound className="w-4 h-4 text-emerald-400" />
+                    <KeyRound className="w-4 h-4 text-white/80" />
                     <span>Update Password</span>
                   </>
                 )}
@@ -222,7 +222,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
             </form>
           ) : (
             <div className="text-center py-4 space-y-4">
-              <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-600 border border-emerald-200">
+              <div className="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mx-auto text-green-600 border border-green-200">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
@@ -242,12 +242,12 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
                       onNavigate?.('landing');
                     }
                   }}
-                  className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors inline-flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-emerald-600/20"
+                  className="w-full py-2.5 px-4 rv-btn-primary text-white font-bold rounded-xl text-xs transition-colors inline-flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-emerald-600/20"
                 >
                   <span>Sign In Now</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
-                <p className="text-[11px] text-slate-400 mt-2">
+                <p className="text-2xs text-slate-400 mt-2">
                   Redirecting automatically in {redirectCountdown}s...
                 </p>
               </div>
@@ -256,7 +256,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
         </div>
 
         {/* Security Badge */}
-        <div className="mt-6 flex items-center justify-center gap-2 text-[11px] text-slate-400">
+        <div className="mt-6 flex items-center justify-center gap-2 text-2xs text-slate-400">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
           <span>Bcrypt-encrypted password update with session invalidation</span>
         </div>

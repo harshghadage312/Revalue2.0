@@ -8,6 +8,7 @@ import { Order, Offer, Product } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
+import { ListSkeleton } from '../components/Skeleton';
 
 interface BuyerDashboardProps {
   onNavigate: (page: string, params?: any) => void;
@@ -122,7 +123,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   if (!isAuthenticated) {
     return (
       <div className="max-w-md mx-auto py-24 text-center px-4">
-        <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4 border border-emerald-100">
+        <div className="w-16 h-16 rounded-2xl bg-brand-gradient text-white flex items-center justify-center mx-auto mb-5 shadow-lg shadow-brand-700/25">
           <ShieldCheck className="w-8 h-8" />
         </div>
         <h2 className="text-2xl font-bold text-slate-900 mb-2">Sign in to your account</h2>
@@ -131,7 +132,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
         </p>
         <button
           onClick={onOpenAuth}
-          className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm transition-all shadow-sm shadow-emerald-700/20"
+          className="px-6 py-2.5 rv-btn-primary text-white font-semibold rounded-xl text-sm transition-all shadow-sm shadow-emerald-700/20"
         >
           Sign In / Register
         </button>
@@ -148,7 +149,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12 py-6 sm:py-10 space-y-6 sm:space-y-8">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
         <div>
@@ -156,7 +157,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             Buyer Portal
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Buyer Dashboard</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Buyer Dashboard</h1>
           <p className="text-sm text-slate-500 mt-1">
             Track confirmed purchases, real-time courier shipments, and active price negotiations.
           </p>
@@ -165,7 +166,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={() => onNavigate('marketplace')}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-colors shadow-sm flex items-center gap-1.5"
+            className="px-4 py-2 bg-slate-900 hover:bg-brand-800 text-white text-xs font-semibold rounded-xl transition-colors shadow-sm flex items-center gap-1.5"
           >
             <span>Browse Smartphones</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -173,13 +174,62 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
         </div>
       </div>
 
+      {/* Overview stats (derived from data already loaded on this page) */}
+      <div className="grid grid-cols-3 gap-3 sm:gap-5">
+        <button
+          type="button"
+          onClick={() => setActiveTab('orders')}
+          className={`text-left p-3 sm:p-5 rounded-2xl border min-w-0 transition-all hover:-translate-y-0.5 hover:shadow-md ${activeTab === 'orders' ? 'bg-brand-gradient text-white border-transparent shadow-lg shadow-brand-700/20' : 'bg-white border-slate-200 shadow-xs'}`}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <span className={`text-3xs sm:text-2xs font-bold uppercase tracking-wider leading-tight ${activeTab === 'orders' ? 'text-white/75' : 'text-slate-500'}`}>Orders</span>
+            <span className={`hidden sm:flex w-9 h-9 rounded-xl items-center justify-center shrink-0 ${activeTab === 'orders' ? 'bg-white/15 text-white' : 'bg-brand-50 text-brand-600'}`}>
+              <Package className="w-[18px] h-[18px]" />
+            </span>
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
+            {loading ? <span className="inline-block w-10 h-7 rounded-md rv-skeleton align-middle" /> : orders.length}
+          </div>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('offers')}
+          className={`text-left p-3 sm:p-5 rounded-2xl border min-w-0 transition-all hover:-translate-y-0.5 hover:shadow-md ${activeTab === 'offers' ? 'bg-brand-gradient text-white border-transparent shadow-lg shadow-brand-700/20' : 'bg-white border-slate-200 shadow-xs'}`}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <span className={`text-3xs sm:text-2xs font-bold uppercase tracking-wider leading-tight ${activeTab === 'offers' ? 'text-white/75' : 'text-slate-500'}`}>Offers</span>
+            <span className={`hidden sm:flex w-9 h-9 rounded-xl items-center justify-center shrink-0 ${activeTab === 'offers' ? 'bg-white/15 text-white' : 'bg-brand-50 text-brand-600'}`}>
+              <Handshake className="w-[18px] h-[18px]" />
+            </span>
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
+            {loading ? <span className="inline-block w-10 h-7 rounded-md rv-skeleton align-middle" /> : offers.length}
+          </div>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('wishlist')}
+          className={`text-left p-3 sm:p-5 rounded-2xl border min-w-0 transition-all hover:-translate-y-0.5 hover:shadow-md ${activeTab === 'wishlist' ? 'bg-brand-gradient text-white border-transparent shadow-lg shadow-brand-700/20' : 'bg-white border-slate-200 shadow-xs'}`}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <span className={`text-3xs sm:text-2xs font-bold uppercase tracking-wider leading-tight ${activeTab === 'wishlist' ? 'text-white/75' : 'text-slate-500'}`}>Saved</span>
+            <span className={`hidden sm:flex w-9 h-9 rounded-xl items-center justify-center shrink-0 ${activeTab === 'wishlist' ? 'bg-white/15 text-white' : 'bg-brand-50 text-brand-600'}`}>
+              <Heart className="w-[18px] h-[18px]" />
+            </span>
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
+            {loading ? <span className="inline-block w-10 h-7 rounded-md rv-skeleton align-middle" /> : wishlist.length}
+          </div>
+        </button>
+      </div>
+
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-2 sm:gap-6 text-sm font-semibold overflow-x-auto">
+      <div className="flex border-b border-slate-200 gap-4 sm:gap-8 text-sm font-semibold overflow-x-auto rv-no-scrollbar" role="tablist">
         <button
           onClick={() => setActiveTab('orders')}
           className={`pb-3.5 px-1 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
             activeTab === 'orders'
-              ? 'border-emerald-600 text-emerald-700 font-bold'
+              ? 'border-brand-600 text-brand-700 font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
@@ -196,7 +246,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
           onClick={() => setActiveTab('offers')}
           className={`pb-3.5 px-1 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
             activeTab === 'offers'
-              ? 'border-emerald-600 text-emerald-700 font-bold'
+              ? 'border-brand-600 text-brand-700 font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
@@ -213,7 +263,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
           onClick={() => setActiveTab('wishlist')}
           className={`pb-3.5 px-1 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
             activeTab === 'wishlist'
-              ? 'border-emerald-600 text-emerald-700 font-bold'
+              ? 'border-brand-600 text-brand-700 font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
@@ -228,20 +278,22 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
       </div>
 
       {/* TAB CONTENT: ORDERS */}
-      {activeTab === 'orders' && (
+      {loading && <ListSkeleton rows={3} />}
+
+      {!loading && activeTab === 'orders' && (
         <div className="space-y-4">
           {orders.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-2xl border border-slate-200/80 p-8 shadow-xs">
               <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mx-auto mb-3 border border-slate-100">
                 <Package className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-900">No orders placed yet</h3>
+              <h3 className="text-base font-bold text-slate-900">No orders placed yet</h3>
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
                 Explore verified smartphones, submit an offer, or win an auction to purchase with escrow protection.
               </p>
               <button
                 onClick={() => onNavigate('marketplace')}
-                className="mt-4 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs"
+                className="mt-4 px-4 py-2 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs"
               >
                 Explore Marketplace
               </button>
@@ -250,8 +302,8 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
             orders.map((ord) => {
               const statusColors: Record<string, string> = {
                 pending_payment: 'bg-amber-50 text-amber-700 border-amber-200',
-                paid: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                shipped: 'bg-sky-50 text-sky-700 border-sky-200',
+                paid: 'bg-green-50 text-green-700 border-green-200',
+                shipped: 'bg-indigo-50 text-indigo-700 border-indigo-200',
                 delivered: 'bg-teal-50 text-teal-700 border-teal-200',
                 completed: 'bg-slate-100 text-slate-700 border-slate-200',
                 disputed: 'bg-rose-50 text-rose-700 border-rose-200',
@@ -265,7 +317,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                   <div className="space-y-2 flex-1">
                     <div className="flex flex-wrap items-center gap-2.5">
                       <span className="text-xs font-semibold text-slate-400">Order #{ord.order_id}</span>
-                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
+                      <span className={`px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider border ${
                         statusColors[ord.status] || 'bg-slate-50 text-slate-600 border-slate-200'
                       }`}>
                         {ord.status.replace('_', ' ')}
@@ -302,7 +354,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                     {ord.status === 'pending_payment' && (
                       <button
                         onClick={() => onNavigate('checkout', { orderId: ord.order_id, productId: ord.product_id, source: ord.purchase_source })}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors"
+                        className="px-4 py-2 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors"
                       >
                         Complete Payment
                       </button>
@@ -312,7 +364,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                       <>
                         <button
                           onClick={() => handleConfirmReceipt(ord.order_id)}
-                          className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs flex items-center gap-1.5 transition-colors"
+                          className="px-3.5 py-2 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs flex items-center gap-1.5 transition-colors"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>Confirm Receipt</span>
@@ -354,14 +406,14 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
       )}
 
       {/* TAB CONTENT: OFFERS */}
-      {activeTab === 'offers' && (
+      {!loading && activeTab === 'offers' && (
         <div className="space-y-4">
           {offers.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-2xl border border-slate-200/80 p-8 shadow-xs">
               <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mx-auto mb-3 border border-slate-100">
                 <Handshake className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-900">No active offers</h3>
+              <h3 className="text-base font-bold text-slate-900">No active offers</h3>
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
                 Make a private counteroffer on any negotiation-enabled smartphone listing.
               </p>
@@ -369,7 +421,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
           ) : (
             offers.map((off) => {
               const statusBadges: Record<string, string> = {
-                accepted: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+                accepted: 'bg-green-50 text-green-800 border-green-200',
                 countered: 'bg-amber-50 text-amber-800 border-amber-200',
                 rejected: 'bg-rose-50 text-rose-800 border-rose-200',
                 pending: 'bg-slate-50 text-slate-700 border-slate-200',
@@ -402,14 +454,14 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                   {/* Negotiation Trail */}
                   {off.counter_history && off.counter_history.length > 0 && (
                     <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 text-xs space-y-2">
-                      <div className="font-bold text-[10px] uppercase tracking-wider text-slate-400">
+                      <div className="font-bold text-3xs uppercase tracking-wider text-slate-400">
                         Counter Trail ({off.counter_history.length} round{off.counter_history.length > 1 ? 's' : ''})
                       </div>
                       <div className="divide-y divide-slate-100">
                         {off.counter_history.map((h, i) => (
                           <div key={i} className="py-1.5 flex items-center justify-between text-slate-600">
                             <div>
-                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase mr-2 ${
+                              <span className={`px-1.5 py-0.5 rounded text-3xs font-bold uppercase mr-2 ${
                                 h.sender_role === 'seller' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
                               }`}>
                                 {h.sender_role}
@@ -417,7 +469,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                               <span className="font-bold text-slate-900">₹{h.amount.toLocaleString('en-IN')}</span>
                               {h.note && <span className="text-slate-500 italic ml-2">"{h.note}"</span>}
                             </div>
-                            <span className="text-slate-400 text-[10px]">
+                            <span className="text-slate-400 text-3xs">
                               {new Date(h.created_at).toLocaleDateString()}
                             </span>
                           </div>
@@ -432,7 +484,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                       <>
                         <button
                           onClick={() => handleAcceptCounter(off.id)}
-                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors"
+                          className="px-4 py-2 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors"
                         >
                           Accept Counter (₹{off.amount.toLocaleString('en-IN')})
                         </button>
@@ -448,7 +500,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                     {off.status === 'accepted' && (
                       <button
                         onClick={() => onNavigate('checkout', { productId: off.product_id, source: 'offer', offerId: off.id })}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+                        className="px-4 py-2 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
                       >
                         <span>Proceed to Escrow Checkout (₹{off.amount.toLocaleString('en-IN')})</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -463,14 +515,14 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
       )}
 
       {/* TAB CONTENT: WISHLIST */}
-      {activeTab === 'wishlist' && (
+      {!loading && activeTab === 'wishlist' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {wishlist.length === 0 ? (
             <div className="col-span-full text-center py-16 bg-white rounded-2xl border border-slate-200/80 p-8 shadow-xs">
               <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mx-auto mb-3 border border-slate-100">
                 <Heart className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-900">Your wishlist is empty</h3>
+              <h3 className="text-base font-bold text-slate-900">Your wishlist is empty</h3>
               <p className="text-xs text-slate-500 mt-1">Tap the heart icon on any smartphone card to save it for later.</p>
             </div>
           ) : (
@@ -480,13 +532,13 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                 className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex justify-between items-center hover:border-slate-300 transition-all"
               >
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{prod.brand}</span>
+                  <span className="text-3xs font-bold uppercase tracking-wider text-slate-400">{prod.brand}</span>
                   <h4 className="font-bold text-sm text-slate-900 line-clamp-1">{prod.title}</h4>
                   <div className="text-xs font-bold text-emerald-700 mt-1">₹{prod.asking_price.toLocaleString('en-IN')}</div>
                 </div>
                 <button
                   onClick={() => onNavigate('product-detail', { id: prod.id })}
-                  className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition-colors"
+                  className="px-3 py-1.5 bg-slate-900 hover:bg-brand-800 text-white text-xs font-semibold rounded-lg transition-colors"
                 >
                   View
                 </button>
@@ -528,7 +580,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                     </button>
                   ))}
                 </div>
-                <p className="text-[11px] font-semibold text-slate-600 mt-1.5">
+                <p className="text-2xs font-semibold text-slate-600 mt-1.5">
                   {ratingLabels[rating]}
                 </p>
               </div>
@@ -541,7 +593,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Share details regarding physical condition, charger, battery health, and packaging accuracy..."
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all"
                 />
               </div>
 
@@ -549,7 +601,7 @@ export const BuyerDashboard: React.FC<BuyerDashboardProps> = ({
                 <button
                   type="submit"
                   disabled={reviewSubmitting}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
+                  className="flex-1 py-2.5 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
                 >
                   {reviewSubmitting ? 'Submitting...' : 'Submit Verified Review'}
                 </button>

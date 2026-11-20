@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, MessageSquareText } from 'lucide-react';
+import { useDialogA11y } from './ui/useDialogA11y';
 
 interface PromptModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({
 }) => {
   const [value, setValue] = useState(initialValue);
   const [error, setError] = useState('');
+  const dialogRef = useDialogA11y<HTMLDivElement>(isOpen, onCancel);
 
   useEffect(() => {
     if (isOpen) {
@@ -50,71 +52,75 @@ export const PromptModal: React.FC<PromptModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity animate-in fade-in"
-        onClick={onCancel}
-      />
+    <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center sm:p-4">
+      <div className="fixed inset-0 bg-slate-950/55 backdrop-blur-[3px] rv-fade" onClick={onCancel} aria-hidden="true" />
 
-      {/* Modal Dialog */}
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 z-10 transition-all animate-in zoom-in-95 duration-200"
+        aria-labelledby="prompt-modal-title"
+        className="relative w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-7 z-10 max-sm:rv-sheet-up sm:animate-in sm:fade-in sm:zoom-in-95"
+        style={{ paddingBottom: 'max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))' }}
       >
+        <div className="sm:hidden mx-auto -mt-2 mb-4 h-1.5 w-10 rounded-full bg-slate-200" aria-hidden="true" />
         <button
+          type="button"
           onClick={onCancel}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors rounded-lg p-1"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors rounded-xl p-2"
           aria-label="Close"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
-        <h3 className="text-lg font-bold text-slate-900 leading-snug">
-          {title}
-        </h3>
-        {description && (
-          <p className="mt-1.5 text-xs text-slate-500 leading-relaxed">
-            {description}
-          </p>
-        )}
-
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+        <div className="flex items-start gap-3.5 pr-8">
+          <div className="w-11 h-11 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+            <MessageSquareText className="w-5 h-5" aria-hidden="true" />
+          </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            <h3 id="prompt-modal-title" className="text-lg font-extrabold text-slate-900 leading-snug">
+              {title}
+            </h3>
+            {description && <p className="mt-1 text-xs text-slate-500 leading-relaxed">{description}</p>}
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+          <div>
+            <label htmlFor="prompt-modal-input" className="block text-xs font-bold text-slate-700 mb-1.5">
               {label}
+              {required && <span className="text-rose-500 ml-0.5">*</span>}
             </label>
             <textarea
+              id="prompt-modal-input"
               autoFocus
-              rows={3}
+              rows={4}
               value={value}
               onChange={(e) => {
                 setValue(e.target.value);
                 if (error) setError('');
               }}
               placeholder={placeholder}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:bg-white focus:border-emerald-600 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 resize-none"
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? 'prompt-modal-error' : undefined}
+              className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none placeholder:text-slate-400 resize-none"
             />
             {error && (
-              <p className="text-[11px] text-rose-500 font-semibold mt-1">
+              <p id="prompt-modal-error" className="text-2xs text-rose-600 font-semibold mt-1.5">
                 {error}
               </p>
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 pt-1">
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors"
+              className="w-full sm:w-auto min-h-11 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
             >
               {cancelText}
             </button>
-            <button
-              type="submit"
-              className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-xs"
-            >
+            <button type="submit" className="w-full sm:w-auto min-h-11 px-6 py-2.5 rv-btn-primary text-sm font-bold rounded-xl">
               {confirmText}
             </button>
           </div>

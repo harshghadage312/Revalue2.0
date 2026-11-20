@@ -120,7 +120,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
         </p>
         <button
           onClick={onOpenAuth}
-          className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm transition-all shadow-sm shadow-emerald-700/20"
+          className="px-6 py-2.5 rv-btn-primary text-white font-semibold rounded-xl text-sm transition-all shadow-sm shadow-emerald-700/20"
         >
           Sign In
         </button>
@@ -207,7 +207,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
     : Math.round(basePrice + shippingFee + insuranceFee + codFee);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12 py-6 sm:py-10 space-y-6">
       <button
         onClick={() => onNavigate('marketplace')}
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
@@ -216,7 +216,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
         <span>Return to Marketplace</span>
       </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
         {/* Left Form: Shipping, Delivery Method & Payment (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/90 shadow-xs space-y-6">
@@ -254,7 +254,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                         required
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
+                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
                       />
                     </div>
                     <div>
@@ -265,7 +265,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="10-digit mobile number"
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
+                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
                       />
                     </div>
                   </div>
@@ -278,11 +278,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                       value={street}
                       onChange={(e) => setStreet(e.target.value)}
                       placeholder="Flat, Wing, Building, Street name"
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1">City</label>
                       <input
@@ -290,7 +290,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                         required
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
+                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
                       />
                     </div>
                     <div>
@@ -300,7 +300,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                         required
                         value={state}
                         onChange={(e) => setState(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
+                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
                       />
                     </div>
                     <div>
@@ -312,7 +312,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                         value={postalCode}
                         onChange={(e) => setPostalCode(e.target.value)}
                         placeholder="e.g. 560034"
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-medium outline-none focus:border-emerald-600 focus:bg-white transition-all"
+                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-medium outline-none focus:border-emerald-600 focus:bg-white transition-all"
                       />
                     </div>
                   </div>
@@ -322,7 +322,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                 <div className="space-y-3 pt-3 border-t border-slate-100">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">2. Courier Partner</h3>
-                    {quotingLoading && <span className="text-[11px] text-slate-400 animate-pulse">Calculating rates...</span>}
+                    {quotingLoading && <span role="status" className="inline-flex items-center gap-1.5 text-2xs font-semibold text-brand-600"><span className="rv-spinner w-3.5 h-3.5" />Calculating rates...</span>}
                   </div>
 
                   {isServiceable === false ? (
@@ -350,7 +350,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                             }`}
                           >
                             {isLocal && (
-                              <div className="inline-flex items-center gap-1 text-[9.5px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-emerald-600 text-white mb-2 shadow-2xs">
+                              <div className="inline-flex items-center gap-1 text-3xs font-extrabold uppercase px-2 py-0.5 rounded-md bg-emerald-600 text-white mb-2 shadow-2xs">
                                 <Zap className="w-2.5 h-2.5" />
                                 <span>ReValue Direct Fleet</span>
                               </div>
@@ -361,7 +361,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                               <span className="text-xs font-bold text-slate-900">₹{q.rate}</span>
                             </div>
 
-                            <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                            <div className="text-2xs text-slate-500 flex items-center gap-1.5">
                               {isLocal ? (
                                 <Bike className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                               ) : (
@@ -374,7 +374,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                               </span>
                             </div>
 
-                            <div className="mt-2 text-[10px] text-emerald-700 font-semibold bg-emerald-100/60 px-2 py-0.5 rounded w-fit">
+                            <div className="mt-2 text-3xs text-emerald-700 font-semibold bg-emerald-100/60 px-2 py-0.5 rounded w-fit">
                               Doorstep OTP Verification
                             </div>
                           </div>
@@ -393,14 +393,14 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                       type="checkbox"
                       checked={optInInsurance}
                       onChange={(e) => setOptInInsurance(e.target.checked)}
-                      className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4"
+                      className="mt-0.5 rounded-xl border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4"
                     />
                     <div>
                       <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                         <ShieldCheck className="w-4 h-4 text-emerald-600" />
                         <span>All-Risk Smartphone Transit Protection (+₹{selectedQuote?.insurance_fee || 149})</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                      <p className="text-2xs text-slate-500 mt-0.5 leading-relaxed">
                         100% full replacement value coverage against physical transit damage, water damage, or courier theft.
                       </p>
                     </div>
@@ -423,10 +423,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                         <CreditCard className="w-4 h-4 text-emerald-600" />
                         <span className="font-bold text-xs text-slate-900">Prepaid Online Escrow</span>
                       </div>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-2xs text-slate-500">
                         UPI, Credit/Debit Card, NetBanking. Funds held in escrow until you inspect and accept the phone.
                       </p>
-                      <span className="inline-block mt-2 text-[10px] font-bold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded">
+                      <span className="inline-block mt-2 text-3xs font-bold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded">
                         Fastest Dispatch
                       </span>
                     </div>
@@ -443,10 +443,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                         <Banknote className="w-4 h-4 text-emerald-600" />
                         <span className="font-bold text-xs text-slate-900">Cash on Delivery (COD)</span>
                       </div>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-2xs text-slate-500">
                         Pay cash to courier agent upon doorstep delivery. Includes ₹50 cash handling charge.
                       </p>
-                      <span className="inline-block mt-2 text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                      <span className="inline-block mt-2 text-3xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
                         OTP Protected
                       </span>
                     </div>
@@ -456,7 +456,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                 <button
                   type="submit"
                   disabled={submittingOrder || isServiceable === false}
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow-xs transition-colors active:scale-[0.99] disabled:opacity-50"
+                  className="w-full py-3 rv-btn-primary text-white font-semibold rounded-xl text-xs shadow-xs transition-colors active:scale-[0.99] disabled:opacity-50"
                 >
                   {submittingOrder
                     ? 'Reserving Smartphone Inventory...'
@@ -469,7 +469,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
               <div className="space-y-5">
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1.5">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="font-bold text-slate-700 uppercase tracking-wide text-[10px]">Confirmed Shipping Address</span>
+                    <span className="font-bold text-slate-700 uppercase tracking-wide text-3xs">Confirmed Shipping Address</span>
                     <span className="font-mono font-bold text-emerald-700">Order #{activeOrder.order_id}</span>
                   </div>
                   <div className="font-bold text-slate-900">{activeOrder.shipping_address?.full_name}</div>
@@ -481,7 +481,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
 
                 {/* Payment Module */}
                 <div className="pt-2 border-t border-slate-100">
-                  <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                  <h3 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
                     <CreditCard className="w-4 h-4 text-emerald-600" />
                     <span>
                       {activeOrder.payment_method === 'cod' ? 'Cash on Delivery Order Confirmed' : 'Escrow Payment Authorization'}
@@ -504,7 +504,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                       <div className="flex gap-2.5 pt-2">
                         <button
                           onClick={() => onNavigate('delivery-tracking', { orderId: activeOrder.order_id })}
-                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs transition-colors shrink-0 flex items-center gap-1.5"
+                          className="px-4 py-2 rv-btn-primary text-white font-semibold rounded-xl text-xs transition-colors shrink-0 flex items-center gap-1.5"
                         >
                           <Truck className="w-3.5 h-3.5" />
                           <span>Track Delivery & View OTP</span>
@@ -532,7 +532,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                       <button
                         onClick={handleSimulatePayment}
                         disabled={paying}
-                        className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-xs transition-all active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="w-full py-3.5 rv-btn-primary text-white font-bold text-sm rounded-xl shadow-xs transition-all active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2"
                       >
                         <Lock className="w-4 h-4" />
                         <span>{paying ? 'Verifying with Payment Gateway...' : `Authorize Escrow Payment — ₹${activeOrder.transaction_price.toLocaleString('en-IN')}`}</span>
@@ -551,7 +551,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                       </div>
                       <button
                         onClick={() => onNavigate('delivery-tracking', { orderId: activeOrder.order_id })}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs transition-colors shrink-0 flex items-center gap-1.5"
+                        className="px-4 py-2 rv-btn-primary text-white font-semibold rounded-xl text-xs transition-colors shrink-0 flex items-center gap-1.5"
                       >
                         <Truck className="w-3.5 h-3.5" />
                         <span>Track Delivery Timeline</span>
@@ -565,9 +565,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
         </div>
 
         {/* Right Summary Card (5 cols) */}
-        <div className="lg:col-span-5 space-y-4">
+        <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-24">
           <div className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs space-y-5">
-            <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">Order Price Breakdown</h3>
+            <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">Order Price Breakdown</h3>
 
             <div>
               <div className="font-bold text-base text-slate-900">
@@ -620,7 +620,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
             </div>
 
             {/* Payout Protection Guarantee */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-[11px] text-slate-600 leading-relaxed space-y-2">
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-2xs text-slate-600 leading-relaxed space-y-2">
               <div className="flex items-start gap-2 text-slate-900 font-semibold">
                 <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <span>ReValue 48-Hour Buyer Protection Guarantee</span>

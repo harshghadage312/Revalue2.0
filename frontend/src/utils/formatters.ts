@@ -30,9 +30,9 @@ export function getConditionMeta(condition: string | undefined | null): Conditio
         label: 'Like New',
         shortLabel: 'Like New',
         description: 'Flawless screen and casing with virtually zero visible scuffs or scratches.',
-        badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-        badgeBorderClass: 'border-emerald-300',
-        dotColor: 'bg-emerald-500',
+        badgeClass: 'bg-green-50 text-green-800 border-green-200',
+        badgeBorderClass: 'border-green-300',
+        dotColor: 'bg-green-500',
       };
     case 'good':
       return {
@@ -40,9 +40,9 @@ export function getConditionMeta(condition: string | undefined | null): Conditio
         label: 'Good Condition',
         shortLabel: 'Good',
         description: 'Screen in great shape with light micro-scratches from normal everyday handling.',
-        badgeClass: 'bg-blue-50 text-blue-800 border-blue-200',
-        badgeBorderClass: 'border-blue-300',
-        dotColor: 'bg-blue-500',
+        badgeClass: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+        badgeBorderClass: 'border-indigo-300',
+        dotColor: 'bg-indigo-500',
       };
     case 'bad':
       return {

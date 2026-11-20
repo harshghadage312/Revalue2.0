@@ -66,7 +66,7 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
           </p>
           <button
             onClick={() => onOpenAuth ? onOpenAuth() : onNavigate('landing')}
-            className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+            className="w-full py-2.5 px-4 rv-btn-primary text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
           >
             Sign In
           </button>
@@ -76,12 +76,12 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 pb-20">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-10 2xl:px-12 pb-20">
+      <div className="max-w-6xl mx-auto space-y-6">
         {/* Top Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Delivery Jobs</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Delivery Jobs</h1>
             <p className="text-xs text-slate-500">Manage ongoing tasks and review completed smartphone dispatches</p>
           </div>
           <button
@@ -109,7 +109,7 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            Active Job {activeJob && <span className="ml-1.5 px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded-full text-[10px]">1</span>}
+            Active Job {activeJob && <span className="ml-1.5 px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded-full text-3xs">1</span>}
           </button>
           <button
             onClick={() => setTab('available')}
@@ -139,7 +139,7 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
             {!activeJob ? (
               <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center space-y-2">
                 <Package className="w-10 h-10 text-slate-300 mx-auto" />
-                <h3 className="text-sm font-bold text-slate-800">No active delivery currently</h3>
+                <h3 className="text-base font-bold text-slate-800">No active delivery currently</h3>
                 <p className="text-xs text-slate-500">
                   Accept an available job from the broadcast list to start a new delivery run.
                 </p>
@@ -153,7 +153,7 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
             ) : (
               <div className="bg-white rounded-2xl border-2 border-emerald-500 p-6 shadow-sm space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase tracking-wider">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-3xs font-bold uppercase tracking-wider">
                     In Progress: {activeJob.status.replace(/_/g, ' ')}
                   </span>
                   <span className="text-xs font-mono text-slate-500">
@@ -165,14 +165,14 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
                   <h3 className="text-base font-bold text-slate-900">{activeJob.product_title}</h3>
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <div className="p-3 bg-slate-50 rounded-xl">
-                      <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Pickup</span>
+                      <span className="text-3xs font-bold uppercase text-slate-400 block mb-1">Pickup</span>
                       <p className="font-semibold text-slate-800">{activeJob.pickup_location.contact_name}</p>
                       <p className="text-slate-600">{activeJob.pickup_location.street}, {activeJob.pickup_location.city}</p>
                       <p className="text-slate-500 font-mono mt-0.5">PIN: {activeJob.pickup_location.pincode}</p>
                     </div>
 
                     <div className="p-3 bg-slate-50 rounded-xl">
-                      <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Dropoff</span>
+                      <span className="text-3xs font-bold uppercase text-slate-400 block mb-1">Dropoff</span>
                       <p className="font-semibold text-slate-800">{activeJob.dropoff_location.contact_name}</p>
                       <p className="text-slate-600">{activeJob.dropoff_location.street}, {activeJob.dropoff_location.city}</p>
                       <p className="text-slate-500 font-mono mt-0.5">PIN: {activeJob.dropoff_location.pincode}</p>
@@ -182,7 +182,7 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
 
                 <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                   <div>
-                    <span className="text-[10px] text-slate-400 block uppercase font-bold">Total Compensation</span>
+                    <span className="text-3xs text-slate-400 block uppercase font-bold">Total Compensation</span>
                     <span className="text-base font-extrabold text-emerald-600">
                       ₹{activeJob.compensation.total_compensation}
                     </span>
@@ -190,7 +190,7 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
 
                   <button
                     onClick={() => onNavigate('rider-job-detail', { jobId: activeJob.id })}
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rv-btn-primary text-white text-xs font-bold rounded-xl transition-all shadow-sm"
                   >
                     <span>Execute Job</span>
                     <ArrowRight className="w-4 h-4" />
@@ -207,7 +207,7 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
             {availableJobs.length === 0 ? (
               <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center space-y-2">
                 <Clock className="w-10 h-10 text-slate-300 mx-auto" />
-                <h3 className="text-sm font-bold text-slate-800">No jobs waiting right now</h3>
+                <h3 className="text-base font-bold text-slate-800">No jobs waiting right now</h3>
                 <p className="text-xs text-slate-500">
                   Deliveries in your registered pincodes will show up here automatically when placed.
                 </p>
@@ -219,7 +219,7 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
                   className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
                   <div className="space-y-1.5 flex-1">
-                    <span className="text-[10px] font-mono text-slate-400">Order #{job.order_id.slice(-6)}</span>
+                    <span className="text-3xs font-mono text-slate-400">Order #{job.order_id.slice(-6)}</span>
                     <h4 className="text-sm font-bold text-slate-900">{job.product_title}</h4>
                     <p className="text-xs text-slate-500">
                       From {job.pickup_location.city} ({job.pickup_location.pincode}) → {job.dropoff_location.city} ({job.dropoff_location.pincode})
@@ -234,7 +234,7 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
                     </div>
                     <button
                       onClick={() => onNavigate('rider-job-detail', { jobId: job.id })}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl"
+                      className="px-4 py-2 rv-btn-primary text-white text-xs font-bold rounded-xl"
                     >
                       View & Accept
                     </button>
@@ -251,7 +251,7 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
             {historyJobs.length === 0 ? (
               <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center space-y-2">
                 <CheckCircle2 className="w-10 h-10 text-slate-300 mx-auto" />
-                <h3 className="text-sm font-bold text-slate-800">No completed jobs yet</h3>
+                <h3 className="text-base font-bold text-slate-800">No completed jobs yet</h3>
                 <p className="text-xs text-slate-500">
                   Completed deliveries and verified OTP handovers will be recorded here.
                 </p>
@@ -264,13 +264,13 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase">
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-3xs font-bold uppercase">
                         Delivered
                       </span>
                       <span className="text-xs text-slate-400">Order #{job.order_id.slice(-6)}</span>
                     </div>
                     <h4 className="text-xs sm:text-sm font-bold text-slate-900">{job.product_title}</h4>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-2xs text-slate-400">
                       Delivered on {job.delivered_at ? new Date(job.delivered_at).toLocaleDateString() : 'Recent'}
                     </p>
                   </div>
@@ -279,7 +279,7 @@ export const RiderJobsPage: React.FC<RiderJobsPageProps> = ({
                     <span className="text-xs sm:text-sm font-bold text-slate-900 block">
                       +₹{job.compensation.total_compensation}
                     </span>
-                    <span className="text-[10px] text-emerald-600 font-semibold capitalize">
+                    <span className="text-3xs text-emerald-600 font-semibold capitalize">
                       {job.compensation.payout_status}
                     </span>
                   </div>

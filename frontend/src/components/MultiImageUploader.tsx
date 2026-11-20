@@ -188,7 +188,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
             Photos ({images.length}/{MAX_IMAGES}) • Include: 1. Screen illuminated, 2. Back casing, 3. Corners & ports.
           </span>
         </div>
-        <span className="text-[11px] text-slate-400 font-medium shrink-0">
+        <span className="text-2xs text-slate-400 font-medium shrink-0">
           First photo is primary cover
         </span>
       </div>
@@ -223,7 +223,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
 
               {/* Cover Badge */}
               {isCover && (
-                <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[9.5px] font-extrabold flex items-center gap-1 shadow-xs">
+                <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-emerald-600 text-white text-3xs font-extrabold flex items-center gap-1 shadow-xs">
                   <Star className="w-2.5 h-2.5 fill-current" />
                   <span>Cover</span>
                 </div>
@@ -237,7 +237,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
                       type="button"
                       onClick={() => handleSetCover(index)}
                       title="Set as Cover Photo"
-                      className="px-2 py-1 bg-white/90 hover:bg-white text-slate-800 text-[10px] font-bold rounded shadow-2xs transition-colors flex items-center gap-1"
+                      className="px-2 py-1 bg-white/90 hover:bg-white text-slate-800 text-3xs font-bold rounded shadow-2xs transition-colors flex items-center gap-1"
                     >
                       <Star className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
                       <span>Set Cover</span>
@@ -260,7 +260,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
                     type="button"
                     disabled={Boolean(scanningImage)}
                     onClick={() => handleScanPhoto(imgUrl)}
-                    className="w-full py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10.5px] font-bold rounded shadow-2xs transition-colors flex items-center justify-center gap-1 disabled:opacity-50"
+                    className="w-full py-1.5 rv-btn-primary text-white text-2xs font-bold rounded shadow-2xs transition-colors flex items-center justify-center gap-1 disabled:opacity-50"
                   >
                     {isScanningThis ? (
                       <>
@@ -270,7 +270,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
                     ) : (
                       <>
                         <Sparkles className="w-3 h-3 text-emerald-200" />
-                        <span>Scan MobileNetV2</span>
+                        <span>AI Scan</span>
                       </>
                     )}
                   </button>
@@ -304,7 +304,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
             {uploadingCount > 0 ? (
               <div className="space-y-1.5">
                 <div className="w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto" />
-                <span className="text-[11px] font-bold text-slate-700 block">Uploading...</span>
+                <span className="text-2xs font-bold text-slate-700 block">Uploading...</span>
               </div>
             ) : (
               <div className="space-y-1">
@@ -312,7 +312,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
                   <Upload className="w-4 h-4" />
                 </div>
                 <span className="text-xs font-bold text-slate-800 block">Add Photos</span>
-                <span className="text-[10px] text-slate-400 block">
+                <span className="text-3xs text-slate-400 block">
                   Drag & drop or browse ({images.length}/{MAX_IMAGES})
                 </span>
               </div>
@@ -329,9 +329,9 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
               <Sparkles className="w-4 h-4 text-emerald-700 shrink-0" />
               <div>
                 <span className="font-extrabold text-emerald-950 block">
-                  MobileNetV2 Visual Assessment Complete
+                  AI Visual Assessment Complete
                 </span>
-                <span className="text-[11px] text-emerald-800 block">
+                <span className="text-2xs text-emerald-800 block">
                   Predicted Condition:{' '}
                   <strong>{getConditionMeta(scanResult.condition).label}</strong> ({Math.round(scanResult.confidence * 100)}% Confidence)
                 </span>
@@ -341,15 +341,15 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
             <button
               type="button"
               onClick={handleApplyDetectedCondition}
-              className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg shadow-2xs transition-colors shrink-0 flex items-center gap-1.5"
+              className="px-3 py-1.5 rv-btn-primary text-white font-bold rounded-lg shadow-2xs transition-colors shrink-0 flex items-center gap-1.5"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>Apply to Grade</span>
             </button>
           </div>
 
-          <p className="text-[10.5px] text-emerald-900/80 leading-relaxed border-t border-emerald-200/60 pt-2">
-            Advisory Notice: MobileNetV2 estimates physical exterior cosmetic wear based on visual markers. It does not verify internal hardware diagnostics or battery health. Seller confirmation is mandatory.
+          <p className="text-2xs text-emerald-900/80 leading-relaxed border-t border-emerald-200/60 pt-2">
+            Advisory Notice: ReValue AI estimates physical exterior cosmetic wear based on visual markers. It does not verify internal hardware diagnostics or battery health. Seller confirmation is mandatory.
           </p>
         </div>
       )}

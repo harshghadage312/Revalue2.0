@@ -75,12 +75,12 @@ export const AiPriceBenchmarkCard: React.FC<AiPriceBenchmarkCardProps> = ({
             <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700">
               <TrendingUp className="w-4 h-4" />
             </div>
-            <h2 className="text-sm font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
               Estimated Resale Valuation
             </h2>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Random Forest algorithmic valuation based on hardware specifications and cosmetic condition.
+            Intelligent product valuation based on specifications, physical condition, and current market trends.
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export const AiPriceBenchmarkCard: React.FC<AiPriceBenchmarkCardProps> = ({
             type="button"
             onClick={onRefreshEstimate}
             disabled={loading}
-            className="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 self-start sm:self-auto disabled:opacity-50"
+            className="text-2xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 self-start sm:self-auto disabled:opacity-50"
           >
             <span>Recalculate</span>
           </button>
@@ -102,7 +102,7 @@ export const AiPriceBenchmarkCard: React.FC<AiPriceBenchmarkCardProps> = ({
           <p className="text-xs font-bold text-slate-700">
             Evaluating secondary smartphone market data...
           </p>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-2xs text-slate-400">
             Applying 17-feature Random Forest model to {brand} {model}.
           </p>
         </div>
@@ -111,9 +111,9 @@ export const AiPriceBenchmarkCard: React.FC<AiPriceBenchmarkCardProps> = ({
           {/* Main Dark Valuation Card */}
           <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-3.5 shadow-sm">
             <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-800">
-              <span className="text-emerald-400 font-extrabold uppercase tracking-wider text-[10.5px] flex items-center gap-1.5">
+              <span className="text-emerald-400 font-extrabold uppercase tracking-wider text-2xs flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
-                Random Forest Secondary Benchmark
+                AI Estimated Resale Price
               </span>
               <span className="text-slate-400 font-medium">{brand} {model}</span>
             </div>
@@ -126,7 +126,7 @@ export const AiPriceBenchmarkCard: React.FC<AiPriceBenchmarkCardProps> = ({
                 </span>
               </div>
               <div className="text-xs text-slate-300">
-                <span className="text-[10.5px] text-slate-400 block font-medium">Estimated Market Range:</span>
+                <span className="text-2xs text-slate-400 block font-medium">Estimated Market Range:</span>
                 <span className="font-semibold text-slate-200">
                   {formatCurrency(priceEstimate.price_range_low)} — {formatCurrency(priceEstimate.price_range_high)}
                 </span>
@@ -140,7 +140,7 @@ export const AiPriceBenchmarkCard: React.FC<AiPriceBenchmarkCardProps> = ({
               </p>
             )}
 
-            <div className="text-[11px] text-emerald-300/90 leading-relaxed bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-800/40">
+            <div className="text-2xs text-emerald-300/90 leading-relaxed bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-800/40">
               Note: This valuation is an algorithmic statistical benchmark based on secondary market transactions. It is not an appraisal or selling mandate; you maintain full sovereignty to set your own price.
             </div>
           </div>
@@ -151,7 +151,7 @@ export const AiPriceBenchmarkCard: React.FC<AiPriceBenchmarkCardProps> = ({
               <span className="text-emerald-950 font-bold block">
                 Apply Benchmark Price of {formatCurrency(priceEstimate.estimated_price)}?
               </span>
-              <span className="text-emerald-800 text-[11px] block mt-0.5">
+              <span className="text-emerald-800 text-2xs block mt-0.5">
                 One-click set as your default asking price. You can adjust it at any time.
               </span>
             </div>
@@ -159,7 +159,7 @@ export const AiPriceBenchmarkCard: React.FC<AiPriceBenchmarkCardProps> = ({
             <button
               type="button"
               onClick={() => onAskingPriceChange(String(Math.round(priceEstimate.estimated_price)))}
-              className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-2xs transition-colors shrink-0"
+              className="px-4 py-2 rv-btn-primary text-white font-bold rounded-xl shadow-2xs transition-colors shrink-0"
             >
               Apply {formatCurrency(priceEstimate.estimated_price)}
             </button>
@@ -171,7 +171,7 @@ export const AiPriceBenchmarkCard: React.FC<AiPriceBenchmarkCardProps> = ({
               <span className="text-xs font-bold text-slate-800">
                 Secondary Market Competitiveness
               </span>
-              <span className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold border ${comp.badgeClass}`}>
+              <span className={`px-2.5 py-0.5 rounded-full text-2xs font-extrabold border ${comp.badgeClass}`}>
                 {comp.label}
               </span>
             </div>
@@ -183,7 +183,7 @@ export const AiPriceBenchmarkCard: React.FC<AiPriceBenchmarkCardProps> = ({
             {/* Visual Bar Indicator */}
             {priceEstimate && askingPriceNum > 0 && (
               <div className="space-y-1.5 pt-1">
-                <div className="flex justify-between text-[10px] text-slate-400 font-bold">
+                <div className="flex justify-between text-3xs text-slate-400 font-bold">
                   <span>Fast Sell ({formatCurrency(priceEstimate.price_range_low)})</span>
                   <span>Benchmark ({formatCurrency(priceEstimate.estimated_price)})</span>
                   <span>Premium ({formatCurrency(priceEstimate.price_range_high)})</span>

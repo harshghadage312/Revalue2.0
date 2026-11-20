@@ -64,21 +64,21 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50">
+    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-10 2xl:px-12 bg-page-gradient">
       <div className="max-w-md w-full">
         {/* Card Header */}
         <div className="text-center mb-8">
           <div className="inline-flex justify-center mb-4">
             <BrandLogo />
           </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Forgot Password</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Forgot Password</h1>
           <p className="mt-2 text-sm text-slate-500">
             Enter your registered email address and we'll send you a secure link to reset your password.
           </p>
         </div>
 
         {/* Main Card */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200/80 p-8">
+        <div className="bg-white rounded-2xl shadow-xl shadow-brand-900/5 border border-slate-200 p-6 sm:p-8">
           {error && (
             <div className="mb-6 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-start gap-2.5 text-xs font-medium">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-500" />
@@ -102,23 +102,23 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10 outline-none transition-all placeholder:text-slate-400"
                   />
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-slate-900/10 hover:shadow-slate-900/20 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 px-4 rv-btn-primary min-h-12 font-bold rounded-xl text-sm flex items-center justify-center gap-2 cursor-pointer"
               >
                 {loading ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span className="rv-spinner rv-spinner-light w-4 h-4" aria-hidden="true" />
                     <span>Sending Reset Link...</span>
                   </>
                 ) : (
                   <>
-                    <KeyRound className="w-4 h-4 text-emerald-400" />
+                    <KeyRound className="w-4 h-4 text-white/80" />
                     <span>Send Reset Link</span>
                   </>
                 )}
@@ -126,16 +126,16 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
             </form>
           ) : (
             <div className="text-center py-2 space-y-5">
-              <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-600 border border-emerald-200">
+              <div className="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mx-auto text-green-600 border border-green-200">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
 
               <div>
-                <h2 className="text-base font-bold text-slate-900 mb-2">Check Your Email</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">Check Your Email</h2>
                 <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
                   If an account exists with this email, you will receive a password reset link.
                 </p>
-                <p className="text-[11px] text-slate-400 mt-2">
+                <p className="text-2xs text-slate-400 mt-2">
                   The link is valid for <strong>15 minutes</strong>. Please check your spam or promotions folder if you don't see it shortly.
                 </p>
               </div>
@@ -176,7 +176,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
         </div>
 
         {/* Security Badge */}
-        <div className="mt-6 flex items-center justify-center gap-2 text-[11px] text-slate-400">
+        <div className="mt-6 flex items-center justify-center gap-2 text-2xs text-slate-400">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
           <span>Encrypted with SHA-256 and single-use link protection</span>
         </div>

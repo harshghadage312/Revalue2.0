@@ -8,6 +8,7 @@ import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { DeliveryJob } from '../types';
 import { useToast } from '../context/ToastContext';
+import { PageLoader } from '../components/ui/Loader';
 
 interface RiderJobDetailPageProps {
   jobId: string;
@@ -150,12 +151,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 py-16 px-4 flex items-center justify-center">
-        <div className="text-center">
-          <RotateCw className="w-8 h-8 text-emerald-600 animate-spin mx-auto mb-3" />
-          <p className="text-xs text-slate-500 font-medium">Loading delivery job...</p>
-        </div>
-      </div>
+      <PageLoader label="Loading delivery job..." />
     );
   }
 
@@ -170,7 +166,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
           </p>
           <button
             onClick={() => onNavigate('rider-dashboard')}
-            className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+            className="w-full py-2.5 px-4 rv-btn-primary text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
           >
             Back to Dashboard
           </button>
@@ -194,8 +190,8 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
   )}`;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-6 px-4 sm:px-6 lg:px-8 pb-20">
-      <div className="max-w-3xl mx-auto space-y-5">
+    <div className="min-h-screen bg-slate-50 py-6 px-4 sm:px-6 lg:px-10 2xl:px-12 pb-20">
+      <div className="max-w-5xl mx-auto space-y-5">
         {/* Top Back Bar */}
         <div className="flex items-center justify-between">
           <button
@@ -230,18 +226,18 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-[10px] uppercase">
+              <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-3xs uppercase">
                 Direct Local Delivery
               </span>
-              <h1 className="text-lg font-bold text-slate-900 mt-1">{job.product_title}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">{job.product_title}</h1>
             </div>
 
             <div className="sm:text-right">
-              <span className="text-[10px] text-slate-400 block uppercase font-bold">Rider Payout</span>
+              <span className="text-3xs text-slate-400 block uppercase font-bold">Rider Payout</span>
               <span className="text-xl font-extrabold text-emerald-600">
                 ₹{job.compensation.total_compensation}
               </span>
-              <span className="text-[10px] text-slate-500 block">
+              <span className="text-3xs text-slate-500 block">
                 (Base ₹{job.compensation.base_pay} + Bonus ₹{job.compensation.distance_bonus})
               </span>
             </div>
@@ -268,7 +264,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
               <button
                 onClick={handleAcceptJob}
                 disabled={actionLoading}
-                className="w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50"
+                className="w-full sm:w-auto px-8 py-3 rv-btn-primary text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50"
               >
                 {actionLoading ? 'Claiming Delivery...' : 'Accept Delivery Job (₹' + job.compensation.total_compensation + ')'}
               </button>
@@ -295,12 +291,12 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
             <div className="bg-slate-50 rounded-xl p-4 space-y-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Seller Contact</span>
+                  <span className="text-3xs font-bold uppercase text-slate-400 block mb-0.5">Seller Contact</span>
                   <p className="font-bold text-slate-900 text-sm">{job.pickup_location.contact_name}</p>
                 </div>
                 <a
                   href={`tel:${job.pickup_location.phone}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rv-btn-primary text-white rounded-lg text-xs font-bold transition-colors"
                 >
                   <Phone className="w-3.5 h-3.5" />
                   <span>Call Seller</span>
@@ -308,7 +304,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Pickup Address</span>
+                <span className="text-3xs font-bold uppercase text-slate-400 block mb-0.5">Pickup Address</span>
                 <p className="text-xs text-slate-700 font-medium">
                   {job.pickup_location.street}, {job.pickup_location.city}, {job.pickup_location.state} - {job.pickup_location.pincode}
                 </p>
@@ -319,7 +315,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
                   href={pickupMapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-semibold"
+                  className="inline-flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
                 >
                   <Navigation className="w-3.5 h-3.5" />
                   <span>Open in Google Maps Navigation</span>
@@ -339,7 +335,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
                   <ShieldCheck className="w-4 h-4 text-amber-600" />
                   <span>Device Condition Protocol:</span>
                 </p>
-                <p className="text-[11px] leading-relaxed">
+                <p className="text-2xs leading-relaxed">
                   Inspect the physical smartphone package with the seller. Verify that the device model matches: <strong>{job.product_title}</strong>. Ensure the box or protective bubble pouch is securely packed.
                 </p>
               </div>
@@ -353,7 +349,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
                   placeholder="e.g. 6-digit handover code"
                   value={pickupToken}
                   onChange={(e) => setPickupToken(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                  className="w-full px-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
                 />
               </div>
 
@@ -366,7 +362,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
                   placeholder="e.g. Box sealed in bubble wrap, accessories included"
                   value={pickupNotes}
                   onChange={(e) => setPickupNotes(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -376,7 +372,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
                     type="checkbox"
                     checked={deviceInspected}
                     onChange={(e) => setDeviceInspected(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="mt-0.5 h-4 w-4 rounded-xl border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
                   <span className="text-xs text-slate-800 font-semibold leading-relaxed">
                     I confirm that I have physically received the smartphone from the seller and it is in sound packaging.
@@ -397,7 +393,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
                   type="button"
                   onClick={handleConfirmPickup}
                   disabled={actionLoading || !deviceInspected}
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50"
+                  className="px-6 py-2.5 rv-btn-primary text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50"
                 >
                   {actionLoading ? 'Confirming...' : 'Confirm Pickup Handover →'}
                 </button>
@@ -427,12 +423,12 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
             <div className="bg-slate-50 rounded-xl p-4 space-y-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Buyer Contact</span>
+                  <span className="text-3xs font-bold uppercase text-slate-400 block mb-0.5">Buyer Contact</span>
                   <p className="font-bold text-slate-900 text-sm">{job.dropoff_location.contact_name}</p>
                 </div>
                 <a
                   href={`tel:${job.dropoff_location.phone}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rv-btn-primary text-white rounded-lg text-xs font-bold transition-colors"
                 >
                   <Phone className="w-3.5 h-3.5" />
                   <span>Call Buyer</span>
@@ -440,7 +436,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Destination Address</span>
+                <span className="text-3xs font-bold uppercase text-slate-400 block mb-0.5">Destination Address</span>
                 <p className="text-xs text-slate-700 font-medium">
                   {job.dropoff_location.street}, {job.dropoff_location.city}, {job.dropoff_location.state} - {job.dropoff_location.pincode}
                 </p>
@@ -451,7 +447,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
                   href={dropoffMapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-semibold"
+                  className="inline-flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
                 >
                   <Navigation className="w-3.5 h-3.5" />
                   <span>Open Dropoff in Google Maps</span>
@@ -462,12 +458,12 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
 
             {/* OTP Verification Form */}
             <form onSubmit={handleVerifyOtp} className="space-y-4 pt-2">
-              <div className="p-3.5 bg-blue-50 rounded-xl border border-blue-200 text-xs text-blue-900 space-y-1">
+              <div className="p-3.5 bg-indigo-50 rounded-xl border border-indigo-200 text-xs text-indigo-900 space-y-1">
                 <p className="font-bold flex items-center gap-1.5">
-                  <KeyRound className="w-4 h-4 text-blue-600" />
+                  <KeyRound className="w-4 h-4 text-indigo-600" />
                   <span>Doorstep Delivery Verification Protocol:</span>
                 </p>
-                <p className="text-[11px] leading-relaxed text-blue-800">
+                <p className="text-2xs leading-relaxed text-indigo-800">
                   Allow the buyer to physically inspect the phone package at their doorstep. Once satisfied, request their <strong>6-digit Delivery OTP</strong> (visible on their tracking page and sent via SMS).
                 </p>
               </div>
@@ -497,7 +493,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
                   placeholder="e.g. Delivered directly to buyer, verified physical condition"
                   value={deliveryNotes}
                   onChange={(e) => setDeliveryNotes(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
@@ -513,7 +509,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
                 <button
                   type="submit"
                   disabled={actionLoading || deliveryOtp.length !== 6}
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50"
+                  className="px-6 py-2.5 rv-btn-primary text-white text-xs font-bold rounded-xl transition-all shadow-sm disabled:opacity-50"
                 >
                   {actionLoading ? 'Verifying...' : 'Verify OTP & Complete Delivery'}
                 </button>
@@ -535,7 +531,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
             <div className="pt-3 flex items-center justify-center gap-3">
               <button
                 onClick={() => onNavigate('rider-dashboard')}
-                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm"
+                className="px-5 py-2.5 rv-btn-primary text-white text-xs font-bold rounded-xl shadow-sm"
               >
                 Back to Dashboard
               </button>
@@ -584,7 +580,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
                 <select
                   value={failureReason}
                   onChange={(e) => setFailureReason(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white"
+                  className="w-full px-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white"
                 >
                   <option value="Customer Unreachable">Customer Unreachable / Not Answering Phone</option>
                   <option value="Customer Refused Package">Customer Refused Package</option>
@@ -601,7 +597,7 @@ export const RiderJobDetailPage: React.FC<RiderJobDetailPageProps> = ({
                   placeholder="Provide context so Operations can assist the customer..."
                   value={failureNotes}
                   onChange={(e) => setFailureNotes(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  className="w-full px-3 py-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
                 />
               </div>
 

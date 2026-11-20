@@ -3,16 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>ReValue — Pre-Owned Smartphone Marketplace</title>
     <meta name="description" content="Every phone has more value. Buy smarter, sell with confidence. Browse pre-owned smartphones with clear condition grading, fair resale estimates, and direct seller deals on ReValue." />
-    <meta name="theme-color" content="#090d16" />
+    <meta name="theme-color" content="#5730bb" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-slate-50 text-slate-900 antialiased selection:bg-emerald-600 selection:text-white">
-    <div id="root"></div>
+  <body class="bg-slate-50 text-slate-900 antialiased">
+    <div id="root">
+      <!-- Boot splash: replaced as soon as React mounts -->
+      <div style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:linear-gradient(135deg,#f8f9ff 0%,#f3f0ff 48%,#eef2ff 100%);font-family:'Plus Jakarta Sans',system-ui,sans-serif">
+        <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#7655d6,#35147f);box-shadow:0 14px 30px -10px rgba(53,20,127,.45);display:flex;align-items:center;justify-content:center">
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none"><rect x="5" y="2" width="14" height="20" rx="3.2" stroke="#fff" stroke-width="1.9"/><path d="M8.5 13.5L12 10L15.5 13.5" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 10V16.5" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg>
+        </div>
+        <div style="font-weight:800;font-size:18px;letter-spacing:-.03em;color:#17142b">Re<span style="color:#5730bb">Value</span></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

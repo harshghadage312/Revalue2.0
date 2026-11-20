@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { PageLoader } from '../components/ui/Loader';
 import { RiderProfile } from '../types';
 
 interface RiderProfilePageProps {
@@ -53,7 +54,7 @@ export const RiderProfilePage: React.FC<RiderProfilePageProps> = ({
           </p>
           <button
             onClick={() => onOpenAuth ? onOpenAuth() : onNavigate('landing')}
-            className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+            className="w-full py-2.5 px-4 rv-btn-primary text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
           >
             Sign In
           </button>
@@ -64,12 +65,7 @@ export const RiderProfilePage: React.FC<RiderProfilePageProps> = ({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 py-16 px-4 flex items-center justify-center">
-        <div className="text-center">
-          <RotateCw className="w-8 h-8 text-emerald-600 animate-spin mx-auto mb-3" />
-          <p className="text-xs text-slate-500 font-medium">Loading partner profile...</p>
-        </div>
-      </div>
+      <PageLoader label="Loading partner profile..." />
     );
   }
 
@@ -81,7 +77,7 @@ export const RiderProfilePage: React.FC<RiderProfilePageProps> = ({
           <h2 className="text-xl font-bold text-slate-900 mb-2">No Profile Found</h2>
           <button
             onClick={() => onNavigate('delivery-partner-signup')}
-            className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm"
+            className="w-full py-2.5 px-4 rv-btn-primary text-white text-xs font-bold rounded-xl shadow-sm"
           >
             Apply to Become a Partner
           </button>
@@ -91,8 +87,8 @@ export const RiderProfilePage: React.FC<RiderProfilePageProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 pb-20">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-10 2xl:px-12 pb-20">
+      <div className="max-w-5xl mx-auto space-y-6">
         {/* Top Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -103,7 +99,7 @@ export const RiderProfilePage: React.FC<RiderProfilePageProps> = ({
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Delivery Partner Profile</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Delivery Partner Profile</h1>
               <p className="text-xs text-slate-500">ID: {profile.id}</p>
             </div>
           </div>
@@ -130,12 +126,12 @@ export const RiderProfilePage: React.FC<RiderProfilePageProps> = ({
               {profile.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">{profile.name}</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900">{profile.name}</h2>
               <p className="text-xs text-slate-500">{profile.email}</p>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[11px] font-semibold text-slate-700">⭐ {Number(profile.rating ?? (profile as any).average_rating ?? 5.0).toFixed(1)} Partner Rating</span>
+                <span className="text-2xs font-semibold text-slate-700">⭐ {Number(profile.rating ?? (profile as any).average_rating ?? 5.0).toFixed(1)} Partner Rating</span>
                 <span>•</span>
-                <span className="text-[11px] text-emerald-600 font-bold">{profile.successful_deliveries ?? (profile as any).total_deliveries_completed ?? 0} Delivered</span>
+                <span className="text-2xs text-emerald-600 font-bold">{profile.successful_deliveries ?? (profile as any).total_deliveries_completed ?? 0} Delivered</span>
               </div>
             </div>
           </div>
@@ -143,34 +139,34 @@ export const RiderProfilePage: React.FC<RiderProfilePageProps> = ({
           {/* Details Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div className="p-3 bg-slate-50 rounded-xl space-y-0.5">
-              <span className="text-slate-400 block text-[10px] uppercase font-bold">Contact Phone</span>
+              <span className="text-slate-400 block text-3xs uppercase font-bold">Contact Phone</span>
               <span className="font-semibold text-slate-900">{profile.phone}</span>
             </div>
 
             <div className="p-3 bg-slate-50 rounded-xl space-y-0.5">
-              <span className="text-slate-400 block text-[10px] uppercase font-bold">Primary Operating City</span>
+              <span className="text-slate-400 block text-3xs uppercase font-bold">Primary Operating City</span>
               <span className="font-semibold text-slate-900">{profile.city}</span>
             </div>
 
             <div className="p-3 bg-slate-50 rounded-xl space-y-0.5">
-              <span className="text-slate-400 block text-[10px] uppercase font-bold">Vehicle Details</span>
+              <span className="text-slate-400 block text-3xs uppercase font-bold">Vehicle Details</span>
               <span className="font-semibold text-slate-900 capitalize">
                 {profile.vehicle_type.replace(/_/g, ' ')} ({profile.vehicle_registration_number})
               </span>
             </div>
 
             <div className="p-3 bg-slate-50 rounded-xl space-y-0.5">
-              <span className="text-slate-400 block text-[10px] uppercase font-bold">Driving License Number</span>
+              <span className="text-slate-400 block text-3xs uppercase font-bold">Driving License Number</span>
               <span className="font-semibold text-slate-900">{profile.driving_license_number}</span>
             </div>
 
             <div className="sm:col-span-2 p-3 bg-slate-50 rounded-xl space-y-1">
-              <span className="text-slate-400 block text-[10px] uppercase font-bold">Covered Delivery PIN Codes</span>
+              <span className="text-slate-400 block text-3xs uppercase font-bold">Covered Delivery PIN Codes</span>
               <div className="flex flex-wrap gap-1.5 pt-0.5">
                 {profile.service_pincodes.map((pin) => (
                   <span
                     key={pin}
-                    className="px-2 py-0.5 bg-white border border-slate-200 text-slate-700 rounded-md font-mono text-[11px]"
+                    className="px-2 py-0.5 bg-white border border-slate-200 text-slate-700 rounded-md font-mono text-2xs"
                   >
                     {pin}
                   </span>
@@ -179,7 +175,7 @@ export const RiderProfilePage: React.FC<RiderProfilePageProps> = ({
             </div>
 
             <div className="sm:col-span-2 p-3 bg-slate-50 rounded-xl space-y-0.5">
-              <span className="text-slate-400 block text-[10px] uppercase font-bold">Emergency Contact</span>
+              <span className="text-slate-400 block text-3xs uppercase font-bold">Emergency Contact</span>
               <span className="font-semibold text-slate-900">
                 {profile.emergency_contact?.name} ({profile.emergency_contact?.relationship}) • {profile.emergency_contact?.phone}
               </span>

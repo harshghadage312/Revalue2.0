@@ -6,7 +6,7 @@
 
 ## 1. System Architecture & Overview
 
-ReValue is built from scratch without fake mockups or synthetic production balances. Every transaction, offer, sealed bid, and delivery milestone connects to a real database model with atomic state transitions and server-side authorization.
+ReValue is built f rom scratch without fake mockups or synthetic production balances. Every transaction, offer, sealed bid, and delivery milestone connects to a real database model with atomic state transitions and server-side authorization.
 
 ```
 revalue/

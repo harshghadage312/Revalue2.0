@@ -12,6 +12,7 @@ import { useToast } from '../context/ToastContext';
 import { formatCurrency, getConditionMeta, getSellingMethodMeta } from '../utils/formatters';
 import { ProductCard } from '../components/ProductCard';
 import { ProductDetailSkeleton } from '../components/Skeleton';
+import { LoadingLabel } from '../components/ui/Loader';
 
 interface ProductDetailPageProps {
   productId: string;
@@ -163,13 +164,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
   if (error || !product) {
     return (
-      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-3">
-        <AlertCircle className="w-8 h-8 text-rose-500 mx-auto" />
-        <h2 className="text-base font-bold text-slate-900">Phone Unavailable</h2>
-        <p className="text-xs text-slate-500">{error || 'This listing does not exist or has been removed.'}</p>
+      <div className="max-w-md mx-auto px-4 py-20 text-center space-y-3">
+        <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center mx-auto mb-2">
+          <AlertCircle className="w-7 h-7 text-rose-500" />
+        </div>
+        <h2 className="text-xl font-extrabold text-slate-900">Phone Unavailable</h2>
+        <p className="text-sm text-slate-500">{error || 'This listing does not exist or has been removed.'}</p>
         <button
           onClick={() => onNavigate('marketplace')}
-          className="px-4 py-2 bg-slate-900 text-white font-bold text-xs rounded-lg"
+          className="mt-3 h-11 px-6 rv-btn-primary font-bold text-xs rounded-xl"
         >
           Return to Marketplace
         </button>
@@ -188,14 +191,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const imagesList = product.images && product.images.length > 0 ? product.images : [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12 py-5 sm:py-10 space-y-10 sm:space-y-14">
       {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-medium text-slate-500 min-w-0">
         <button
           onClick={() => onNavigate('marketplace')}
-          className="hover:text-slate-900 transition-colors flex items-center gap-1"
+          className="hover:text-brand-700 transition-colors flex items-center gap-1.5 px-2.5 py-1.5 -ml-2.5 rounded-lg hover:bg-brand-50 shrink-0"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-4 h-4" />
           <span>Marketplace</span>
         </button>
         <span>/</span>
@@ -206,21 +209,22 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           {product.brand}
         </button>
         <span>/</span>
-        <span className="text-slate-800 font-semibold truncate max-w-[200px]">{product.title}</span>
-      </div>
+        <span className="text-slate-800 font-semibold truncate min-w-0">{product.title}</span>
+      </nav>
 
       {/* Main Product Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-14 items-start">
         {/* Left Column: Gallery & Hardware Specs (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           {/* Main Photo Card */}
           <div className="space-y-3">
-            <div className="aspect-[4/3] rounded-2xl bg-slate-50 border border-slate-200 overflow-hidden relative flex items-center justify-center p-4">
+            <div className="aspect-[4/3] rounded-3xl bg-gradient-to-br from-white via-slate-50 to-brand-50 border border-slate-200 overflow-hidden relative flex items-center justify-center p-6 sm:p-10 shadow-sm">
               {imagesList.length > 0 ? (
                 <img
                   src={resolveMediaUrl(imagesList[selectedImageIndex] || imagesList[0])}
                   alt={product.title}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain drop-shadow-[0_24px_32px_rgb(23_20_43/0.18)] animate-in fade-in"
+                  key={selectedImageIndex}
                   onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
                 />
               ) : (
@@ -234,15 +238,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
               {/* Selling Method Badge (Top Left) */}
               <div className="absolute top-3 left-3 z-10">
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold shadow-2xs ${
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${
                   product.selling_method === 'bidding'
-                    ? 'bg-amber-600 text-white'
+                    ? 'bg-amber-500 text-white'
                     : 'bg-slate-900 text-white'
                 }`}>
                   {product.selling_method === 'bidding' ? (
                     <Gavel className="w-3.5 h-3.5" />
                   ) : (
-                    <Handshake className="w-3.5 h-3.5 text-emerald-400" />
+                    <Handshake className="w-3.5 h-3.5 text-brand-300" />
                   )}
                   {methodMeta.tag}
                 </span>
@@ -250,7 +254,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
               {/* Condition Badge (Bottom Left) */}
               <div className="absolute bottom-3 left-3 z-10">
-                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider border shadow-2xs ${conditionMeta.badgeClass}`}>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-2xs font-bold uppercase tracking-wider border shadow-sm ${conditionMeta.badgeClass}`}>
                   <span className={`w-2 h-2 rounded-full ${conditionMeta.dotColor}`} />
                   {conditionMeta.label}
                 </span>
@@ -259,16 +263,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
             {/* Thumbnails */}
             {imagesList.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-1">
+              <div className="flex gap-2.5 overflow-x-auto pb-1 rv-no-scrollbar">
                 {imagesList.map((img, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => setSelectedImageIndex(idx)}
-                    className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all shrink-0 bg-slate-50 p-1 ${
+                    aria-label={`Show image ${idx + 1}`}
+                    aria-current={selectedImageIndex === idx ? 'true' : undefined}
+                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white p-1.5 ${
                       selectedImageIndex === idx
-                        ? 'border-emerald-600 ring-1 ring-emerald-600'
-                        : 'border-slate-200 opacity-70 hover:opacity-100'
+                        ? 'border-brand-500 ring-4 ring-brand-500/15'
+                        : 'border-slate-200 opacity-70 hover:opacity-100 hover:border-slate-300'
                     }`}
                   >
                     <img
@@ -283,37 +289,37 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           </div>
 
           {/* Hardware Specifications */}
-          <div className="bg-white rounded-xl p-5 border border-slate-200 space-y-4">
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2.5 flex items-center gap-1.5">
-              <Cpu className="w-4 h-4 text-emerald-600" />
+          <div className="bg-white rounded-2xl p-5 sm:p-7 border border-slate-200 shadow-xs space-y-5">
+            <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center"><Cpu className="w-4 h-4" /></span>
               <span>Specifications</span>
             </h3>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-                <span className="text-slate-400 font-semibold block text-[10px] uppercase">Storage</span>
-                <span className="font-extrabold text-slate-900 text-sm mt-0.5 block">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="p-4 rounded-xl bg-page-gradient border border-slate-100">
+                <span className="text-slate-400 font-semibold block text-3xs uppercase">Storage</span>
+                <span className="font-extrabold text-slate-900 text-base mt-1 block">
                   {product.specs?.storage_gb ? `${product.specs.storage_gb} GB` : 'Standard'}
                 </span>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-                <span className="text-slate-400 font-semibold block text-[10px] uppercase">RAM</span>
-                <span className="font-extrabold text-slate-900 text-sm mt-0.5 block">
+              <div className="p-4 rounded-xl bg-page-gradient border border-slate-100">
+                <span className="text-slate-400 font-semibold block text-3xs uppercase">RAM</span>
+                <span className="font-extrabold text-slate-900 text-base mt-1 block">
                   {product.specs?.ram_gb ? `${product.specs.ram_gb} GB` : 'Standard'}
                 </span>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-                <span className="text-slate-400 font-semibold block text-[10px] uppercase">Battery Health</span>
-                <span className="font-extrabold text-emerald-700 text-sm mt-0.5 block">
+              <div className="p-4 rounded-xl bg-page-gradient border border-slate-100">
+                <span className="text-slate-400 font-semibold block text-3xs uppercase">Battery Health</span>
+                <span className="font-extrabold text-green-700 text-base mt-1 block">
                   {product.specs?.battery_health_percent ? `${product.specs.battery_health_percent}%` : '85%+'}
                 </span>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-                <span className="text-slate-400 font-semibold block text-[10px] uppercase">Color</span>
-                <span className="font-extrabold text-slate-900 text-sm mt-0.5 block truncate">
+              <div className="p-4 rounded-xl bg-page-gradient border border-slate-100">
+                <span className="text-slate-400 font-semibold block text-3xs uppercase">Color</span>
+                <span className="font-extrabold text-slate-900 text-base mt-1 block truncate">
                   {product.specs?.color || 'Original'}
                 </span>
               </div>
@@ -333,7 +339,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
             {/* Known faults / cosmetic notes */}
             {product.specs?.known_faults && (
-              <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2">
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold">Disclosed Wear / Notes: </span>
@@ -345,7 +351,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             {/* Description */}
             {product.description && (
               <div className="pt-3 border-t border-slate-100">
-                <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Seller Description</h4>
+                <h4 className="text-2xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Seller Description</h4>
                 <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">
                   {product.description}
                 </p>
@@ -355,8 +361,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         </div>
 
         {/* Right Column: Pricing & Actions (5 cols) */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="bg-white rounded-xl p-5 sm:p-6 border border-slate-200 shadow-2xs space-y-4">
+        <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-24">
+          <div className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200 shadow-lg space-y-5">
             <div>
               <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
                 <span className="font-bold uppercase tracking-wider text-slate-600">
@@ -369,24 +375,24 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   </span>
                 )}
               </div>
-              <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-snug">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight tracking-tight mt-1">
                 {product.title}
               </h1>
 
               {/* Price Display */}
-              <div className="mt-3 pt-3 border-t border-slate-100 flex items-baseline justify-between">
+              <div className="mt-4 pt-4 border-t border-slate-100 flex items-end justify-between gap-3">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                  <span className="text-3xs uppercase font-bold text-slate-400 block tracking-wider">
                     {product.selling_method === 'bidding' ? 'Starting Bid' : 'Asking Price'}
                   </span>
-                  <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-0.5 block">
+                  <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-1 block tracking-tight">
                     {formatCurrency(displayedPrice)}
                   </span>
                 </div>
 
                 {product.original_retail_price && (
                   <div className="text-right">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Original MSRP</span>
+                    <span className="text-3xs uppercase font-bold text-slate-400 block">Original MSRP</span>
                     <span className="text-xs line-through text-slate-400 font-semibold block">
                       {formatCurrency(product.original_retail_price)}
                     </span>
@@ -397,29 +403,30 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
             {/* Estimated Resale Value Card */}
             {priceEstimate && priceEstimate.is_model_available && (
-              <div className="p-3.5 rounded-xl bg-slate-900 text-white space-y-2">
-                <div className="flex items-center justify-between text-xs pb-1.5 border-b border-slate-800">
-                  <span className="text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1 text-[10.5px]">
+              <div className="relative overflow-hidden p-4 sm:p-5 rounded-2xl bg-slate-950 text-white space-y-3">
+                <div aria-hidden="true" className="absolute -top-16 -right-10 w-48 h-48 rounded-full bg-brand-600/40 blur-3xl" />
+                <div className="relative flex items-center justify-between text-xs pb-2 border-b border-white/10">
+                  <span className="text-brand-200 font-bold uppercase tracking-wider flex items-center gap-1.5 text-2xs">
                     <Sparkles className="w-3.5 h-3.5" />
                     Estimated Resale Value
                   </span>
-                  <span className="text-[10px] text-slate-400">Market Benchmark</span>
+                  <span className="text-3xs text-slate-400">Market Benchmark</span>
                 </div>
 
-                <div className="flex items-baseline justify-between pt-0.5">
+                <div className="relative flex items-end justify-between gap-3 pt-0.5">
                   <div>
                     <span className="text-xs text-slate-400 block">Estimated Fair Price:</span>
-                    <span className="text-lg font-extrabold text-emerald-400">
+                    <span className="text-2xl font-extrabold text-white tracking-tight">
                       {formatCurrency(priceEstimate.estimated_price)}
                     </span>
                   </div>
                   <div className="text-right text-xs text-slate-300">
-                    <span className="text-[10px] text-slate-400 block">Expected Range:</span>
+                    <span className="text-3xs text-slate-400 block">Expected Range:</span>
                     <span>{formatCurrency(priceEstimate.price_range_low)} - {formatCurrency(priceEstimate.price_range_high)}</span>
                   </div>
                 </div>
 
-                <p className="text-[11px] text-slate-300 leading-relaxed pt-1">
+                <p className="relative text-2xs text-slate-300 leading-relaxed pt-1">
                   {priceEstimate.explanation}
                 </p>
               </div>
@@ -432,33 +439,33 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 <button
                   disabled={isSeller || product.status !== 'active'}
                   onClick={() => onNavigate('checkout', { productId: product.id, source: 'buy_now' })}
-                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg transition-colors disabled:opacity-40 text-xs sm:text-sm"
+                  className="w-full min-h-12 py-3 px-4 rv-btn-primary font-bold rounded-xl text-sm"
                 >
                   Buy Now at Asking Price ({formatCurrency(product.asking_price)})
                 </button>
 
                 {/* Make a Private Offer Form */}
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+                <div className="p-4 sm:p-5 rounded-2xl bg-page-gradient border border-slate-200 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                      <Handshake className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                      <Handshake className="w-4 h-4 text-brand-600" />
                       Make a Private Offer
                     </span>
-                    <span className="text-[10.5px] text-slate-400">Seller receives privately</span>
+                    <span className="text-2xs text-slate-400">Seller receives privately</span>
                   </div>
 
                   {userOffer ? (
-                    <div className="p-3 rounded-lg bg-white border border-slate-200 space-y-2 text-xs">
+                    <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-2.5 text-xs">
                       <div className="flex justify-between items-center">
                         <span className="text-slate-500">Your Active Offer:</span>
                         <span className="text-slate-900 font-extrabold text-sm">
                           {formatCurrency(userOffer.amount)}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100">
+                      <div className="flex items-center justify-between text-2xs pt-1 border-t border-slate-100">
                         <span className="text-slate-400">Status:</span>
-                        <span className={`font-bold uppercase tracking-wider px-2 py-0.5 rounded text-[10px] ${
-                          userOffer.status === 'accepted' ? 'bg-emerald-100 text-emerald-800' :
+                        <span className={`font-bold uppercase tracking-wider px-2 py-0.5 rounded text-3xs ${
+                          userOffer.status === 'accepted' ? 'bg-green-100 text-green-800' :
                           userOffer.status === 'rejected' ? 'bg-rose-100 text-rose-800' :
                           'bg-slate-100 text-slate-800'
                         }`}>
@@ -468,16 +475,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                       {userOffer.status === 'accepted' && (
                         <button
                           onClick={() => onNavigate('checkout', { productId: product.id, source: 'offer', offerId: userOffer.id })}
-                          className="w-full mt-1.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs"
+                          className="w-full mt-1.5 min-h-11 py-2.5 rv-btn-primary font-bold rounded-xl text-xs"
                         >
                           Proceed to Checkout ({formatCurrency(userOffer.amount)})
                         </button>
                       )}
                     </div>
                   ) : (
-                    <form onSubmit={handleCreateOffer} className="space-y-2">
+                    <form onSubmit={handleCreateOffer} className="space-y-2.5">
                       {/* Offer Shortcuts */}
-                      <div className="flex gap-1.5">
+                      <div className="grid grid-cols-3 gap-1.5">
                         {[-5, -10, -15].map((pct) => {
                           const suggested = Math.round((product.asking_price * (100 + pct)) / 100);
                           return (
@@ -485,7 +492,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                               type="button"
                               key={pct}
                               onClick={() => setOfferAmount(String(suggested))}
-                              className="flex-1 py-1 text-[10.5px] font-semibold rounded bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors"
+                              className="py-2 px-1 text-2xs font-semibold rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:text-brand-700 text-slate-600 transition-colors leading-tight"
                             >
                               {pct}% ({formatCurrency(suggested)})
                             </button>
@@ -499,7 +506,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                         min="1000"
                         value={offerAmount}
                         onChange={(e) => setOfferAmount(e.target.value)}
-                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-emerald-600"
+                        inputMode="numeric"
+                        aria-label="Offer amount in rupees"
+                        className="w-full px-3.5 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold outline-none"
                         required
                       />
 
@@ -508,15 +517,16 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                         placeholder="Optional note to seller"
                         value={offerNote}
                         onChange={(e) => setOfferNote(e.target.value)}
-                        className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:border-emerald-600"
+                        aria-label="Optional note to seller"
+                        className="w-full px-3.5 py-3 bg-white border border-slate-200 rounded-xl text-xs outline-none"
                       />
 
                       <button
                         type="submit"
                         disabled={offerLoading || isSeller || product.status !== 'active'}
-                        className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-40"
+                        className="w-full min-h-11 py-2.5 bg-slate-900 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition-colors disabled:opacity-40"
                       >
-                        {offerLoading ? 'Submitting Offer...' : 'Send Private Offer'}
+                        {offerLoading ? <LoadingLabel>Submitting Offer...</LoadingLabel> : 'Send Private Offer'}
                       </button>
                     </form>
                   )}
@@ -527,18 +537,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             {/* SELLING METHOD 2: SEALED BIDDING AUCTION */}
             {product.selling_method === 'bidding' && auction && (
               <div className="space-y-3 pt-1">
-                <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 space-y-2.5">
+                <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
-                      <Gavel className="w-3.5 h-3.5 text-amber-600" />
+                    <span className="text-sm font-bold text-amber-950 flex items-center gap-2">
+                      <Gavel className="w-4 h-4 text-amber-600" />
                       Sealed-Bid Auction
                     </span>
-                    <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider bg-amber-100 px-2 py-0.5 rounded">
+                    <span className="text-3xs font-bold text-amber-800 uppercase tracking-wider bg-amber-100 px-2 py-0.5 rounded">
                       {auction.status}
                     </span>
                   </div>
 
-                  <p className="text-[11px] text-amber-900 leading-relaxed">
+                  <p className="text-2xs text-amber-900 leading-relaxed">
                     All bids remain strictly confidential. When the auction closes, the highest bid meeting or exceeding the seller's secret reserve price wins.
                   </p>
 
@@ -558,7 +568,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   </div>
 
                   {auction.user_own_bid && (
-                    <div className="p-2.5 rounded-lg bg-white border border-amber-200 text-xs">
+                    <div className="p-3.5 rounded-2xl bg-white border border-amber-200 text-xs">
                       <span className="text-slate-500 font-medium">Your current sealed bid:</span>
                       <div className="text-sm font-extrabold text-slate-900 mt-0.5">
                         {formatCurrency(auction.user_own_bid.amount)}
@@ -574,26 +584,28 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                         placeholder={`Enter bid (min ${formatCurrency(Math.max(auction.starting_bid, (auction.user_own_bid?.amount || 0) + auction.min_increment))})`}
                         value={bidAmount}
                         onChange={(e) => setBidAmount(e.target.value)}
-                        className="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-xs font-semibold outline-none focus:border-amber-500"
+                        inputMode="numeric"
+                        aria-label="Your sealed bid amount"
+                        className="w-full px-3.5 py-3 bg-white border border-amber-200 rounded-xl text-sm font-semibold outline-none"
                         required
                       />
                       <button
                         type="submit"
                         disabled={bidLoading || isSeller}
-                        className="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-40"
+                        className="w-full min-h-11 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-colors disabled:opacity-40 shadow-md shadow-amber-500/25"
                       >
-                        {bidLoading ? 'Submitting Bid...' : 'Submit Sealed Bid'}
+                        {bidLoading ? <LoadingLabel>Submitting Bid...</LoadingLabel> : 'Submit Sealed Bid'}
                       </button>
                     </form>
                   ) : (
                     <div className="space-y-2">
-                      <div className="p-2.5 rounded-lg bg-white border border-slate-200 text-xs text-center font-bold">
+                      <div className="p-3 rounded-2xl bg-white border border-slate-200 text-xs text-center font-bold">
                         Auction has ended. Status: {auction.status}
                       </div>
                       {auction.winner_id === user?.id && (
                         <button
                           onClick={() => onNavigate('checkout', { productId: product.id, source: 'auction', auctionId: auction.id })}
-                          className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-2xs"
+                          className="w-full min-h-11 py-2.5 rv-btn-primary text-xs font-bold rounded-xl"
                         >
                           Complete Winner Order ({formatCurrency(auction.winning_amount || 0)})
                         </button>
@@ -603,7 +615,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
                   <button
                     onClick={handleFinalizeAuction}
-                    className="w-full py-1 text-[10.5px] font-semibold text-amber-900/80 hover:text-amber-950 border border-amber-200/80 rounded bg-white/70"
+                    className="w-full py-2.5 text-2xs font-semibold text-amber-900/80 hover:text-amber-950 border border-amber-200/80 rounded-xl bg-white/70 hover:bg-white transition-colors"
                   >
                     Check Status / Finalize
                   </button>
@@ -612,13 +624,18 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             )}
 
             {/* Seller Info & Protection */}
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Seller</span>
-                <span className="font-bold text-slate-800">{product.seller_name || 'Verified Member'}</span>
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-10 h-10 rounded-xl bg-brand-gradient text-white font-bold text-sm flex items-center justify-center shrink-0">
+                  {(product.seller_name || 'V').charAt(0).toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                <span className="text-3xs uppercase font-bold text-slate-400 block tracking-wider">Seller</span>
+                <span className="font-bold text-slate-900 truncate block">{product.seller_name || 'Verified Member'}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1 text-slate-500 text-[11px]">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <div className="flex items-center gap-1.5 text-green-800 bg-green-50 border border-green-100 px-2.5 py-1.5 rounded-full text-2xs font-semibold shrink-0">
+                <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
                 <span>Buyer Payout Protection</span>
               </div>
             </div>
@@ -628,24 +645,25 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
       {/* Related Smartphones Section */}
       {relatedProducts.length > 0 && (
-        <section className="pt-8 border-t border-slate-200">
-          <div className="flex items-center justify-between mb-4">
+        <section className="pt-10 border-t border-slate-200">
+          <div className="flex items-end justify-between gap-3 mb-6">
             <div>
-              <h2 className="text-sm sm:text-base font-bold text-slate-900">
+              <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
                 More from {product.brand}
               </h2>
               <p className="text-xs text-slate-500">Other available models from this brand.</p>
             </div>
             <button
               onClick={() => onNavigate('marketplace', { brand: product.brand })}
-              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-0.5"
+              className="text-xs font-bold text-brand-700 hover:text-brand-800 flex items-center gap-1 px-3 py-2 rounded-xl hover:bg-brand-50 shrink-0"
             >
               <span>View All</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+
             {relatedProducts.map((p) => (
               <ProductCard
                 key={p.id}

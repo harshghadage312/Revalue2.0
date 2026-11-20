@@ -53,7 +53,7 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
           </p>
           <button
             onClick={() => onOpenAuth ? onOpenAuth() : onNavigate('landing')}
-            className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+            className="w-full py-2.5 px-4 rv-btn-primary text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
           >
             Sign In
           </button>
@@ -63,8 +63,8 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 pb-20">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-10 2xl:px-12 pb-20">
+      <div className="max-w-6xl mx-auto space-y-6">
         {/* Top Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -75,7 +75,7 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Partner Earnings Ledger</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Partner Earnings Ledger</h1>
               <p className="text-xs text-slate-500">Transparent per-delivery payout accounting</p>
             </div>
           </div>
@@ -98,7 +98,7 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
         {/* Earnings Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
               Total Earned
             </span>
             <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">
@@ -110,7 +110,7 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 block mb-1">
+            <span className="text-2xs font-bold uppercase tracking-wider text-amber-600 block mb-1">
               Pending Payout
             </span>
             <p className="text-2xl sm:text-3xl font-extrabold text-amber-600">
@@ -122,7 +122,7 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 block mb-1">
+            <span className="text-2xs font-bold uppercase tracking-wider text-emerald-600 block mb-1">
               Paid Out to Bank
             </span>
             <p className="text-2xl sm:text-3xl font-extrabold text-emerald-600">
@@ -140,7 +140,7 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
             <span>ReValue Delivery Partner Compensation Policy</span>
           </div>
-          <p className="text-[11px] leading-relaxed text-emerald-800">
+          <p className="text-2xs leading-relaxed text-emerald-800">
             • <strong>Base Pay:</strong> ₹100 flat rate for every successfully delivered smartphone handover verified with OTP.<br />
             • <strong>Distance Bonus:</strong> Additional ₹15/km for deliveries spanning wider radii.<br />
             • <strong>No Hidden Cuts:</strong> 100% of the compensation stated at job broadcast is credited directly to your partner ledger.
@@ -150,14 +150,14 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
         {/* Completed Deliveries Table / List */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-slate-900">Payout Breakdown by Delivery</h2>
+            <h2 className="text-base sm:text-lg font-bold text-slate-900">Payout Breakdown by Delivery</h2>
             <span className="text-xs text-slate-500 font-medium">
               {earnings?.jobs?.length ?? 0} completed records
             </span>
           </div>
 
           {loading ? (
-            <div className="p-8 text-center text-xs text-slate-400">Loading payout records...</div>
+            <div role="status" className="p-10 flex flex-col items-center gap-3 text-xs font-semibold text-slate-500"><span className="rv-spinner w-7 h-7" />Loading payout records...</div>
           ) : !earnings || !earnings.jobs || earnings.jobs.length === 0 ? (
             <div className="p-8 text-center text-xs text-slate-400">
               No completed delivery payout records found yet.
@@ -171,7 +171,7 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
                       <span className="text-xs font-mono font-semibold text-slate-600">
                         Order #{item.order_id.slice(-6)}
                       </span>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                      <span className={`px-2 py-0.5 rounded-full text-3xs font-bold uppercase ${
                         item.compensation.payout_status === 'paid'
                           ? 'bg-emerald-100 text-emerald-800'
                           : 'bg-amber-100 text-amber-800'
@@ -180,7 +180,7 @@ export const RiderEarningsPage: React.FC<RiderEarningsPageProps> = ({
                       </span>
                     </div>
                     <p className="text-xs font-bold text-slate-800">{item.product_title || 'Smartphone Delivery'}</p>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-2xs text-slate-400">
                       Base: ₹{item.compensation.base_pay} • Bonus: ₹{item.compensation.distance_bonus}
                       {item.compensation.paid_at && ` • Settled: ${new Date(item.compensation.paid_at).toLocaleDateString()}`}
                       {item.compensation.payout_reference && ` (Ref: ${item.compensation.payout_reference})`}

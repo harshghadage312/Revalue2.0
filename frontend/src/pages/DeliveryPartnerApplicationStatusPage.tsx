@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { PageLoader } from '../components/ui/Loader';
 import { RiderProfile } from '../types';
 
 interface DeliveryPartnerApplicationStatusPageProps {
@@ -58,7 +59,7 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
           <div className="space-y-3">
             <button
               onClick={() => onOpenAuth ? onOpenAuth() : onNavigate('landing')}
-              className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+              className="w-full py-2.5 px-4 rv-btn-primary text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
             >
               Sign In to Account
             </button>
@@ -76,12 +77,7 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 py-16 px-4 flex items-center justify-center">
-        <div className="text-center">
-          <RotateCw className="w-8 h-8 text-emerald-600 animate-spin mx-auto mb-3" />
-          <p className="text-xs text-slate-500 font-medium">Checking application status...</p>
-        </div>
-      </div>
+      <PageLoader label="Checking application status..." />
     );
   }
 
@@ -98,7 +94,7 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
               </p>
               <button
                 onClick={() => fetchProfile(true)}
-                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+                className="w-full py-2.5 px-4 rv-btn-primary text-white text-xs font-bold rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
               >
                 <RotateCw className="w-4 h-4" />
                 <span>Retry Connection</span>
@@ -113,7 +109,7 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
               </p>
               <button
                 onClick={() => onNavigate('delivery-partner-signup')}
-                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
+                className="w-full py-2.5 px-4 rv-btn-primary text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
               >
                 Submit a Partner Application
               </button>
@@ -130,12 +126,12 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
   const isSuspended = profile.application_status === 'suspended';
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-10 2xl:px-12">
+      <div className="max-w-5xl mx-auto space-y-6">
         {/* Top bar with refresh */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Partner Application Status</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Partner Application Status</h1>
             <p className="text-xs text-slate-500">Application ID: {profile.id}</p>
           </div>
           <button
@@ -162,7 +158,7 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
                 <Clock className="w-6 h-6" />
               </div>
               <div className="space-y-2">
-                <div className="inline-block px-2.5 py-0.5 bg-amber-200 text-amber-900 rounded-full text-[11px] font-bold uppercase tracking-wider">
+                <div className="inline-block px-2.5 py-0.5 bg-amber-200 text-amber-900 rounded-full text-2xs font-bold uppercase tracking-wider">
                   Under Operations Review
                 </div>
                 <h2 className="text-lg font-bold text-slate-900">
@@ -176,15 +172,15 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
                 <div className="pt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="p-3 bg-white/80 rounded-xl border border-amber-100 flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className="text-[11px] font-semibold text-slate-800">1. Application Submitted</span>
+                    <span className="text-2xs font-semibold text-slate-800">1. Application Submitted</span>
                   </div>
                   <div className="p-3 bg-white/80 rounded-xl border border-amber-300 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-amber-600 shrink-0 animate-pulse" />
-                    <span className="text-[11px] font-bold text-amber-900">2. Verification in Progress</span>
+                    <span className="text-2xs font-bold text-amber-900">2. Verification in Progress</span>
                   </div>
                   <div className="p-3 bg-white/50 rounded-xl border border-dashed border-amber-200 flex items-center gap-2 opacity-60">
                     <CheckCircle2 className="w-4 h-4 text-slate-400 shrink-0" />
-                    <span className="text-[11px] font-medium text-slate-500">3. Fleet Activation</span>
+                    <span className="text-2xs font-medium text-slate-500">3. Fleet Activation</span>
                   </div>
                 </div>
               </div>
@@ -199,7 +195,7 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div className="space-y-2 flex-1">
-                <div className="inline-block px-2.5 py-0.5 bg-emerald-200 text-emerald-900 rounded-full text-[11px] font-bold uppercase tracking-wider">
+                <div className="inline-block px-2.5 py-0.5 bg-emerald-200 text-emerald-900 rounded-full text-2xs font-bold uppercase tracking-wider">
                   Approved & Ready to Deliver
                 </div>
                 <h2 className="text-lg font-bold text-slate-900">
@@ -212,7 +208,7 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
                 <div className="pt-3">
                   <button
                     onClick={() => onNavigate('rider-dashboard')}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rv-btn-primary text-white text-xs font-bold rounded-xl transition-all shadow-sm"
                   >
                     <span>Launch Rider Dashboard</span>
                     <ArrowRight className="w-4 h-4" />
@@ -230,7 +226,7 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
                 <XCircle className="w-6 h-6" />
               </div>
               <div className="space-y-2">
-                <div className="inline-block px-2.5 py-0.5 bg-rose-200 text-rose-900 rounded-full text-[11px] font-bold uppercase tracking-wider">
+                <div className="inline-block px-2.5 py-0.5 bg-rose-200 text-rose-900 rounded-full text-2xs font-bold uppercase tracking-wider">
                   Application Not Approved
                 </div>
                 <h2 className="text-lg font-bold text-slate-900">
@@ -254,7 +250,7 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
                 <AlertTriangle className="w-6 h-6" />
               </div>
               <div className="space-y-2">
-                <div className="inline-block px-2.5 py-0.5 bg-slate-300 text-slate-800 rounded-full text-[11px] font-bold uppercase tracking-wider">
+                <div className="inline-block px-2.5 py-0.5 bg-slate-300 text-slate-800 rounded-full text-2xs font-bold uppercase tracking-wider">
                   Partner Account Suspended
                 </div>
                 <h2 className="text-lg font-bold text-slate-900">
@@ -270,7 +266,7 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
 
         {/* Profile Details Summary */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-4">
-          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2">
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-2">
             Submitted Partner Information
           </h3>
 
@@ -297,7 +293,7 @@ export const DeliveryPartnerApplicationStatusPage: React.FC<DeliveryPartnerAppli
                 {profile.service_pincodes.map((pin) => (
                   <span
                     key={pin}
-                    className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md font-mono text-[11px] font-medium"
+                    className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md font-mono text-2xs font-medium"
                   >
                     {pin}
                   </span>

@@ -8,6 +8,7 @@ import { api } from '../services/api';
 import { OrderTrackingResponse, InspectionChecklist } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
+import { PageLoader } from '../components/ui/Loader';
 
 interface DeliveryTrackingPageProps {
   orderId: string;
@@ -152,10 +153,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
 
   if (loading) {
     return (
-      <div className="max-w-xl mx-auto py-24 text-center">
-        <div className="w-8 h-8 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <span className="text-xs font-semibold text-slate-500">Retrieving real-time courier milestones...</span>
-      </div>
+      <PageLoader label="Retrieving real-time courier milestones..." />
     );
   }
 
@@ -167,7 +165,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
         <p className="text-xs text-slate-500 mt-1 mb-6">{error || 'Could not find tracking records for this order.'}</p>
         <button
           onClick={() => onNavigate('buyer-dashboard')}
-          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors"
+          className="px-4 py-2 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors"
         >
           Return to Dashboard
         </button>
@@ -235,7 +233,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
   const isDisputed = tracking.status === 'disputed' || tracking.payout_status === 'blocked_dispute';
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-10 space-y-6">
       {/* Top Breadcrumb */}
       <div className="flex items-center justify-between">
         <button
@@ -268,22 +266,22 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
           <div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Live Delivery Status</span>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">{tracking.product_title || 'Pre-Owned Smartphone'}</h1>
+            <span className="text-3xs font-bold text-slate-400 uppercase tracking-wider">Live Delivery Status</span>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-0.5">{tracking.product_title || 'Pre-Owned Smartphone'}</h1>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
-              tracking.status === 'completed' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+              tracking.status === 'completed' ? 'bg-green-50 text-green-800 border-green-200' :
               tracking.status === 'delivered' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' :
               tracking.status === 'disputed' ? 'bg-rose-50 text-rose-800 border-rose-200' :
-              tracking.status === 'in_transit' ? 'bg-sky-50 text-sky-800 border-sky-200' :
+              tracking.status === 'in_transit' ? 'bg-indigo-50 text-indigo-800 border-indigo-200' :
               'bg-slate-50 text-slate-700 border-slate-200'
             }`}>
               {tracking.status.replace(/_/g, ' ')}
             </span>
 
-            <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider ${
+            <span className={`px-2.5 py-1 rounded-full text-2xs font-semibold uppercase tracking-wider ${
               tracking.payout_status === 'released' ? 'bg-emerald-100 text-emerald-800' :
               tracking.payout_status === 'blocked_dispute' ? 'bg-rose-100 text-rose-800 font-bold' :
               'bg-amber-100 text-amber-800'
@@ -300,19 +298,19 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
             {milestones.map((m, idx) => (
               <div key={m.key} className="space-y-1 p-3 rounded-xl bg-slate-50/70 border border-slate-100">
                 <div className="flex items-center justify-between mb-1">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold ${
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-2xs font-bold ${
                     m.done ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-500'
                   }`}>
                     {m.done ? <Check className="w-3.5 h-3.5" /> : idx + 1}
                   </div>
                   {m.time && (
-                    <span className="text-[10px] text-slate-400 font-mono">
+                    <span className="text-3xs text-slate-400 font-mono">
                       {new Date(m.time).toLocaleDateString()}
                     </span>
                   )}
                 </div>
                 <div className="text-xs font-bold text-slate-900">{m.label}</div>
-                <div className="text-[11px] text-slate-500 line-clamp-1">{m.desc}</div>
+                <div className="text-2xs text-slate-500 line-clamp-1">{m.desc}</div>
               </div>
             ))}
           </div>
@@ -337,7 +335,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                 <Truck className="w-4 h-4 text-emerald-600" />
                 <span className="font-bold text-sm text-slate-900">{tracking.shipment_info.courier_name}</span>
                 {tracking.shipment_info.is_courier_verified && (
-                  <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                  <span className="text-3xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
                     Verified Pickup
                   </span>
                 )}
@@ -350,7 +348,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
             {/* Courier Tracking Scan Activities */}
             {tracking.courier_tracking?.milestones && tracking.courier_tracking.milestones.length > 0 && (
               <div className="pt-2 border-t border-slate-200/70 space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Transit Activity Log</span>
+                <span className="text-3xs font-bold uppercase tracking-wider text-slate-400 block">Transit Activity Log</span>
                 <div className="space-y-1.5">
                   {tracking.courier_tracking.milestones.slice(-3).reverse().map((ml, idx) => (
                     <div key={idx} className="text-xs text-slate-600 flex items-start gap-2">
@@ -358,7 +356,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                       <div>
                         <strong className="text-slate-800">{ml.activity}</strong>
                         {ml.location && <span className="text-slate-500"> — {ml.location}</span>}
-                        <span className="text-[10px] text-slate-400 block">{new Date(ml.timestamp).toLocaleString()}</span>
+                        <span className="text-3xs text-slate-400 block">{new Date(ml.timestamp).toLocaleString()}</span>
                       </div>
                     </div>
                   ))}
@@ -378,10 +376,10 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-white">ReValue Direct Local Partner Delivery</h3>
-                  <p className="text-[11px] text-slate-400">Handled by our verified local fleet partner</p>
+                  <p className="text-2xs text-slate-400">Handled by our verified local fleet partner</p>
                 </div>
               </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300">
+              <span className="px-2 py-0.5 rounded text-3xs font-bold uppercase bg-emerald-500/20 text-emerald-300">
                 {tracking.local_delivery_job.status.replace(/_/g, ' ')}
               </span>
             </div>
@@ -389,13 +387,13 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
             {tracking.local_delivery_job.assigned_rider_name && (
               <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-xs">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-semibold">Assigned Rider</span>
+                  <span className="text-slate-400 block text-3xs uppercase font-semibold">Assigned Rider</span>
                   <span className="font-bold text-slate-100">{tracking.local_delivery_job.assigned_rider_name}</span>
                 </div>
                 {tracking.local_delivery_job.assigned_rider_phone && (
                   <a
                     href={`tel:${tracking.local_delivery_job.assigned_rider_phone}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rv-btn-primary text-white rounded-lg text-xs font-semibold transition-colors"
                   >
                     <Phone className="w-3.5 h-3.5" />
                     <span>Call Partner</span>
@@ -424,14 +422,14 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
             {tracking.delivery_otp && (
               <div className="bg-white p-3.5 rounded-xl border border-emerald-300 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                  <span className="text-3xs uppercase font-bold text-slate-400 block">
                     Your Secret Doorstep Handover OTP
                   </span>
                   <span className="text-2xl font-mono font-extrabold tracking-widest text-emerald-700">
                     {tracking.delivery_otp}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 sm:max-w-xs sm:text-right leading-tight">
+                <p className="text-2xs text-slate-500 sm:max-w-xs sm:text-right leading-tight">
                   Share this 6-digit code with your delivery partner only after receiving and inspecting the package.
                 </p>
               </div>
@@ -444,17 +442,17 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                 value={enteredOtp}
                 onChange={(e) => setEnteredOtp(e.target.value)}
                 placeholder="Enter 6-digit OTP"
-                className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold outline-none focus:border-emerald-600 w-36"
+                className="px-3 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold outline-none focus:border-emerald-600 w-36"
               />
               <button
                 type="submit"
                 disabled={verifyingOtp}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
+                className="px-4 py-2 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
               >
                 {verifyingOtp ? 'Verifying...' : 'Verify Doorstep OTP'}
               </button>
             </form>
-            {otpError && <div className="text-[11px] text-rose-600 font-semibold">{otpError}</div>}
+            {otpError && <div className="text-2xs text-rose-600 font-semibold">{otpError}</div>}
           </div>
         )}
 
@@ -474,11 +472,11 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
 
               {tracking.inspection_hours_left !== null && tracking.inspection_hours_left !== undefined && (
                 <div className="p-3 rounded-2xl bg-white border border-indigo-100 text-center shrink-0">
-                  <div className="text-[10px] uppercase font-bold text-slate-400">Time Remaining</div>
+                  <div className="text-3xs uppercase font-bold text-slate-400">Time Remaining</div>
                   <div className="text-xl font-mono font-extrabold text-indigo-900">
                     {tracking.inspection_hours_left}h
                   </div>
-                  <div className="text-[10px] text-slate-500">until auto-acceptance</div>
+                  <div className="text-3xs text-slate-500">until auto-acceptance</div>
                 </div>
               )}
             </div>
@@ -495,7 +493,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                     type="checkbox"
                     checked={checklist.screen_ok}
                     onChange={(e) => setChecklist({ ...checklist, screen_ok: e.target.checked })}
-                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="rounded-xl border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
                   <span>Display & Glass (no cracks, no touchlines)</span>
                 </label>
@@ -505,7 +503,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                     type="checkbox"
                     checked={checklist.touch_ok}
                     onChange={(e) => setChecklist({ ...checklist, touch_ok: e.target.checked })}
-                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="rounded-xl border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
                   <span>Touchscreen responsiveness & multitouch</span>
                 </label>
@@ -515,7 +513,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                     type="checkbox"
                     checked={checklist.cameras_ok}
                     onChange={(e) => setChecklist({ ...checklist, cameras_ok: e.target.checked })}
-                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="rounded-xl border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
                   <span>Front & Rear camera autofocus & flash</span>
                 </label>
@@ -525,7 +523,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                     type="checkbox"
                     checked={checklist.audio_ok}
                     onChange={(e) => setChecklist({ ...checklist, audio_ok: e.target.checked })}
-                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="rounded-xl border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
                   <span>Earpiece, speaker, and microphone clarity</span>
                 </label>
@@ -535,7 +533,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                     type="checkbox"
                     checked={checklist.charging_battery_ok}
                     onChange={(e) => setChecklist({ ...checklist, charging_battery_ok: e.target.checked })}
-                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="rounded-xl border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
                   <span>Charging port & stable battery health</span>
                 </label>
@@ -545,7 +543,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                     type="checkbox"
                     checked={checklist.imei_matches}
                     onChange={(e) => setChecklist({ ...checklist, imei_matches: e.target.checked })}
-                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="rounded-xl border-slate-300 text-emerald-600 focus:ring-emerald-500"
                   />
                   <span>IMEI number matches listing specifications</span>
                 </label>
@@ -555,7 +553,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                 <button
                   type="submit"
                   disabled={submittingChecklist}
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors"
+                  className="px-4 py-2 bg-slate-900 hover:bg-brand-800 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors"
                 >
                   {submittingChecklist ? 'Saving Checklist...' : 'Save Inspection Progress'}
                 </button>
@@ -566,7 +564,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button
                 onClick={handleConfirmReceipt}
-                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors"
+                className="flex-1 py-3 rv-btn-primary text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Everything is Perfect — Confirm Receipt & Release Escrow Payout</span>
@@ -627,7 +625,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                 <select
                   value={disputeReason}
                   onChange={(e) => setDisputeReason(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
                 >
                   <option value="damaged_item">Item arrived physically damaged or cracked</option>
                   <option value="not_delivered">Package was marked delivered but not received</option>
@@ -646,7 +644,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                   value={disputeDetails}
                   onChange={(e) => setDisputeDetails(e.target.value)}
                   placeholder="Explain exactly what is wrong or does not match the listing..."
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all"
                 />
               </div>
 
@@ -657,7 +655,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                   value={disputeEvidence}
                   onChange={(e) => setDisputeEvidence(e.target.value)}
                   placeholder="https://images.example.com/phone-crack.jpg"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-mono"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-mono"
                 />
               </div>
 
@@ -666,7 +664,7 @@ export const DeliveryTrackingPage: React.FC<DeliveryTrackingPageProps> = ({
                 <select
                   value={preferredResolution}
                   onChange={(e) => setPreferredResolution(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
                 >
                   <option value="return_and_refund">Return Smartphone & Receive 100% Full Refund</option>
                   <option value="partial_refund">Keep Smartphone with Partial Refund Compromise</option>

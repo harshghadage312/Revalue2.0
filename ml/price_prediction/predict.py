@@ -232,7 +232,7 @@ def estimate_price(req: PriceEstimateRequest) -> PriceEstimateResponse:
     range_high = min(orig_price, pred_rounded + spread)
 
     explanation = (
-        f"MindValue valuation of ₹{pred_rounded:,.2f} based on {int(days_used)} days used "
+        f"ReValue valuation of ₹{pred_rounded:,.2f} based on {int(days_used)} days used "
         f"({req.approximate_age_months} mos), '{condition_val}' condition, {int(battery_health)}% battery health, "
         f"and original launch price of ₹{orig_price:,.2f}."
     )

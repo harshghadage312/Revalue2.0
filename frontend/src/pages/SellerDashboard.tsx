@@ -9,6 +9,7 @@ import { Product, Offer, Order, NegotiationSuggestion } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
+import { ListSkeleton } from '../components/Skeleton';
 
 interface SellerDashboardProps {
   onNavigate: (page: string, params?: any) => void;
@@ -223,7 +224,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
   if (!isAuthenticated) {
     return (
       <div className="max-w-md mx-auto py-24 text-center px-4">
-        <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4 border border-emerald-100">
+        <div className="w-16 h-16 rounded-2xl bg-brand-gradient text-white flex items-center justify-center mx-auto mb-5 shadow-lg shadow-brand-700/25">
           <ShieldCheck className="w-8 h-8" />
         </div>
         <h2 className="text-2xl font-bold text-slate-900 mb-2">Sign in to your seller account</h2>
@@ -232,7 +233,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
         </p>
         <button
           onClick={onOpenAuth}
-          className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm transition-all shadow-sm shadow-emerald-700/20"
+          className="px-6 py-2.5 rv-btn-primary text-white font-semibold rounded-xl text-sm transition-all shadow-sm shadow-emerald-700/20"
         >
           Sign In / Register
         </button>
@@ -252,7 +253,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12 py-6 sm:py-10 space-y-6 sm:space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
         <div>
@@ -260,7 +261,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             Seller Portal
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Seller Dashboard</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Seller Dashboard</h1>
           <p className="text-sm text-slate-500 mt-1">
             Manage smartphone inventory, evaluate buyer offers with rule-based AI advice, and fulfill orders.
           </p>
@@ -268,20 +269,69 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
 
         <button
           onClick={() => onNavigate('create-listing')}
-          className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5 self-start"
+          className="px-4 py-2.5 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5 self-start"
         >
           <PlusCircle className="w-4 h-4" />
           <span>New Smartphone Listing</span>
         </button>
       </div>
 
+      {/* Overview stats (derived from data already loaded on this page) */}
+      <div className="grid grid-cols-3 gap-3 sm:gap-5">
+        <button
+          type="button"
+          onClick={() => setActiveTab('offers')}
+          className={`text-left p-3 sm:p-5 rounded-2xl border min-w-0 transition-all hover:-translate-y-0.5 hover:shadow-md ${activeTab === 'offers' ? 'bg-brand-gradient text-white border-transparent shadow-lg shadow-brand-700/20' : 'bg-white border-slate-200 shadow-xs'}`}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <span className={`text-3xs sm:text-2xs font-bold uppercase tracking-wider leading-tight ${activeTab === 'offers' ? 'text-white/75' : 'text-slate-500'}`}>Pending offers</span>
+            <span className={`hidden sm:flex w-9 h-9 rounded-xl items-center justify-center shrink-0 ${activeTab === 'offers' ? 'bg-white/15 text-white' : 'bg-brand-50 text-brand-600'}`}>
+              <Handshake className="w-[18px] h-[18px]" />
+            </span>
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
+            {loading ? <span className="inline-block w-10 h-7 rounded-md rv-skeleton align-middle" /> : pendingOffers.length}
+          </div>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('shipments')}
+          className={`text-left p-3 sm:p-5 rounded-2xl border min-w-0 transition-all hover:-translate-y-0.5 hover:shadow-md ${activeTab === 'shipments' ? 'bg-brand-gradient text-white border-transparent shadow-lg shadow-brand-700/20' : 'bg-white border-slate-200 shadow-xs'}`}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <span className={`text-3xs sm:text-2xs font-bold uppercase tracking-wider leading-tight ${activeTab === 'shipments' ? 'text-white/75' : 'text-slate-500'}`}>To ship</span>
+            <span className={`hidden sm:flex w-9 h-9 rounded-xl items-center justify-center shrink-0 ${activeTab === 'shipments' ? 'bg-white/15 text-white' : 'bg-brand-50 text-brand-600'}`}>
+              <Truck className="w-[18px] h-[18px]" />
+            </span>
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
+            {loading ? <span className="inline-block w-10 h-7 rounded-md rv-skeleton align-middle" /> : paidOrdersToShip.length}
+          </div>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('listings')}
+          className={`text-left p-3 sm:p-5 rounded-2xl border min-w-0 transition-all hover:-translate-y-0.5 hover:shadow-md ${activeTab === 'listings' ? 'bg-brand-gradient text-white border-transparent shadow-lg shadow-brand-700/20' : 'bg-white border-slate-200 shadow-xs'}`}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <span className={`text-3xs sm:text-2xs font-bold uppercase tracking-wider leading-tight ${activeTab === 'listings' ? 'text-white/75' : 'text-slate-500'}`}>Listings</span>
+            <span className={`hidden sm:flex w-9 h-9 rounded-xl items-center justify-center shrink-0 ${activeTab === 'listings' ? 'bg-white/15 text-white' : 'bg-brand-50 text-brand-600'}`}>
+              <Package className="w-[18px] h-[18px]" />
+            </span>
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
+            {loading ? <span className="inline-block w-10 h-7 rounded-md rv-skeleton align-middle" /> : listings.length}
+          </div>
+        </button>
+      </div>
+
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-2 sm:gap-6 text-sm font-semibold overflow-x-auto">
+      <div className="flex border-b border-slate-200 gap-4 sm:gap-8 text-sm font-semibold overflow-x-auto rv-no-scrollbar" role="tablist">
         <button
           onClick={() => setActiveTab('offers')}
           className={`pb-3.5 px-1 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
             activeTab === 'offers'
-              ? 'border-emerald-600 text-emerald-700 font-bold'
+              ? 'border-brand-600 text-brand-700 font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
@@ -298,7 +348,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
           onClick={() => setActiveTab('shipments')}
           className={`pb-3.5 px-1 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
             activeTab === 'shipments'
-              ? 'border-emerald-600 text-emerald-700 font-bold'
+              ? 'border-brand-600 text-brand-700 font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
@@ -315,7 +365,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
           onClick={() => setActiveTab('listings')}
           className={`pb-3.5 px-1 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
             activeTab === 'listings'
-              ? 'border-emerald-600 text-emerald-700 font-bold'
+              ? 'border-brand-600 text-brand-700 font-bold'
               : 'border-transparent text-slate-500 hover:text-slate-900'
           }`}
         >
@@ -330,14 +380,16 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
       </div>
 
       {/* TAB CONTENT: OFFERS */}
-      {activeTab === 'offers' && (
+      {loading && <ListSkeleton rows={3} />}
+
+      {!loading && activeTab === 'offers' && (
         <div className="space-y-4">
           {offers.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-2xl border border-slate-200/80 p-8 shadow-xs">
               <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mx-auto mb-3 border border-slate-100">
                 <Handshake className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-900">No buyer offers yet</h3>
+              <h3 className="text-base font-bold text-slate-900">No buyer offers yet</h3>
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
                 Incoming counteroffers on negotiation-enabled smartphones will appear here with AI recommendations.
               </p>
@@ -345,7 +397,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
           ) : (
             offers.map((off) => {
               const statusBadges: Record<string, string> = {
-                accepted: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+                accepted: 'bg-green-50 text-green-800 border-green-200',
                 countered: 'bg-amber-50 text-amber-800 border-amber-200',
                 rejected: 'bg-rose-50 text-rose-800 border-rose-200',
                 pending: 'bg-slate-50 text-slate-700 border-slate-200',
@@ -393,7 +445,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
 
                       <button
                         onClick={() => handleAcceptOffer(off.id)}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors"
+                        className="px-4 py-2 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors"
                       >
                         Accept (₹{off.amount.toLocaleString('en-IN')})
                       </button>
@@ -424,14 +476,14 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
       )}
 
       {/* TAB CONTENT: SHIPMENTS & PAYOUTS */}
-      {activeTab === 'shipments' && (
+      {!loading && activeTab === 'shipments' && (
         <div className="space-y-4">
           {orders.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-2xl border border-slate-200/80 p-8 shadow-xs">
               <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mx-auto mb-3 border border-slate-100">
                 <Truck className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-900">No sold orders to ship</h3>
+              <h3 className="text-base font-bold text-slate-900">No sold orders to ship</h3>
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
                 When buyers complete escrow payment for your listings, fulfillment tasks appear here.
               </p>
@@ -439,12 +491,12 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
           ) : (
             orders.map((ord) => {
               const statusBadges: Record<string, string> = {
-                paid: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                paid: 'bg-green-50 text-green-700 border-green-200',
                 processing: 'bg-emerald-50 text-emerald-700 border-emerald-200',
                 shipment_booked: 'bg-indigo-50 text-indigo-700 border-indigo-200',
                 pickup_scheduled: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-                picked_up: 'bg-sky-50 text-sky-700 border-sky-200',
-                in_transit: 'bg-sky-50 text-sky-700 border-sky-200',
+                picked_up: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                in_transit: 'bg-indigo-50 text-indigo-700 border-indigo-200',
                 out_for_delivery: 'bg-amber-50 text-amber-700 border-amber-200',
                 delivered: 'bg-purple-50 text-purple-700 border-purple-200',
                 receipt_confirmed: 'bg-emerald-50 text-emerald-800 border-emerald-200',
@@ -528,7 +580,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       <>
                         <button
                           onClick={() => setBookingOrder(ord)}
-                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl flex items-center gap-1.5 shadow-xs transition-colors"
+                          className="px-4 py-2 rv-btn-primary text-white font-semibold text-xs rounded-xl flex items-center gap-1.5 shadow-xs transition-colors"
                         >
                           <Truck className="w-3.5 h-3.5" />
                           <span>Book Courier & Generate Shipping Label</span>
@@ -548,7 +600,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       <>
                         <button
                           onClick={() => handleDownloadLabel(ord.order_id)}
-                          className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl flex items-center gap-1.5 shadow-xs transition-colors"
+                          className="px-3.5 py-2 bg-slate-900 hover:bg-brand-800 text-white font-semibold text-xs rounded-xl flex items-center gap-1.5 shadow-xs transition-colors"
                         >
                           <Download className="w-3.5 h-3.5" />
                           <span>Print AWB Label ({ord.shipment_info.courier_name})</span>
@@ -557,13 +609,13 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                         <button
                           onClick={() => handleConfirmHandover(ord.order_id)}
                           disabled={handoverLoading === ord.order_id}
-                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl flex items-center gap-1.5 shadow-xs transition-colors disabled:opacity-50"
+                          className="px-4 py-2 rv-btn-primary text-white font-semibold text-xs rounded-xl flex items-center gap-1.5 shadow-xs transition-colors disabled:opacity-50"
                         >
                           <Check className="w-3.5 h-3.5" />
                           <span>{handoverLoading === ord.order_id ? 'Recording Handover...' : 'Record Courier Handover'}</span>
                         </button>
 
-                        <span className="text-[11px] text-slate-500 italic block sm:inline">
+                        <span className="text-2xs text-slate-500 italic block sm:inline">
                           *Generating a label is not a handover. Confirm once agent physically collects package.
                         </span>
                       </>
@@ -573,9 +625,9 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                     {['picked_up', 'in_transit', 'out_for_delivery', 'delivered', 'receipt_confirmed', 'completed'].includes(ord.status) && (
                       <button
                         onClick={() => onNavigate('delivery-tracking', { orderId: ord.order_id })}
-                        className="px-3.5 py-2 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition-colors"
+                        className="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-800 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition-colors"
                       >
-                        <Truck className="w-3.5 h-3.5 text-sky-600" />
+                        <Truck className="w-3.5 h-3.5 text-indigo-600" />
                         <span>View Live Courier Milestones</span>
                       </button>
                     )}
@@ -588,7 +640,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
       )}
 
       {/* TAB CONTENT: LISTINGS */}
-      {activeTab === 'listings' && (
+      {!loading && activeTab === 'listings' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {listings.map((p) => (
             <div
@@ -597,8 +649,8 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
             >
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{p.brand}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                  <span className="text-3xs font-bold uppercase tracking-wider text-slate-400">{p.brand}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-3xs font-bold uppercase tracking-wider ${
                     p.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
                   }`}>
                     {p.status}
@@ -654,7 +706,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
             ) : suggestion && (
               <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-emerald-950 text-xs space-y-2">
                 <div className="flex justify-between items-center font-bold">
-                  <span className="uppercase tracking-wider text-[10px] text-emerald-700">Recommendation</span>
+                  <span className="uppercase tracking-wider text-3xs text-emerald-700">Recommendation</span>
                   <span className="text-xs font-bold uppercase px-2 py-0.5 rounded bg-white text-emerald-800 border border-emerald-200">
                     {suggestion.recommendation}
                   </span>
@@ -676,7 +728,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   type="number"
                   value={counterAmount}
                   onChange={(e) => setCounterAmount(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-600 outline-none transition-all"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:bg-white focus:border-emerald-600 outline-none transition-all"
                   placeholder="Enter counter amount"
                 />
               </div>
@@ -687,7 +739,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   type="text"
                   value={counterNote}
                   onChange={(e) => setCounterNote(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-emerald-600 outline-none transition-all"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:border-emerald-600 outline-none transition-all"
                   placeholder="e.g. Includes original fast charger and tempered glass screen"
                 />
               </div>
@@ -695,7 +747,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
               <div className="flex gap-2.5 pt-2">
                 <button
                   onClick={() => handleSendCounter(suggestionOffer.id)}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors"
+                  className="flex-1 py-2.5 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors"
                 >
                   Send Counteroffer
                 </button>
@@ -734,7 +786,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                 <select
                   value={courierName}
                   onChange={(e) => setCourierName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
                 >
                   {popularCouriers.map(c => (
                     <option key={c} value={c}>{c}</option>
@@ -750,7 +802,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   placeholder="e.g. BD789012345"
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-semibold outline-none focus:border-emerald-600 focus:bg-white transition-all"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-semibold outline-none focus:border-emerald-600 focus:bg-white transition-all"
                 />
               </div>
 
@@ -758,7 +810,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                 <button
                   type="submit"
                   disabled={shipLoading}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
+                  className="flex-1 py-2.5 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
                 >
                   {shipLoading ? 'Recording Dispatch...' : 'Confirm Shipment & Update Buyer'}
                 </button>
@@ -798,7 +850,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                 <select
                   value={selectedCourierId}
                   onChange={(e) => setSelectedCourierId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
                 >
                   <option value="delhivery_surface">Delhivery Express Surface (Doorstep Pickup & OTP)</option>
                   <option value="bluedart_air">Blue Dart Air Express (Next-Day Priority)</option>
@@ -810,7 +862,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Package Dimensions (cm) & Weight (kg)</label>
                 <div className="grid grid-cols-4 gap-2">
                   <div>
-                    <span className="text-[10px] text-slate-400 block mb-0.5">Length (cm)</span>
+                    <span className="text-3xs text-slate-400 block mb-0.5">Length (cm)</span>
                     <input
                       type="number"
                       required
@@ -818,11 +870,11 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       max={50}
                       value={pkgLength}
                       onChange={(e) => setPkgLength(Number(e.target.value))}
-                      className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-medium outline-none focus:border-emerald-600"
+                      className="w-full px-2.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-medium outline-none focus:border-emerald-600"
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 block mb-0.5">Breadth (cm)</span>
+                    <span className="text-3xs text-slate-400 block mb-0.5">Breadth (cm)</span>
                     <input
                       type="number"
                       required
@@ -830,11 +882,11 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       max={50}
                       value={pkgBreadth}
                       onChange={(e) => setPkgBreadth(Number(e.target.value))}
-                      className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-medium outline-none focus:border-emerald-600"
+                      className="w-full px-2.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-medium outline-none focus:border-emerald-600"
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 block mb-0.5">Height (cm)</span>
+                    <span className="text-3xs text-slate-400 block mb-0.5">Height (cm)</span>
                     <input
                       type="number"
                       required
@@ -842,11 +894,11 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       max={30}
                       value={pkgHeight}
                       onChange={(e) => setPkgHeight(Number(e.target.value))}
-                      className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-medium outline-none focus:border-emerald-600"
+                      className="w-full px-2.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-medium outline-none focus:border-emerald-600"
                     />
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 block mb-0.5">Weight (kg)</span>
+                    <span className="text-3xs text-slate-400 block mb-0.5">Weight (kg)</span>
                     <input
                       type="number"
                       required
@@ -855,7 +907,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                       max={5.0}
                       value={packageWeight}
                       onChange={(e) => setPackageWeight(Number(e.target.value))}
-                      className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-medium outline-none focus:border-emerald-600"
+                      className="w-full px-2.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-medium outline-none focus:border-emerald-600"
                     />
                   </div>
                 </div>
@@ -868,7 +920,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                   placeholder="e.g. 358742091823746"
                   value={imeiSerial}
                   onChange={(e) => setImeiSerial(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono outline-none focus:border-emerald-600 focus:bg-white transition-all"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono outline-none focus:border-emerald-600 focus:bg-white transition-all"
                 />
               </div>
 
@@ -877,7 +929,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                 <select
                   value={pickupSlot}
                   onChange={(e) => setPickupSlot(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 focus:bg-white transition-all font-medium"
                 >
                   <option value="10:00 - 14:00">Morning Slot: 10:00 AM – 02:00 PM</option>
                   <option value="14:00 - 18:00">Afternoon Slot: 02:00 PM – 06:00 PM</option>
@@ -892,9 +944,9 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                     required
                     checked={batteryDeclared}
                     onChange={(e) => setBatteryDeclared(e.target.checked)}
-                    className="mt-0.5 rounded border-amber-400 text-emerald-600 focus:ring-emerald-500 w-4 h-4 shrink-0"
+                    className="mt-0.5 rounded-xl border-amber-400 text-emerald-600 focus:ring-emerald-500 w-4 h-4 shrink-0"
                   />
-                  <div className="text-amber-900 leading-relaxed text-[11px]">
+                  <div className="text-amber-900 leading-relaxed text-2xs">
                     <strong className="block text-xs font-bold text-amber-950 mb-0.5">Mandatory Lithium-ion Battery Transit Declaration:</strong>
                     I certify that this smartphone package contains a secure Lithium-ion battery installed inside the equipment (UN 3481) and conforms with courier safe-transit protocols.
                   </div>
@@ -905,7 +957,7 @@ export const SellerDashboard: React.FC<SellerDashboardProps> = ({
                 <button
                   type="submit"
                   disabled={bookingLoading || !batteryDeclared}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
+                  className="flex-1 py-2.5 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
                 >
                   {bookingLoading ? 'Generating AWB & Booking Carrier...' : 'Confirm Carrier Booking & Generate Label'}
                 </button>

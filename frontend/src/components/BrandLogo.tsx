@@ -14,48 +14,43 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   className = '',
 }) => {
   const iconDimensions = {
-    sm: 'w-7 h-7',
-    md: 'w-8 h-8',
-    lg: 'w-10 h-10',
+    sm: 'w-8 h-8 p-1.5 rounded-[10px]',
+    md: 'w-9 h-9 p-2 sm:w-10 sm:h-10 rounded-xl',
+    lg: 'w-12 h-12 p-2.5 rounded-2xl',
   }[size];
 
   const textSizes = {
-    sm: 'text-base',
-    md: 'text-lg sm:text-xl',
-    lg: 'text-2xl',
+    sm: 'text-lg',
+    md: 'text-xl sm:text-[1.4rem]',
+    lg: 'text-3xl',
   }[size];
 
   const textColorRe = variant === 'dark' ? 'text-white' : 'text-slate-900';
-  const textColorValue = variant === 'dark' ? 'text-emerald-400' : 'text-emerald-600';
+  const textColorValue = variant === 'dark' ? 'text-brand-300' : 'text-brand-600';
   const taglineColor = variant === 'dark' ? 'text-slate-400' : 'text-slate-500';
 
   return (
-    <div className={`flex items-center gap-2 select-none ${className}`}>
+    <div className={`flex items-center gap-2.5 select-none ${className}`}>
       {/* Brand Emblem */}
-      <div className={`${iconDimensions} rounded-lg bg-slate-950 flex items-center justify-center p-1.5 shadow-2xs shrink-0 border border-slate-800`}>
-        <svg viewBox="0 0 24 24" fill="none" className="w-full h-full">
-          <rect x="5" y="2" width="14" height="20" rx="3" stroke="#059669" strokeWidth="1.75" />
-          <path d="M10 5H14" stroke="#34d399" strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M8.5 13.5L12 10L15.5 13.5" stroke="#10b981" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M12 10V16" stroke="#10b981" strokeWidth="1.75" strokeLinecap="round" />
+      <div
+        className={`${iconDimensions} bg-brand-gradient flex items-center justify-center shrink-0 shadow-md shadow-brand-700/25 ring-1 ring-inset ring-white/15`}
+      >
+        <svg viewBox="0 0 24 24" fill="none" className="w-full h-full" aria-hidden="true">
+          <rect x="5" y="2" width="14" height="20" rx="3.2" stroke="#ffffff" strokeWidth="1.9" />
+          <path d="M10 5H14" stroke="#d9cefc" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M8.5 13.5L12 10L15.5 13.5" stroke="#ffffff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M12 10V16.5" stroke="#ffffff" strokeWidth="1.9" strokeLinecap="round" />
         </svg>
       </div>
 
       {/* Wordmark */}
-      <div className="flex flex-col">
-        <div className="flex items-center">
-          <span className={`${textSizes} font-black tracking-tight ${textColorRe}`}>
-            Re
-          </span>
-          <span className={`${textSizes} font-black tracking-tight ${textColorValue}`}>
-            Value
-          </span>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-0.5 inline-block" />
+      <div className="flex flex-col leading-none">
+        <div className="flex items-baseline">
+          <span className={`${textSizes} font-extrabold tracking-[-0.03em] ${textColorRe}`}>Re</span>
+          <span className={`${textSizes} font-extrabold tracking-[-0.03em] ${textColorValue}`}>Value</span>
         </div>
         {showTagline && (
-          <span className={`text-[9.5px] font-medium tracking-tight -mt-0.5 ${taglineColor}`}>
-            Every phone has more value
-          </span>
+          <span className={`text-2xs font-medium tracking-tight mt-1 ${taglineColor}`}>Every phone has more value</span>
         )}
       </div>
     </div>

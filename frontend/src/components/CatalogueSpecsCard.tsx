@@ -136,7 +136,7 @@ export const CatalogueSpecsCard: React.FC<CatalogueSpecsCardProps> = ({
             <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700">
               <Smartphone className="w-4 h-4" />
             </div>
-            <h2 className="text-sm font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
               Smartphone Specifications
             </h2>
           </div>
@@ -146,7 +146,7 @@ export const CatalogueSpecsCard: React.FC<CatalogueSpecsCardProps> = ({
         </div>
 
         {curatedSpecs && !customModel && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10.5px] font-bold self-start sm:self-auto">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-2xs font-bold self-start sm:self-auto">
             <Sparkles className="w-3 h-3 text-emerald-600" />
             <span>Auto-filled from Catalogue</span>
           </div>
@@ -188,7 +188,7 @@ export const CatalogueSpecsCard: React.FC<CatalogueSpecsCardProps> = ({
               onBrandChange(e.target.value);
               onCustomModelToggle(false);
             }}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition-colors"
+            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none transition-colors"
           >
             {ALL_EXPANDED_BRANDS.map((b) => (
               <option key={b} value={b}>{b}</option>
@@ -206,7 +206,7 @@ export const CatalogueSpecsCard: React.FC<CatalogueSpecsCardProps> = ({
           <button
             type="button"
             onClick={() => onCustomModelToggle(!customModel)}
-            className="text-[11px] text-emerald-700 font-bold hover:underline"
+            className="text-2xs text-emerald-700 font-bold hover:underline"
           >
             {customModel ? '← Select from catalogue' : '+ Enter custom model'}
           </button>
@@ -218,7 +218,7 @@ export const CatalogueSpecsCard: React.FC<CatalogueSpecsCardProps> = ({
             placeholder="e.g. Galaxy S23 Ultra, iPhone 14 Pro"
             value={model}
             onChange={(e) => onModelChange(e.target.value)}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
+            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none"
             required
           />
         ) : (
@@ -227,7 +227,7 @@ export const CatalogueSpecsCard: React.FC<CatalogueSpecsCardProps> = ({
               value={model}
               onChange={(e) => onModelChange(e.target.value)}
               disabled={loadingModels}
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none disabled:opacity-50"
+              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 outline-none disabled:opacity-50"
             >
               {availableModels.map((m) => (
                 <option key={m} value={m}>{m}</option>
@@ -250,26 +250,26 @@ export const CatalogueSpecsCard: React.FC<CatalogueSpecsCardProps> = ({
               <Cpu className="w-3.5 h-3.5 text-emerald-600" />
               Catalogue Hardware Profile
             </span>
-            <span className="text-[10.5px] text-slate-500 font-medium uppercase">
+            <span className="text-2xs text-slate-500 font-medium uppercase">
               {curatedSpecs.os === 'ios' ? 'Apple iOS' : 'Google Android'}
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             <div className="p-2 rounded-lg bg-white border border-slate-200/70">
-              <span className="text-[10px] text-slate-400 font-bold uppercase block">Battery</span>
+              <span className="text-3xs text-slate-400 font-bold uppercase block">Battery</span>
               <span className="font-bold text-slate-800">{curatedSpecs.battery_mah ? `${curatedSpecs.battery_mah} mAh` : 'Standard'}</span>
             </div>
             <div className="p-2 rounded-lg bg-white border border-slate-200/70">
-              <span className="text-[10px] text-slate-400 font-bold uppercase block">Display</span>
+              <span className="text-3xs text-slate-400 font-bold uppercase block">Display</span>
               <span className="font-bold text-slate-800">{curatedSpecs.display_size_inches ? `${curatedSpecs.display_size_inches}" Display` : 'Standard'}</span>
             </div>
             <div className="p-2 rounded-lg bg-white border border-slate-200/70">
-              <span className="text-[10px] text-slate-400 font-bold uppercase block">Connectivity</span>
+              <span className="text-3xs text-slate-400 font-bold uppercase block">Connectivity</span>
               <span className="font-bold text-emerald-700">{curatedSpecs.has_5g ? '5G Ultra' : '4G LTE'}</span>
             </div>
             <div className="p-2 rounded-lg bg-white border border-slate-200/70">
-              <span className="text-[10px] text-slate-400 font-bold uppercase block">Retail Launch MSRP</span>
+              <span className="text-3xs text-slate-400 font-bold uppercase block">Retail Launch MSRP</span>
               <span className="font-bold text-slate-800">
                 {curatedSpecs.original_retail_price ? `₹${curatedSpecs.original_retail_price.toLocaleString('en-IN')}` : 'Market Avg'}
               </span>
@@ -339,7 +339,7 @@ export const CatalogueSpecsCard: React.FC<CatalogueSpecsCardProps> = ({
             max="100"
             value={batteryHealth}
             onChange={(e) => onBatteryHealthChange(Number(e.target.value))}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 outline-none focus:bg-white focus:border-emerald-600"
+            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 outline-none focus:bg-white focus:border-emerald-600"
           />
         </div>
 
@@ -353,7 +353,7 @@ export const CatalogueSpecsCard: React.FC<CatalogueSpecsCardProps> = ({
             max="72"
             value={ageMonths}
             onChange={(e) => onAgeMonthsChange(Number(e.target.value))}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 outline-none focus:bg-white focus:border-emerald-600"
+            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 outline-none focus:bg-white focus:border-emerald-600"
           />
         </div>
 
@@ -364,7 +364,7 @@ export const CatalogueSpecsCard: React.FC<CatalogueSpecsCardProps> = ({
             placeholder="e.g. Space Grey, Blue"
             value={color}
             onChange={(e) => onColorChange(e.target.value)}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 outline-none focus:bg-white focus:border-emerald-600"
+            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 outline-none focus:bg-white focus:border-emerald-600"
           />
         </div>
 
@@ -375,7 +375,7 @@ export const CatalogueSpecsCard: React.FC<CatalogueSpecsCardProps> = ({
             placeholder="e.g. 69900"
             value={originalMSRP}
             onChange={(e) => onOriginalMSRPChange(e.target.value)}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 outline-none focus:bg-white focus:border-emerald-600"
+            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 outline-none focus:bg-white focus:border-emerald-600"
           />
         </div>
       </div>

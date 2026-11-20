@@ -120,17 +120,17 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
 
   if (!isAuthenticated) {
     return (
-      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-3">
-        <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 mx-auto flex items-center justify-center">
-          <ShieldCheck className="w-6 h-6" />
+      <div className="max-w-md mx-auto px-4 py-20 text-center space-y-3">
+        <div className="w-16 h-16 rounded-2xl bg-brand-gradient text-white mx-auto flex items-center justify-center shadow-lg shadow-brand-700/25 mb-2">
+          <ShieldCheck className="w-7 h-7" />
         </div>
-        <h2 className="text-base font-bold text-slate-900">Sign in to Sell Your Phone</h2>
+        <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Sign in to Sell Your Phone</h2>
         <p className="text-xs text-slate-500 leading-relaxed">
           Log in with your verified ReValue account to create a listing.
         </p>
         <button
           onClick={onOpenAuth}
-          className="px-4 py-2 bg-slate-900 text-white font-bold text-xs rounded-xl shadow-2xs hover:bg-slate-800 transition-colors"
+          className="mt-3 h-11 px-6 rv-btn-primary font-bold text-sm rounded-xl"
         >
           Sign In
         </button>
@@ -295,30 +295,33 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12 py-6 sm:py-10 space-y-6">
       {/* Top Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+      <div className="flex items-end justify-between gap-4">
         <div>
           <button
             onClick={() => onNavigate('marketplace')}
-            className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 mb-1 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-brand-700 mb-2 -ml-2 px-2 py-1.5 rounded-lg hover:bg-brand-50 transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-4 h-4" />
             <span>Cancel</span>
           </button>
-          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Sell Your Smartphone
           </h1>
         </div>
 
-        <div className="text-right text-xs">
-          <span className="text-slate-400">Step {currentStep} of 6</span>
-          <span className="font-extrabold text-slate-800 block">{STEPS[currentStep - 1].title}</span>
+        <div className="text-right text-xs shrink-0">
+          <span className="inline-block px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 font-bold text-2xs">Step {currentStep} of 6</span>
+          <span className="font-extrabold text-slate-900 block mt-1.5 text-sm">{STEPS[currentStep - 1].title}</span>
         </div>
       </div>
 
       {/* Step Progress Navigation Bar */}
-      <div className="bg-white rounded-2xl p-2.5 border border-slate-200/80 shadow-xs">
+      <div className="bg-white rounded-2xl p-2 sm:p-3 border border-slate-200 shadow-sm">
+        <div className="h-1 rounded-full bg-slate-100 mb-2 sm:mb-3 overflow-hidden" aria-hidden="true">
+          <div className="h-full bg-brand-gradient rounded-full transition-[width] duration-500 ease-out" style={{ width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%` }} />
+        </div>
         <div className="grid grid-cols-6 gap-1">
           {STEPS.map((s) => {
             const isCompleted = currentStep > s.id;
@@ -329,24 +332,26 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 type="button"
                 onClick={() => { if (isCompleted) setCurrentStep(s.id); }}
                 disabled={!isCompleted && !isCurrent}
-                className={`py-1.5 px-1 rounded-xl text-center transition-all ${
+                aria-current={isCurrent ? 'step' : undefined}
+                className={`py-2 px-1 rounded-xl text-center transition-all ${
                   isCurrent
-                    ? 'bg-emerald-50 text-emerald-950 font-extrabold shadow-2xs'
+                    ? 'bg-brand-50 text-brand-900 font-extrabold'
                     : isCompleted
                     ? 'text-slate-700 hover:bg-slate-50 cursor-pointer'
                     : 'text-slate-300 opacity-60 cursor-not-allowed'
                 }`}
               >
-                <div className={`w-5 h-5 mx-auto rounded-full text-[10.5px] font-bold flex items-center justify-center mb-0.5 ${
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 mx-auto rounded-full text-2xs font-bold flex items-center justify-center mb-1 transition-colors ${
                   isCurrent
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-brand-gradient text-white shadow-md shadow-brand-700/30'
                     : isCompleted
-                    ? 'bg-emerald-100 text-emerald-800'
+                    ? 'bg-green-100 text-green-700'
                     : 'bg-slate-100 text-slate-400'
                 }`}>
                   {isCompleted ? <Check className="w-3 h-3" /> : s.id}
                 </div>
-                <span className="text-[10px] truncate block font-semibold">
+                <span className="text-3xs sm:text-2xs truncate block font-semibold">
+
                   {s.stepLabel}
                 </span>
               </button>
@@ -399,7 +404,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700">
                   <Camera className="w-4 h-4" />
                 </div>
-                <h2 className="text-sm font-extrabold text-slate-900 tracking-tight">
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
                   Device Photos & Cosmetic Condition
                 </h2>
               </div>
@@ -437,8 +442,8 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 Cosmetic Condition Grade <span className="text-rose-500">*</span>
               </label>
               {isAiConditionVerified && (
-                <span className="text-[10.5px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                  ✓ MobileNetV2 Verified
+                <span className="text-2xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  ✓ Verified by AI
                 </span>
               )}
             </div>
@@ -471,7 +476,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                   />
                   <div>
                     <span className="font-bold text-slate-900 block">{c.label}</span>
-                    <span className="text-[11px] text-slate-500 mt-0.5 block">{c.desc}</span>
+                    <span className="text-2xs text-slate-500 mt-0.5 block">{c.desc}</span>
                   </div>
                 </label>
               ))}
@@ -480,7 +485,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
 
           {/* Physical Verification Inputs */}
           <div className="pt-2 border-t border-slate-100 space-y-2">
-            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
+            <span className="text-2xs font-bold text-slate-700 uppercase tracking-wider block">
               Physical Checkpoints
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
@@ -489,7 +494,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 <select
                   value={screenCrack}
                   onChange={(e) => setScreenCrack(e.target.value)}
-                  className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-semibold"
+                  className="w-full px-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-semibold"
                 >
                   <option value="No">No Cracks</option>
                   <option value="Minor">Minor Hairline</option>
@@ -502,7 +507,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 <select
                   value={scratches}
                   onChange={(e) => setScratches(e.target.value)}
-                  className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-semibold"
+                  className="w-full px-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-semibold"
                 >
                   <option value="None">None</option>
                   <option value="Minor">Minor</option>
@@ -515,7 +520,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 <select
                   value={repairHistory}
                   onChange={(e) => setRepairHistory(e.target.value)}
-                  className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-semibold"
+                  className="w-full px-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-semibold"
                 >
                   <option value="No">None / Original</option>
                   <option value="Yes">Repaired</option>
@@ -527,7 +532,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 <select
                   value={warrantyAvailable}
                   onChange={(e) => setWarrantyAvailable(e.target.value)}
-                  className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-semibold"
+                  className="w-full px-2 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-semibold"
                 >
                   <option value="No">Expired</option>
                   <option value="Yes">Active Warranty</option>
@@ -563,7 +568,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700">
                   <Wand2 className="w-4 h-4" />
                 </div>
-                <h2 className="text-sm font-extrabold text-slate-900 tracking-tight">
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
                   Listing Information & AI Suggestions
                 </h2>
               </div>
@@ -579,7 +584,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
               <label className="block font-bold text-slate-700">
                 Listing Title <span className="text-rose-500">*</span>
               </label>
-              <span className="text-[10.5px] text-emerald-700 font-bold flex items-center gap-1">
+              <span className="text-2xs text-emerald-700 font-bold flex items-center gap-1">
                 <Sparkles className="w-3 h-3" />
                 AI Smart Suggestions
               </span>
@@ -595,13 +600,13 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                     setTitle(sug.title);
                     toast.info(`Selected ${sug.label} title.`);
                   }}
-                  className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-semibold text-left transition-all ${
+                  className={`px-2.5 py-1.5 rounded-xl border text-2xs font-semibold text-left transition-all ${
                     title === sug.title
                       ? 'border-emerald-600 bg-emerald-50 text-emerald-950 ring-1 ring-emerald-600'
                       : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
                   }`}
                 >
-                  <span className="block font-bold text-[10px] text-slate-400 uppercase">{sug.label}</span>
+                  <span className="block font-bold text-3xs text-slate-400 uppercase">{sug.label}</span>
                   <span className="line-clamp-1">{sug.title}</span>
                 </button>
               ))}
@@ -612,7 +617,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Apple iPhone 14 (128GB) - Like New"
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:border-emerald-600 font-medium text-xs"
+              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:bg-white focus:border-emerald-600 font-medium text-xs"
               required
             />
           </div>
@@ -629,7 +634,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 value={askingPrice}
                 onChange={(e) => setAskingPrice(e.target.value)}
                 placeholder="Enter price in ₹"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:bg-white focus:border-emerald-600 outline-none text-xs"
+                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:bg-white focus:border-emerald-600 outline-none text-xs"
                 required
               />
             </div>
@@ -644,10 +649,10 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                   value={locationCity}
                   onChange={(e) => setLocationCity(e.target.value)}
                   placeholder="e.g. Mumbai, Bengaluru, Delhi"
-                  className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-600 outline-none text-xs font-semibold"
+                  className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-600 outline-none text-xs font-semibold"
                   required
                 />
-                <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
               </div>
             </div>
           </div>
@@ -659,7 +664,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 type="checkbox"
                 checked={hasBox}
                 onChange={(e) => setHasBox(e.target.checked)}
-                className="accent-emerald-600 rounded"
+                className="accent-emerald-600 rounded-xl"
               />
               <span>Original Box Included</span>
             </label>
@@ -669,7 +674,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 type="checkbox"
                 checked={hasCharger}
                 onChange={(e) => setHasCharger(e.target.checked)}
-                className="accent-emerald-600 rounded"
+                className="accent-emerald-600 rounded-xl"
               />
               <span>Original Charger Included</span>
             </label>
@@ -681,7 +686,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
               <label className="block font-bold text-slate-700">
                 Seller Description & Notes
               </label>
-              <span className="text-[10.5px] text-emerald-700 font-bold flex items-center gap-1">
+              <span className="text-2xs text-emerald-700 font-bold flex items-center gap-1">
                 <Wand2 className="w-3 h-3" />
                 AI Description Templates
               </span>
@@ -699,8 +704,8 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                   }}
                   className="p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50/40 text-left transition-colors"
                 >
-                  <span className="font-bold text-[10.5px] text-slate-800 block">{tpl.label}</span>
-                  <span className="text-[9.5px] text-slate-400 font-medium block mt-0.5">{tpl.tag}</span>
+                  <span className="font-bold text-2xs text-slate-800 block">{tpl.label}</span>
+                  <span className="text-3xs text-slate-400 font-medium block mt-0.5">{tpl.tag}</span>
                 </button>
               ))}
             </div>
@@ -710,7 +715,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe condition, phone usage, battery health habits..."
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-600 outline-none text-xs leading-relaxed"
+              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-600 outline-none text-xs leading-relaxed"
             />
           </div>
 
@@ -724,7 +729,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
               value={knownFaults}
               onChange={(e) => setKnownFaults(e.target.value)}
               placeholder="e.g. Tiny pin-sized scuff on lower bezel, never dropped"
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs"
+              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs"
             />
           </div>
         </div>
@@ -734,7 +739,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
       {currentStep === 5 && (
         <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-4 text-xs">
           <div className="border-b border-slate-100 pb-4">
-            <h2 className="text-sm font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
               Choose How to Sell
             </h2>
             <p className="text-slate-500 mt-0.5">
@@ -803,9 +808,9 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 placeholder="e.g. 45000 (offers below this are automatically rejected)"
                 value={minAcceptablePrice}
                 onChange={(e) => setMinAcceptablePrice(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl outline-none font-semibold text-xs"
+                className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl outline-none font-semibold text-xs"
               />
-              <span className="text-[10.5px] text-slate-400 block">
+              <span className="text-2xs text-slate-400 block">
                 🔒 Security Guarantee: This floor price is confidential and is NEVER revealed to buyers or included in public API responses.
               </span>
             </div>
@@ -819,7 +824,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                     placeholder="e.g. 35000"
                     value={startingBid}
                     onChange={(e) => setStartingBid(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-amber-200 rounded-xl outline-none font-semibold text-xs"
+                    className="w-full px-3 py-2.5 bg-white border border-amber-200 rounded-xl outline-none font-semibold text-xs"
                     required
                   />
                 </div>
@@ -831,9 +836,9 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                     placeholder="e.g. 48000"
                     value={reservePrice}
                     onChange={(e) => setReservePrice(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-amber-200 rounded-xl outline-none font-semibold text-xs"
+                    className="w-full px-3 py-2.5 bg-white border border-amber-200 rounded-xl outline-none font-semibold text-xs"
                   />
-                  <span className="text-[10px] text-amber-800 mt-0.5 block">🔒 Strictly confidential to you.</span>
+                  <span className="text-3xs text-amber-800 mt-0.5 block">🔒 Strictly confidential to you.</span>
                 </div>
               </div>
 
@@ -842,7 +847,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
                 <select
                   value={auctionDays}
                   onChange={(e) => setAuctionDays(Number(e.target.value))}
-                  className="w-full sm:w-48 px-3 py-2 bg-white border border-amber-200 rounded-xl font-bold outline-none text-xs"
+                  className="w-full sm:w-48 px-3 py-2.5 bg-white border border-amber-200 rounded-xl font-bold outline-none text-xs"
                 >
                   <option value={1}>1 Day (Express)</option>
                   <option value={3}>3 Days (Standard)</option>
@@ -902,7 +907,7 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
           <button
             type="button"
             onClick={handleNextStep}
-            className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-2xs transition-colors flex items-center gap-1.5"
+            className="px-5 py-2 bg-slate-900 hover:bg-brand-800 text-white text-xs font-bold rounded-xl shadow-2xs transition-colors flex items-center gap-1.5"
           >
             <span>Continue</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -912,11 +917,11 @@ export const CreateListingPage: React.FC<CreateListingPageProps> = ({
             type="button"
             onClick={handleSubmitListing}
             disabled={submitting}
-            className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-xl shadow-2xs transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="px-6 py-2.5 rv-btn-primary text-white text-xs font-extrabold rounded-xl shadow-2xs transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             {submitting ? (
               <>
-                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span className="rv-spinner rv-spinner-light w-4 h-4" aria-hidden="true" />
                 <span>Publishing Listing...</span>
               </>
             ) : (

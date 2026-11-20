@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import { PromptModal } from '../components/PromptModal';
+import { DashboardSkeleton } from '../components/Skeleton';
 import {
   AdminShipmentItem, AdminCodOrder, RiderProfile, DeliveryJob,
   ServiceArea, RiderCompensationRecord
@@ -432,7 +433,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         </p>
         <button
           onClick={() => onNavigate('landing')}
-          className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-sm transition-all shadow-xs"
+          className="px-6 py-2.5 bg-slate-900 hover:bg-brand-800 text-white font-semibold rounded-xl text-sm transition-all shadow-xs"
         >
           Return to Marketplace
         </button>
@@ -441,7 +442,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-12 py-6 sm:py-10 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
         <div>
@@ -449,7 +450,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             Platform Governance & Logistics Operations
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Administrator Console</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Administrator Console</h1>
           <p className="text-sm text-slate-500 mt-1">
             Nationwide logistics monitoring, 48h dispatch deadlines, escrow dispute arbitration, and COD cash reconciliation.
           </p>
@@ -485,8 +486,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
             <span className="font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-800 font-semibold uppercase">
               {courierHealth.active_provider}
             </span>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-              courierHealth.is_healthy ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+            <span className={`px-2 py-0.5 rounded text-3xs font-bold uppercase tracking-wider ${
+              courierHealth.is_healthy ? 'bg-green-100 text-green-800' : 'bg-rose-100 text-rose-800'
             }`}>
               {courierHealth.is_healthy ? 'System Operational' : 'Degraded Service'}
             </span>
@@ -501,11 +502,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
+      <div className="flex gap-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto rv-no-scrollbar" role="tablist" aria-label="Admin sections">
         <button
           onClick={() => setActiveTab('overview')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-            activeTab === 'overview' ? 'bg-slate-900 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100'
+            activeTab === 'overview' ? 'bg-brand-gradient text-white shadow-md shadow-brand-700/25' : 'bg-white text-slate-600 border border-slate-200 hover:border-brand-200 hover:text-brand-700'
           }`}
         >
           Operational Metrics
@@ -514,7 +515,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         <button
           onClick={() => setActiveTab('delivery')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-            activeTab === 'delivery' ? 'bg-slate-900 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100'
+            activeTab === 'delivery' ? 'bg-brand-gradient text-white shadow-md shadow-brand-700/25' : 'bg-white text-slate-600 border border-slate-200 hover:border-brand-200 hover:text-brand-700'
           }`}
         >
           <Truck className="w-3.5 h-3.5" />
@@ -524,7 +525,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         <button
           onClick={() => setActiveTab('disputes')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-            activeTab === 'disputes' ? 'bg-slate-900 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100'
+            activeTab === 'disputes' ? 'bg-brand-gradient text-white shadow-md shadow-brand-700/25' : 'bg-white text-slate-600 border border-slate-200 hover:border-brand-200 hover:text-brand-700'
           }`}
         >
           <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
@@ -534,7 +535,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         <button
           onClick={() => setActiveTab('cod')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-            activeTab === 'cod' ? 'bg-slate-900 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100'
+            activeTab === 'cod' ? 'bg-brand-gradient text-white shadow-md shadow-brand-700/25' : 'bg-white text-slate-600 border border-slate-200 hover:border-brand-200 hover:text-brand-700'
           }`}
         >
           <Banknote className="w-3.5 h-3.5 text-emerald-600" />
@@ -544,7 +545,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         <button
           onClick={() => setActiveTab('users')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-            activeTab === 'users' ? 'bg-slate-900 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100'
+            activeTab === 'users' ? 'bg-brand-gradient text-white shadow-md shadow-brand-700/25' : 'bg-white text-slate-600 border border-slate-200 hover:border-brand-200 hover:text-brand-700'
           }`}
         >
           <Users className="w-3.5 h-3.5" />
@@ -554,7 +555,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         <button
           onClick={() => setActiveTab('riders')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
-            activeTab === 'riders' ? 'bg-slate-900 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100'
+            activeTab === 'riders' ? 'bg-brand-gradient text-white shadow-md shadow-brand-700/25' : 'bg-white text-slate-600 border border-slate-200 hover:border-brand-200 hover:text-brand-700'
           }`}
         >
           <Bike className="w-3.5 h-3.5 text-emerald-600" />
@@ -564,17 +565,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         <button
           onClick={() => setActiveTab('local-dispatch')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
-            activeTab === 'local-dispatch' ? 'bg-slate-900 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100'
+            activeTab === 'local-dispatch' ? 'bg-brand-gradient text-white shadow-md shadow-brand-700/25' : 'bg-white text-slate-600 border border-slate-200 hover:border-brand-200 hover:text-brand-700'
           }`}
         >
-          <Package className="w-3.5 h-3.5 text-blue-600" />
+          <Package className="w-3.5 h-3.5 text-indigo-600" />
           <span>Local Dispatch ({dispatchJobs.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('service-areas')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
-            activeTab === 'service-areas' ? 'bg-slate-900 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100'
+            activeTab === 'service-areas' ? 'bg-brand-gradient text-white shadow-md shadow-brand-700/25' : 'bg-white text-slate-600 border border-slate-200 hover:border-brand-200 hover:text-brand-700'
           }`}
         >
           <MapPin className="w-3.5 h-3.5 text-purple-600" />
@@ -584,7 +585,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         <button
           onClick={() => setActiveTab('rider-payouts')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
-            activeTab === 'rider-payouts' ? 'bg-slate-900 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100'
+            activeTab === 'rider-payouts' ? 'bg-brand-gradient text-white shadow-md shadow-brand-700/25' : 'bg-white text-slate-600 border border-slate-200 hover:border-brand-200 hover:text-brand-700'
           }`}
         >
           <Banknote className="w-3.5 h-3.5 text-amber-600" />
@@ -593,39 +594,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
       </div>
 
       {/* TAB: OVERVIEW */}
+      {activeTab === 'overview' && !metrics && loading && <DashboardSkeleton />}
       {activeTab === 'overview' && metrics && (
         <div className="space-y-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs space-y-1">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Total GMV Volume</span>
-              <span className="text-2xl font-bold text-slate-900 block">
+              <span className="text-3xs uppercase font-bold tracking-wider text-slate-400 block">Total GMV Volume</span>
+              <span className="text-3xl font-extrabold tracking-tight text-slate-900 block mt-1">
                 ₹{(metrics.marketplace_gmv_inr || 0).toLocaleString('en-IN')}
               </span>
-              <span className="text-[11px] text-slate-500">Gross completed turnover</span>
+              <span className="text-2xs text-slate-500">Gross completed turnover</span>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs space-y-1">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Total Marketplace Orders</span>
-              <span className="text-2xl font-bold text-slate-900 block">
+              <span className="text-3xs uppercase font-bold tracking-wider text-slate-400 block">Total Marketplace Orders</span>
+              <span className="text-3xl font-extrabold tracking-tight text-slate-900 block mt-1">
                 {metrics.total_orders}
               </span>
-              <span className="text-[11px] text-slate-500">{metrics.completed_orders} completed</span>
+              <span className="text-2xs text-slate-500">{metrics.completed_orders} completed</span>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs space-y-1">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Registered Users</span>
-              <span className="text-2xl font-bold text-slate-900 block">
+              <span className="text-3xs uppercase font-bold tracking-wider text-slate-400 block">Registered Users</span>
+              <span className="text-3xl font-extrabold tracking-tight text-slate-900 block mt-1">
                 {metrics.total_users}
               </span>
-              <span className="text-[11px] text-slate-500">Active market participants</span>
+              <span className="text-2xs text-slate-500">Active market participants</span>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs space-y-1">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Active Listings</span>
-              <span className="text-2xl font-bold text-emerald-700 block">
+              <span className="text-3xs uppercase font-bold tracking-wider text-slate-400 block">Active Listings</span>
+              <span className="text-3xl font-extrabold tracking-tight text-brand-700 block mt-1">
                 {metrics.active_listings}
               </span>
-              <span className="text-[11px] text-slate-500">Available smartphone inventory</span>
+              <span className="text-2xs text-slate-500">Available smartphone inventory</span>
             </div>
           </div>
         </div>
@@ -646,7 +648,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   type="checkbox"
                   checked={overdueOnly}
                   onChange={(e) => setOverdueOnly(e.target.checked)}
-                  className="rounded border-slate-300 text-rose-600 focus:ring-rose-500"
+                  className="rounded-xl border-slate-300 text-rose-600 focus:ring-rose-500"
                 />
                 <span className="text-rose-700">Show Overdue Dispatch Only</span>
               </label>
@@ -654,7 +656,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 font-medium"
+                className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 font-medium"
               >
                 <option value="">All Statuses</option>
                 <option value="shipment_booked">Shipment Booked</option>
@@ -672,10 +674,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               No shipments matching the selected filters.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+            <div className="overflow-x-auto rv-table-scroll rounded-xl border border-slate-100">
+              <table className="w-full min-w-[46rem] text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px] tracking-wider font-bold">
+                  <tr className="border-b border-slate-200 text-slate-400 uppercase text-3xs tracking-wider font-bold">
                     <th className="py-3 px-3">Order ID / Item</th>
                     <th className="py-3 px-3">Courier / AWB</th>
                     <th className="py-3 px-3">Status</th>
@@ -689,18 +691,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     <tr key={s.order_id} className="hover:bg-slate-50/60 transition-colors">
                       <td className="py-3 px-3">
                         <div className="font-bold text-slate-900">{s.product_title}</div>
-                        <div className="text-[11px] font-mono text-slate-400">#{s.order_id}</div>
+                        <div className="text-2xs font-mono text-slate-400">#{s.order_id}</div>
                       </td>
                       <td className="py-3 px-3">
                         <div className="font-semibold text-slate-800">{s.courier_name}</div>
-                        <div className="font-mono text-slate-500 text-[11px]">{s.awb_code || 'Pending'}</div>
+                        <div className="font-mono text-slate-500 text-2xs">{s.awb_code || 'Pending'}</div>
                       </td>
                       <td className="py-3 px-3">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                          s.status === 'completed' ? 'bg-emerald-50 text-emerald-700' :
+                        <span className={`px-2 py-0.5 rounded text-3xs font-bold uppercase tracking-wider ${
+                          s.status === 'completed' ? 'bg-green-50 text-green-700' :
                           s.status === 'delivered' ? 'bg-indigo-50 text-indigo-700' :
                           s.status === 'disputed' ? 'bg-rose-50 text-rose-700' :
-                          s.status === 'picked_up' || s.status === 'in_transit' ? 'bg-sky-50 text-sky-700' :
+                          s.status === 'picked_up' || s.status === 'in_transit' ? 'bg-indigo-50 text-indigo-700' :
                           'bg-slate-100 text-slate-600'
                         }`}>
                           {s.status.replace(/_/g, ' ')}
@@ -718,11 +720,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                       </td>
                       <td className="py-3 px-3">
                         {s.is_overdue_dispatch ? (
-                          <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-[10px]">
+                          <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-3xs">
                             OVERDUE DISPATCH (&gt;48h)
                           </span>
                         ) : s.dispatch_deadline ? (
-                          <span className="text-slate-500 font-mono text-[11px]">
+                          <span className="text-slate-500 font-mono text-2xs">
                             Deadline: {new Date(s.dispatch_deadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         ) : (
@@ -776,12 +778,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                       <span className="font-bold text-slate-900 text-sm">Dispute #{d.id}</span>
                       <span className="text-slate-400">•</span>
                       <span className="font-mono text-slate-600">Order #{d.order_id}</span>
-                      <span className="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-100 text-rose-800">
+                      <span className="px-2.5 py-0.5 rounded text-3xs font-bold uppercase tracking-wider bg-rose-100 text-rose-800">
                         {d.reason?.replace(/_/g, ' ')}
                       </span>
                     </div>
 
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                    <span className={`px-2.5 py-0.5 rounded-full text-3xs font-bold uppercase ${
                       d.status === 'resolved' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                     }`}>
                       {d.status}
@@ -794,7 +796,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
                   {d.evidence_images && d.evidence_images.length > 0 && (
                     <div className="space-y-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Buyer Uploaded Evidence:</span>
+                      <span className="text-3xs font-bold uppercase tracking-wider text-slate-400">Buyer Uploaded Evidence:</span>
                       <div className="flex gap-2">
                         {d.evidence_images.map((img: string, idx: number) => (
                           <a key={idx} href={img} target="_blank" rel="noreferrer" className="text-emerald-700 underline flex items-center gap-1 font-semibold">
@@ -847,7 +849,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                           setResolutionAction('release_seller');
                           setResolutionNotes('Buyer claim unsubstantiated. Device matches listing description. Releasing seller payout.');
                         }}
-                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs transition-colors"
+                        className="px-3.5 py-1.5 rv-btn-primary text-white font-semibold rounded-xl text-xs transition-colors"
                       >
                         Dismiss & Release Seller Payout
                       </button>
@@ -875,10 +877,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               No Cash on Delivery orders recorded.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+            <div className="overflow-x-auto rv-table-scroll rounded-xl border border-slate-100">
+              <table className="w-full min-w-[46rem] text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px] tracking-wider font-bold">
+                  <tr className="border-b border-slate-200 text-slate-400 uppercase text-3xs tracking-wider font-bold">
                     <th className="py-3 px-3">Order ID / AWB</th>
                     <th className="py-3 px-3">Expected Cash Amount</th>
                     <th className="py-3 px-3">COD Status</th>
@@ -891,13 +893,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     <tr key={c.order_id} className="hover:bg-slate-50/60 transition-colors">
                       <td className="py-3 px-3">
                         <div className="font-bold text-slate-900">#{c.order_id}</div>
-                        <div className="font-mono text-slate-400 text-[11px]">{c.awb_code || 'No AWB'}</div>
+                        <div className="font-mono text-slate-400 text-2xs">{c.awb_code || 'No AWB'}</div>
                       </td>
                       <td className="py-3 px-3 font-bold text-slate-900">
                         ₹{c.expected_amount.toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-3">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                        <span className={`px-2 py-0.5 rounded text-3xs font-bold uppercase tracking-wider ${
                           c.cod_status === 'reconciled' ? 'bg-emerald-100 text-emerald-800' :
                           c.cod_status === 'exception' ? 'bg-rose-100 text-rose-800' :
                           'bg-amber-100 text-amber-800'
@@ -915,7 +917,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                               setSelectedCod(c);
                               setRemittedAmount(String(c.expected_amount));
                             }}
-                            className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-xs transition-colors"
+                            className="px-3 py-1 rv-btn-primary text-white font-semibold rounded-lg text-xs transition-colors"
                           >
                             Reconcile
                           </button>
@@ -944,7 +946,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 <div className="flex items-center gap-2.5">
                   <span className="font-bold text-slate-900">{u.name}</span>
                   <span className="text-slate-400">({u.email})</span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                  <span className={`px-2 py-0.5 rounded text-3xs font-bold uppercase tracking-wider ${
                     u.role === 'admin' ? 'bg-amber-100 text-amber-800' :
                     u.role === 'seller' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'
                   }`}>
@@ -953,7 +955,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 </div>
                 <button
                   onClick={() => handleToggleUser(u.id, u.is_active)}
-                  className={`px-3 py-1 rounded-lg font-semibold text-[11px] transition-colors self-start sm:self-auto ${
+                  className={`px-3 py-1 rounded-lg font-semibold text-2xs transition-colors self-start sm:self-auto ${
                     u.is_active
                       ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
                       : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
@@ -1012,7 +1014,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 >
                   <span>{tab.label}</span>
                   <span
-                    className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                    className={`px-1.5 py-0.5 rounded-full text-3xs font-bold ${
                       riderStatusFilter === tab.id
                         ? 'bg-slate-700 text-white'
                         : 'bg-white text-slate-700 shadow-2xs'
@@ -1039,10 +1041,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               )}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+            <div className="overflow-x-auto rv-table-scroll rounded-xl border border-slate-100">
+              <table className="w-full min-w-[46rem] text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-3xs">
                     <th className="pb-3 px-3">Applicant & Contact</th>
                     <th className="pb-3 px-3">Vehicle Details</th>
                     <th className="pb-3 px-3">Operating PIN Codes & City</th>
@@ -1056,31 +1058,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
                       <td className="py-3 px-3">
                         <span className="font-bold text-slate-900 block">{r.name}</span>
-                        <span className="text-slate-500 text-[11px] block">{r.email}</span>
-                        <span className="text-slate-400 text-[10px] block font-mono">{r.phone}</span>
+                        <span className="text-slate-500 text-2xs block">{r.email}</span>
+                        <span className="text-slate-400 text-3xs block font-mono">{r.phone}</span>
                       </td>
 
                       <td className="py-3 px-3 text-slate-600">
                         <span className="capitalize font-semibold text-slate-800 block">
                           {r.vehicle_type?.replace(/_/g, ' ') || 'Motorcycle'}
                         </span>
-                        <span className="text-[10px] text-slate-500 block font-mono">
+                        <span className="text-3xs text-slate-500 block font-mono">
                           Reg: {r.vehicle_registration_number || 'N/A'}
                         </span>
-                        <span className="text-[10px] text-slate-400 block font-mono">
+                        <span className="text-3xs text-slate-400 block font-mono">
                           DL: {r.driving_license_number || 'Submitted'}
                         </span>
                       </td>
 
                       <td className="py-3 px-3 text-slate-600">
                         <span className="font-semibold text-slate-800 block">{r.city}</span>
-                        <span className="text-[10px] text-slate-500 block font-mono">
+                        <span className="text-3xs text-slate-500 block font-mono">
                           PINs: {r.service_pincodes && r.service_pincodes.length > 0 ? r.service_pincodes.join(', ') : 'None'}
                         </span>
                       </td>
 
                       <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
-                        <div className="flex items-center gap-1 text-[11px]">
+                        <div className="flex items-center gap-1 text-2xs">
                           <Clock className="w-3 h-3 text-slate-400 shrink-0" />
                           <span>
                             {r.created_at
@@ -1093,7 +1095,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                           </span>
                         </div>
                         {r.created_at && (
-                          <span className="text-[10px] text-slate-400 block pl-4">
+                          <span className="text-3xs text-slate-400 block pl-4">
                             {new Date(r.created_at).toLocaleTimeString('en-IN', {
                               hour: '2-digit',
                               minute: '2-digit',
@@ -1105,7 +1107,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                       <td className="py-3 px-3 whitespace-nowrap">
                         <div className="space-y-1">
                           <span
-                            className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            className={`inline-block px-2 py-0.5 rounded text-3xs font-bold uppercase tracking-wider ${
                               r.application_status === 'approved'
                                 ? 'bg-emerald-100 text-emerald-800'
                                 : r.application_status === 'pending' || r.application_status === 'under_review'
@@ -1117,7 +1119,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                           </span>
                           <div>
                             <span
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-bold ${
                                 r.is_online ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
                               }`}
                             >
@@ -1141,7 +1143,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                                 disabled={updatingRiderStatus}
                                 onClick={() => handleDirectApproveRider(r)}
                                 title="Approve application"
-                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-xs transition-colors flex items-center gap-1 shadow-xs disabled:opacity-50"
+                                className="px-2.5 py-1 rv-btn-primary text-white font-semibold rounded-lg text-xs transition-colors flex items-center gap-1 shadow-xs disabled:opacity-50"
                               >
                                 <CheckCircle className="w-3.5 h-3.5" />
                                 <span>Approve</span>
@@ -1241,10 +1243,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               No local delivery dispatches created yet. Local shipments are automatically generated when buyers choose ReValue Local Delivery.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+            <div className="overflow-x-auto rv-table-scroll rounded-xl border border-slate-100">
+              <table className="w-full min-w-[46rem] text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-3xs">
                     <th className="pb-3 px-3">Order / Device</th>
                     <th className="pb-3 px-3">Route (PIN to PIN)</th>
                     <th className="pb-3 px-3">Assigned Rider</th>
@@ -1258,29 +1260,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     <tr key={job.id} className="hover:bg-slate-50/50">
                       <td className="py-3 px-3">
                         <span className="font-bold text-slate-900 block">{job.product_title}</span>
-                        <span className="text-[10px] text-slate-400 font-mono">Order #{job.order_id.slice(-6)}</span>
+                        <span className="text-3xs text-slate-400 font-mono">Order #{job.order_id.slice(-6)}</span>
                       </td>
-                      <td className="py-3 px-3 text-slate-600 font-mono text-[11px]">
+                      <td className="py-3 px-3 text-slate-600 font-mono text-2xs">
                         <span>{job.pickup_location.pincode} → {job.dropoff_location.pincode}</span>
-                        <span className="text-[10px] text-slate-400 block font-sans">{job.dropoff_location.city}</span>
+                        <span className="text-3xs text-slate-400 block font-sans">{job.dropoff_location.city}</span>
                       </td>
                       <td className="py-3 px-3">
                         {job.assigned_rider_name ? (
                           <div>
                             <span className="font-semibold text-slate-800 block">{job.assigned_rider_name}</span>
-                            <span className="text-[10px] text-slate-400 block">{job.assigned_rider_phone}</span>
+                            <span className="text-3xs text-slate-400 block">{job.assigned_rider_phone}</span>
                           </div>
                         ) : (
-                          <span className="text-[10px] text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded">
+                          <span className="text-3xs text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded">
                             Unassigned Broadcast
                           </span>
                         )}
                       </td>
                       <td className="py-3 px-3">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                          job.status === 'delivered' ? 'bg-emerald-100 text-emerald-800' :
+                        <span className={`px-2 py-0.5 rounded text-3xs font-bold uppercase tracking-wider ${
+                          job.status === 'delivered' ? 'bg-green-100 text-green-800' :
                           job.status === 'failed' || job.status === 'cancelled' ? 'bg-rose-100 text-rose-800' :
-                          'bg-blue-100 text-blue-800'
+                          'bg-indigo-100 text-indigo-800'
                         }`}>
                           {job.status.replace(/_/g, ' ')}
                         </span>
@@ -1328,7 +1330,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
             </div>
             <button
               onClick={() => setShowAddAreaModal(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs transition-colors shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rv-btn-primary text-white font-semibold rounded-xl text-xs transition-colors shadow-xs"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Service Area</span>
@@ -1347,7 +1349,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="font-bold text-slate-900 text-sm">{area.name}</h4>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                        <span className={`px-2 py-0.5 rounded text-3xs font-bold uppercase tracking-wider ${
                           area.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
                         }`}>
                           {area.is_active ? 'Active' : 'Inactive'}
@@ -1379,26 +1381,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
                   <div className="grid grid-cols-3 gap-2 text-xs bg-slate-50 p-2.5 rounded-xl">
                     <div>
-                      <span className="text-[10px] text-slate-400 block font-semibold">Base Rate</span>
+                      <span className="text-3xs text-slate-400 block font-semibold">Base Rate</span>
                       <span className="font-bold text-slate-900">₹{area.base_shipping_rate}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 block font-semibold">Max Weight</span>
+                      <span className="text-3xs text-slate-400 block font-semibold">Max Weight</span>
                       <span className="font-bold text-slate-900">{area.max_package_weight_kg} kg</span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 block font-semibold">Est. SLA</span>
+                      <span className="text-3xs text-slate-400 block font-semibold">Est. SLA</span>
                       <span className="font-bold text-slate-900">{area.estimated_delivery_hours}h</span>
                     </div>
                   </div>
 
                   <div>
-                    <span className="text-[10px] text-slate-400 block font-semibold mb-1">
+                    <span className="text-3xs text-slate-400 block font-semibold mb-1">
                       Covered PIN Codes ({area.pincodes.length})
                     </span>
                     <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
                       {area.pincodes.map((pin) => (
-                        <span key={pin} className="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded font-mono text-[10px]">
+                        <span key={pin} className="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded font-mono text-3xs">
                           {pin}
                         </span>
                       ))}
@@ -1427,10 +1429,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               No rider compensation entries recorded yet. Entries are credited automatically when local deliveries are completed.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+            <div className="overflow-x-auto rv-table-scroll rounded-xl border border-slate-100">
+              <table className="w-full min-w-[46rem] text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-3xs">
                     <th className="pb-3 px-3">Order / Job</th>
                     <th className="pb-3 px-3">Delivery Partner</th>
                     <th className="pb-3 px-3">Compensation Amount</th>
@@ -1446,30 +1448,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                         <span className="font-mono font-semibold text-slate-800 block">
                           Order #{item.order_id.slice(-6)}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-mono">Job #{item.job_id.slice(-6)}</span>
+                        <span className="text-3xs text-slate-400 font-mono">Job #{item.job_id.slice(-6)}</span>
                       </td>
                       <td className="py-3 px-3">
                         <span className="font-bold text-slate-900 block">{item.rider_name}</span>
-                        <span className="text-[11px] text-slate-400">{item.rider_phone}</span>
+                        <span className="text-2xs text-slate-400">{item.rider_phone}</span>
                       </td>
                       <td className="py-3 px-3">
                         <span className="font-extrabold text-emerald-600 text-sm">₹{item.amount}</span>
                       </td>
                       <td className="py-3 px-3">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                          item.payout_status === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        <span className={`px-2 py-0.5 rounded text-3xs font-bold uppercase tracking-wider ${
+                          item.payout_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
                         }`}>
                           {item.payout_status}
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-slate-600 font-mono text-[11px]">
+                      <td className="py-3 px-3 text-slate-600 font-mono text-2xs">
                         {item.payout_reference || <span className="text-slate-400 italic">Pending Settlement</span>}
                       </td>
                       <td className="py-3 px-3 text-right">
                         {item.payout_status !== 'paid' && (
                           <button
                             onClick={() => setSelectedCompensation(item)}
-                            className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-xs transition-colors"
+                            className="px-3 py-1 rv-btn-primary text-white font-semibold rounded-lg text-xs transition-colors"
                           >
                             Mark Paid
                           </button>
@@ -1507,7 +1509,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 <select
                   value={resolutionAction}
                   onChange={(e) => setResolutionAction(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 font-medium"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 font-medium"
                 >
                   <option value="refund_buyer_full">Full Refund to Buyer (100% money back)</option>
                   <option value="refund_buyer_partial">Partial Refund (Remainder to seller)</option>
@@ -1525,7 +1527,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     placeholder="e.g. 2500"
                     value={partialRefundAmount}
                     onChange={(e) => setPartialRefundAmount(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-emerald-600"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-emerald-600"
                   />
                 </div>
               )}
@@ -1538,7 +1540,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   value={resolutionNotes}
                   onChange={(e) => setResolutionNotes(e.target.value)}
                   placeholder="Record formal reasons for decision communicated to both buyer and seller..."
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600"
                 />
               </div>
 
@@ -1546,7 +1548,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 <button
                   type="submit"
                   disabled={submittingResolution}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
+                  className="flex-1 py-2.5 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
                 >
                   {submittingResolution ? 'Executing Decision...' : 'Apply Resolution & Finalize'}
                 </button>
@@ -1589,7 +1591,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   step="0.01"
                   value={remittedAmount}
                   onChange={(e) => setRemittedAmount(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-emerald-600"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-emerald-600"
                 />
               </div>
 
@@ -1601,7 +1603,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   placeholder="e.g. UTR-DELHIVERY-981240"
                   value={courierRef}
                   onChange={(e) => setCourierRef(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono outline-none focus:border-emerald-600"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono outline-none focus:border-emerald-600"
                 />
               </div>
 
@@ -1612,7 +1614,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   placeholder="Weekly batch remittance report match"
                   value={codNotes}
                   onChange={(e) => setCodNotes(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600"
                 />
               </div>
 
@@ -1620,7 +1622,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 <button
                   type="submit"
                   disabled={reconciling}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
+                  className="flex-1 py-2.5 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
                 >
                   {reconciling ? 'Reconciling Ledger...' : 'Confirm Remittance Reconciliation'}
                 </button>
@@ -1657,25 +1659,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
             <div className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Phone</span>
+                  <span className="text-slate-400 block text-3xs uppercase font-bold">Phone</span>
                   <span className="font-semibold text-slate-800">{selectedRider.phone}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">City</span>
+                  <span className="text-slate-400 block text-3xs uppercase font-bold">City</span>
                   <span className="font-semibold text-slate-800">{selectedRider.city}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Vehicle</span>
+                  <span className="text-slate-400 block text-3xs uppercase font-bold">Vehicle</span>
                   <span className="font-semibold text-slate-800 capitalize">
                     {selectedRider.vehicle_type.replace(/_/g, ' ')} ({selectedRider.vehicle_registration_number})
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">License</span>
+                  <span className="text-slate-400 block text-3xs uppercase font-bold">License</span>
                   <span className="font-semibold text-slate-800">{selectedRider.driving_license_number}</span>
                 </div>
                 <div className="col-span-2">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Pincodes ({selectedRider.service_pincodes.length})</span>
+                  <span className="text-slate-400 block text-3xs uppercase font-bold">Pincodes ({selectedRider.service_pincodes.length})</span>
                   <span className="font-mono text-slate-700">{selectedRider.service_pincodes.join(', ')}</span>
                 </div>
               </div>
@@ -1689,7 +1691,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   placeholder="e.g. Invalid driving license document, or out of service zone"
                   value={riderRejectionReason}
                   onChange={(e) => setRiderRejectionReason(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600"
                 />
               </div>
 
@@ -1698,7 +1700,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   type="button"
                   disabled={updatingRiderStatus}
                   onClick={() => handleUpdateRiderStatus('approved')}
-                  className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs transition-colors disabled:opacity-50"
+                  className="flex-1 py-2 rv-btn-primary text-white font-semibold rounded-xl text-xs transition-colors disabled:opacity-50"
                 >
                   Approve Application
                 </button>
@@ -1748,7 +1750,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   required
                   value={targetRiderId}
                   onChange={(e) => setTargetRiderId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 bg-white"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600 bg-white"
                 >
                   <option value="">-- Choose Approved Rider --</option>
                   {riders
@@ -1768,7 +1770,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   placeholder="e.g. Initial rider vehicle breakdown, customer requested rush pickup"
                   value={reassignReason}
                   onChange={(e) => setReassignReason(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-emerald-600"
                 />
               </div>
 
@@ -1776,7 +1778,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 <button
                   type="submit"
                   disabled={reassigning || !targetRiderId}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
+                  className="flex-1 py-2.5 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
                 >
                   {reassigning ? 'Reassigning...' : 'Confirm Reassignment'}
                 </button>
@@ -1819,7 +1821,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   placeholder="e.g. South Mumbai & Bandra"
                   value={newAreaName}
                   onChange={(e) => setNewAreaName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600"
                 />
               </div>
 
@@ -1832,7 +1834,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     placeholder="e.g. Mumbai"
                     value={newAreaCity}
                     onChange={(e) => setNewAreaCity(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600"
                   />
                 </div>
                 <div>
@@ -1843,7 +1845,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     placeholder="e.g. Maharashtra"
                     value={newAreaState}
                     onChange={(e) => setNewAreaState(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600"
                   />
                 </div>
               </div>
@@ -1858,7 +1860,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   placeholder="400001, 400002, 400050"
                   value={newAreaPincodes}
                   onChange={(e) => setNewAreaPincodes(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 font-mono"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 font-mono"
                 />
               </div>
 
@@ -1869,7 +1871,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     type="number"
                     value={newAreaRate}
                     onChange={(e) => setNewAreaRate(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 font-bold"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 font-bold"
                   />
                 </div>
                 <div>
@@ -1879,7 +1881,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     step="0.5"
                     value={newAreaWeight}
                     onChange={(e) => setNewAreaWeight(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 font-bold"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 font-bold"
                   />
                 </div>
                 <div>
@@ -1888,7 +1890,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     type="number"
                     value={newAreaHours}
                     onChange={(e) => setNewAreaHours(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 font-bold"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 font-bold"
                   />
                 </div>
               </div>
@@ -1897,7 +1899,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 <button
                   type="submit"
                   disabled={savingArea}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
+                  className="flex-1 py-2.5 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
                 >
                   {savingArea ? 'Saving...' : 'Register Service Area'}
                 </button>
@@ -1944,7 +1946,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   placeholder="e.g. UPI-AXIS-9823410"
                   value={payoutBankRef}
                   onChange={(e) => setPayoutBankRef(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 font-mono font-bold"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-600 font-mono font-bold"
                 />
               </div>
 
@@ -1952,7 +1954,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 <button
                   type="submit"
                   disabled={settlingPayout}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
+                  className="flex-1 py-2.5 rv-btn-primary text-white font-semibold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50"
                 >
                   {settlingPayout ? 'Recording Settlement...' : 'Confirm Payout Settled'}
                 </button>
